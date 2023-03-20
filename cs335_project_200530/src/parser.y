@@ -22,10 +22,12 @@ map<int, string> additionalInfo;
 map<int, int> LineNumber;
 map<int, int> parent;
 map<int, string> scope;
+map<int, vector<int>> backlist;
 int makenode( string name){
     countnode++;
     vector<int> childs;
     tree[countnode] = {name, childs};
+    backlist[countnode] = {};
     return countnode;
 }
 int makenode( string name, string type){
@@ -34,6 +36,7 @@ int makenode( string name, string type){
     tree[countnode] = {name, childs};
     additionalInfo[countnode] = type;
     LineNumber[countnode] = line;
+    backlist[countnode] = {};
     return countnode;
 }
 
@@ -60,69 +63,54 @@ void printThreeAC(){
     }
 }
 
+tac* createTac2(int id){
+    vector<int> temp = tree[id].second;
+    tac *t = new tac();
+    t -> op = tree[temp[1]].first;
+    t -> res = "_v" + to_string(id);
+    t -> arg1 = createArg(temp[0]);
+    t -> arg2 = createArg(temp[2]);
+    return t;
+}
+
+tac* createTac1(int id){
+    vector<int> temp = tree[id].second;
+    tac* t = new tac();
+    t -> op = tree[temp[1]].first;
+    t -> res = createArg(temp[0]);
+    t -> arg1 = createArg(temp[2]);
+    return  t;
+}
+
 void ThreeACHelperFunc(int id){
     int childcallistrue = 1;
     vector<int> temp = tree[id].second;
+    if(tree[id].first == "ConditionalOrExpression"){
+        tacVector.push_back(createTac2(id));
+    }
+    if(tree[id].first == "ConditionalAndExpression"){
+        tacVector.push_back(createTac2(id));
+    }
     if(tree[id].first == "AdditiveExpression"){
-        // cout << "AdditiveExpression" << endl;
-        tac* t = new tac();
-        t -> op = tree[temp[1]].first;
-        t -> res = "_v" + to_string(id);
-        t -> arg1 = createArg(temp[0]);
-        t -> arg2 = createArg(temp[2]);
-        tacVector.push_back(t);
+        tacVector.push_back(createTac2(id));
     }
     if(tree[id].first == "MultiplicativeExpression"){
-        // cout << "MultiplicativeExpression" << endl;
-        tac* t = new tac();
-        t -> op = tree[temp[1]].first;
-        t -> res = "_v" + to_string(id);
-        t -> arg1 = createArg(temp[0]);
-        t -> arg2 = createArg(temp[2]);
-        tacVector.push_back(t);
+        tacVector.push_back(createTac2(id));
     }
     if(tree[id].first == "RelationalExpression"){
-        // cout << "RelationalExpression" << endl;
-        tac* t = new tac();
-        t -> op = tree[temp[1]].first;
-        t -> res = "_v" + to_string(id);
-        t -> arg1 = createArg(temp[0]);
-        t -> arg2 = createArg(temp[2]);
-        tacVector.push_back(t);
+        tacVector.push_back(createTac2(id));
     }
     if(tree[id].first == "EqualityExpression"){
-        // cout << "EqualityExpression" << endl;
-        tac* t = new tac();
-        t -> op = tree[temp[1]].first;
-        t -> res = "_v" + to_string(id);
-        t -> arg1 = createArg(temp[0]);
-        t -> arg2 = createArg(temp[2]);
-        tacVector.push_back(t);
+        tacVector.push_back(createTac2(id));
     }
     if(tree[id].first == "AssignmentExpression"){
-        // cout << "AssignmentExpression" << endl;
-        tac* t = new tac();
-        t -> op = tree[temp[1]].first;
-        t -> res = createArg(temp[0]);
-        t -> arg1 = createArg(temp[2]);
-        tacVector.push_back(t);
+        tacVector.push_back(createTac1(id));
     }
     if(tree[id].first == "PrimaryExpression"){
-        // cout << "PrimaryExpression" << endl;
-        tac* t = new tac();
-        t -> op = "=";
-        t -> res = "_v" + to_string(id);
-        t -> arg1 = createArg(temp[0]);
-
-        tacVector.push_back(t);
+        tacVector.push_back(createTac1(id));
     }
     if(tree[id].first == "VariableDeclarator"){
-        // cout << "VariableDeclarator" << endl;
-        tac* t = new tac();
-        t -> op = "=";
-        t -> res = createArg(temp[0]);
-        t -> arg1 = createArg(temp[2]);
-        tacVector.push_back(t);
+        tacVector.push_back(createTac1(id));
     }
     if(tree[id].first == "forStmt"){
 
@@ -1129,8 +1117,8 @@ UnaryExpression         : PLUS UnaryExpression          {int uid = makenode("Una
                         | UnaryExpressionNotPlusMinus    {$$ = $1;}
                         ;
 UnaryExpressionNotPlusMinus : PostfixExpression          {$$ = $1;}
-                        | TILDA UnaryExpression         {int uid = makenode("UnaryExpressionNot+-"); addChild(uid, $1);  $$=uid;}
-                        | EXCLAMATORY UnaryExpression       {int uid = makenode("UnaryExpressionNot+-"); addChild(uid, $1);  $$=uid;}
+                        | TILDA UnaryExpression         {int uid = makenode("UnaryExpressionNot+-"); addChild(uid, $1); addChild(uid, $2); $$=uid;}
+                        | EXCLAMATORY UnaryExpression       {int uid = makenode("UnaryExpressionNot+-"); addChild(uid, $1);  addChild(uid, $2); $$=uid;}
                         | CastExpression                   {$$ = $1;}
                         ;
 CastExpression          : OPEN_BRACKETS PrimitiveType Dims2 CLOSE_BRACKETS UnaryExpression  {
