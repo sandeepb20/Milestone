@@ -38,6 +38,127 @@ int makenode( string name, string type){
 }
 
 
+// ******************************* THREE AC CODE **********************************************
+typedef struct ThreeAC {
+    string op;
+    string arg1;
+    string arg2;
+    string res;
+} tac;
+vector<tac*> tacVector;
+
+string createArg(int id){
+    if(additionalInfo.find(id) != additionalInfo.end()){
+        return tree[id].first;
+    }
+    else return "t" + to_string(id);
+}
+
+void printThreeAC(){
+    for(int i = 0; i < tacVector.size(); i++){
+        cout << i << " " << tacVector[i] -> op << " " << tacVector[i] -> arg1 << " " << tacVector[i] -> arg2 << " " << tacVector[i] -> res << endl;
+    }
+}
+
+void ThreeACHelperFunc(int id){
+    int childcallistrue = 1;
+    vector<int> temp = tree[id].second;
+    if(tree[id].first == "AdditiveExpression"){
+        // cout << "AdditiveExpression" << endl;
+        tac* t = new tac();
+        t -> op = tree[temp[1]].first;
+        t -> res = "_v" + to_string(id);
+        t -> arg1 = createArg(temp[0]);
+        t -> arg2 = createArg(temp[2]);
+        tacVector.push_back(t);
+    }
+    if(tree[id].first == "MultiplicativeExpression"){
+        // cout << "MultiplicativeExpression" << endl;
+        tac* t = new tac();
+        t -> op = tree[temp[1]].first;
+        t -> res = "_v" + to_string(id);
+        t -> arg1 = createArg(temp[0]);
+        t -> arg2 = createArg(temp[2]);
+        tacVector.push_back(t);
+    }
+    if(tree[id].first == "RelationalExpression"){
+        // cout << "RelationalExpression" << endl;
+        tac* t = new tac();
+        t -> op = tree[temp[1]].first;
+        t -> res = "_v" + to_string(id);
+        t -> arg1 = createArg(temp[0]);
+        t -> arg2 = createArg(temp[2]);
+        tacVector.push_back(t);
+    }
+    if(tree[id].first == "EqualityExpression"){
+        // cout << "EqualityExpression" << endl;
+        tac* t = new tac();
+        t -> op = tree[temp[1]].first;
+        t -> res = "_v" + to_string(id);
+        t -> arg1 = createArg(temp[0]);
+        t -> arg2 = createArg(temp[2]);
+        tacVector.push_back(t);
+    }
+    if(tree[id].first == "AssignmentExpression"){
+        // cout << "AssignmentExpression" << endl;
+        tac* t = new tac();
+        t -> op = tree[temp[1]].first;
+        t -> res = createArg(temp[0]);
+        t -> arg1 = createArg(temp[2]);
+        tacVector.push_back(t);
+    }
+    if(tree[id].first == "PrimaryExpression"){
+        // cout << "PrimaryExpression" << endl;
+        tac* t = new tac();
+        t -> op = "=";
+        t -> res = "_v" + to_string(id);
+        t -> arg1 = createArg(temp[0]);
+
+        tacVector.push_back(t);
+    }
+    if(tree[id].first == "VariableDeclarator"){
+        // cout << "VariableDeclarator" << endl;
+        tac* t = new tac();
+        t -> op = "=";
+        t -> res = createArg(temp[0]);
+        t -> arg1 = createArg(temp[2]);
+        tacVector.push_back(t);
+    }
+    if(tree[id].first == "forStmt"){
+
+        childcallistrue = 0;
+         for(int i = 0; i < temp.size(); i++){
+            if(tree[temp[i]].first == "Assignment")
+                ThreeACHelperFunc(temp[i]);
+            if(tree[temp[i]].first == ";"){
+                    if(tree[temp[i+2]].first == ";"){
+                        vector<int> relchild = tree[temp[i+1]].second;
+                        ThreeACHelperFunc(relchild[0]);
+                        int for1 = tacVector.size();
+                        ThreeACHelperFunc(relchild[2]);
+                        int for2 = tacVector.size();
+                        tac* t = new tac();
+
+                        t -> op = "ifFalse ( " + tacVector[for1-1] -> res + tree[relchild[1]].first + tacVector[for2-1] -> res + " ) " + "goto " ;
+                        t -> arg2 = "";
+                        tacVector.push_back(t);
+                    }
+            }
+         }
+
+        
+    }
+    if(childcallistrue){
+               
+        for(int i = 0; i < temp.size(); i++){
+            ThreeACHelperFunc(temp[i]);
+        }
+    }
+    // cout << tree[id].first << endl;
+    
+}
+// ****************************************************************
+
 void tempfunc1(ofstream& fout, unordered_map<int,int> &visited, int id){
     if(id == -1) return;
     if(visited.find(id)==visited.end()){
@@ -310,6 +431,12 @@ void print(){
     symTable(root);
     curr_table = "program";
     checkScope(root);
+
+    // ***************************
+    cout << "******************** Three AC Print Statements**************" << endl;
+    ThreeACHelperFunc(root);
+    printThreeAC();
+    // ***************************
     ofstream fout;
     fout.open(OutputFileName);
     fout << "digraph G {" << endl;
@@ -1643,10 +1770,10 @@ int main(int argc, char *argv[]) {
 
     }
     fclose(yyin);
-    for(auto it : table){
+    /* for(auto it : table){
         printSymbolTable(it.first);
         cout << "***" << endl;
-    }
+    } */
 }
 
 void yyerror(const char* s) {

@@ -1,13 +1,16 @@
-public class ReverseString {
-  public static void main(String[] args) {
-    String str = "Hello World";
-    String reverse = "ok";
-
-    for (int i = str.length() - 1; i >= 0; i--) {
-      reverse = reverse + str.charAt(i);
-    }
-
-    System.out.println("Original string: " + str);
-    System.out.println("Reversed string: " + reverse);
+class ReverseString {
+  {
+  int a =0;
+  int i = 0;
+  for( i = 0;i < a+b-c ;i++){
+    a = a + i;
   }
+  int b = 0;
+  while(b<10){
+    b = b + 1;
+  }
+  int c = 10;
+
+// int a = 1 + 1*(2-3)+ (2-3)*4/3+3%2;
+}
 }

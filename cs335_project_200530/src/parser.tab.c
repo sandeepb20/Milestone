@@ -1,4 +1,4 @@
-/* A Bison parser, made by GNU Bison 3.8.2.  */
+/* A Bison parser, made by GNU Bison 3.8.  */
 
 /* Bison implementation for Yacc-like parsers in C
 
@@ -46,10 +46,10 @@
    USER NAME SPACE" below.  */
 
 /* Identify Bison output, and Bison version.  */
-#define YYBISON 30802
+#define YYBISON 30800
 
 /* Bison version string.  */
-#define YYBISON_VERSION "3.8.2"
+#define YYBISON_VERSION "3.8"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -107,6 +107,127 @@ int makenode( string name, string type){
     return countnode;
 }
 
+
+// ******************************* THREE AC CODE **********************************************
+typedef struct ThreeAC {
+    string op;
+    string arg1;
+    string arg2;
+    string res;
+} tac;
+vector<tac*> tacVector;
+
+string createArg(int id){
+    if(additionalInfo.find(id) != additionalInfo.end()){
+        return tree[id].first;
+    }
+    else return "t" + to_string(id);
+}
+
+void printThreeAC(){
+    for(int i = 0; i < tacVector.size(); i++){
+        cout << i << " " << tacVector[i] -> op << " " << tacVector[i] -> arg1 << " " << tacVector[i] -> arg2 << " " << tacVector[i] -> res << endl;
+    }
+}
+
+void ThreeACHelperFunc(int id){
+    int childcallistrue = 1;
+    vector<int> temp = tree[id].second;
+    if(tree[id].first == "AdditiveExpression"){
+        // cout << "AdditiveExpression" << endl;
+        tac* t = new tac();
+        t -> op = tree[temp[1]].first;
+        t -> res = "_v" + to_string(id);
+        t -> arg1 = createArg(temp[0]);
+        t -> arg2 = createArg(temp[2]);
+        tacVector.push_back(t);
+    }
+    if(tree[id].first == "MultiplicativeExpression"){
+        // cout << "MultiplicativeExpression" << endl;
+        tac* t = new tac();
+        t -> op = tree[temp[1]].first;
+        t -> res = "_v" + to_string(id);
+        t -> arg1 = createArg(temp[0]);
+        t -> arg2 = createArg(temp[2]);
+        tacVector.push_back(t);
+    }
+    if(tree[id].first == "RelationalExpression"){
+        // cout << "RelationalExpression" << endl;
+        tac* t = new tac();
+        t -> op = tree[temp[1]].first;
+        t -> res = "_v" + to_string(id);
+        t -> arg1 = createArg(temp[0]);
+        t -> arg2 = createArg(temp[2]);
+        tacVector.push_back(t);
+    }
+    if(tree[id].first == "EqualityExpression"){
+        // cout << "EqualityExpression" << endl;
+        tac* t = new tac();
+        t -> op = tree[temp[1]].first;
+        t -> res = "_v" + to_string(id);
+        t -> arg1 = createArg(temp[0]);
+        t -> arg2 = createArg(temp[2]);
+        tacVector.push_back(t);
+    }
+    if(tree[id].first == "AssignmentExpression"){
+        // cout << "AssignmentExpression" << endl;
+        tac* t = new tac();
+        t -> op = tree[temp[1]].first;
+        t -> res = createArg(temp[0]);
+        t -> arg1 = createArg(temp[2]);
+        tacVector.push_back(t);
+    }
+    if(tree[id].first == "PrimaryExpression"){
+        // cout << "PrimaryExpression" << endl;
+        tac* t = new tac();
+        t -> op = "=";
+        t -> res = "_v" + to_string(id);
+        t -> arg1 = createArg(temp[0]);
+
+        tacVector.push_back(t);
+    }
+    if(tree[id].first == "VariableDeclarator"){
+        // cout << "VariableDeclarator" << endl;
+        tac* t = new tac();
+        t -> op = "=";
+        t -> res = createArg(temp[0]);
+        t -> arg1 = createArg(temp[2]);
+        tacVector.push_back(t);
+    }
+    if(tree[id].first == "forStmt"){
+
+        childcallistrue = 0;
+         for(int i = 0; i < temp.size(); i++){
+            if(tree[temp[i]].first == "Assignment")
+                ThreeACHelperFunc(temp[i]);
+            if(tree[temp[i]].first == ";"){
+                    if(tree[temp[i+2]].first == ";"){
+                        vector<int> relchild = tree[temp[i+1]].second;
+                        ThreeACHelperFunc(relchild[0]);
+                        int for1 = tacVector.size();
+                        ThreeACHelperFunc(relchild[2]);
+                        int for2 = tacVector.size();
+                        tac* t = new tac();
+
+                        t -> op = "ifFalse ( " + tacVector[for1-1] -> res + tree[relchild[1]].first + tacVector[for2-1] -> res + " ) " + "goto " ;
+                        t -> arg2 = "";
+                        tacVector.push_back(t);
+                    }
+            }
+         }
+
+        
+    }
+    if(childcallistrue){
+               
+        for(int i = 0; i < temp.size(); i++){
+            ThreeACHelperFunc(temp[i]);
+        }
+    }
+    // cout << tree[id].first << endl;
+    
+}
+// ****************************************************************
 
 void tempfunc1(ofstream& fout, unordered_map<int,int> &visited, int id){
     if(id == -1) return;
@@ -380,6 +501,12 @@ void print(){
     symTable(root);
     curr_table = "program";
     checkScope(root);
+
+    // ***************************
+    cout << "******************** Three AC Print Statements**************" << endl;
+    ThreeACHelperFunc(root);
+    printThreeAC();
+    // ***************************
     ofstream fout;
     fout.open(OutputFileName);
     fout << "digraph G {" << endl;
@@ -402,7 +529,7 @@ void printast(struct ast* temp);
 
 
 
-#line 406 "parser.tab.c"
+#line 533 "parser.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -1187,46 +1314,46 @@ static const yytype_uint8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   588,   588,   590,   592,   600,   601,   603,   604,   606,
-     607,   609,   610,   612,   613,   615,   623,   624,   626,   634,
-     644,   645,   646,   649,   660,   661,   663,   670,   671,   679,
-     680,   687,   689,   690,   698,   699,   708,   716,   717,   719,
-     720,   721,   722,   724,   726,   728,   731,   732,   734,   735,
-     737,   739,   741,   742,   743,   747,   749,   750,   752,   753,
-     755,   756,   759,   761,   762,   769,   770,   771,   772,   773,
-     774,   775,   776,   777,   778,   779,   781,   782,   784,   785,
-     787,   788,   790,   791,   793,   794,   798,   806,   807,   809,
-     810,   812,   813,   815,   817,   820,   821,   822,   823,   824,
-     825,   827,   828,   829,   830,   831,   833,   834,   835,   836,
-     837,   838,   839,   840,   842,   844,   846,   848,   850,   860,
-     872,   884,   894,   904,   919,   933,   934,   937,   938,   940,
-     941,   943,   944,   946,   948,   949,   951,   952,   955,   956,
-     958,   960,   971,   973,   974,   976,   977,   980,   982,   983,
-     984,   985,   986,   987,   988,   990,   992,   994,   996,   998,
-     999,  1000,  1001,  1002,  1004,  1005,  1006,  1007,  1009,  1018,
-    1027,  1037,  1038,  1039,  1040,  1042,  1050,  1051,  1052,  1053,
-    1054,  1055,  1056,  1057,  1058,  1059,  1060,  1061,  1063,  1064,
-    1065,  1067,  1068,  1070,  1072,  1073,  1083,  1084,  1092,  1093,
-    1101,  1102,  1110,  1111,  1119,  1120,  1128,  1129,  1136,  1144,
-    1145,  1152,  1159,  1166,  1173,  1181,  1182,  1189,  1196,  1204,
-    1205,  1212,  1220,  1221,  1228,  1235,  1244,  1245,  1247,  1248,
-    1250,  1251,  1252,  1253,  1254,  1255,  1257,  1258,  1260,  1261,
-    1263,  1265,  1273,  1280,  1289,  1297,  1306,  1307,  1309,  1310,
-    1311,  1318,  1319,  1320,  1321,  1323,  1324,  1325,  1326,  1327,
-    1328,  1329,  1331,  1341,  1349,  1359,  1370,  1371,  1373,  1374,
-    1382,  1383,  1385,  1392,  1399,  1407,  1415,  1424,  1425,  1427,
-    1428,  1435,  1436,  1438,  1446,  1456,  1457,  1459,  1460,  1467,
-    1475,  1476,  1478,  1479,  1486,  1487,  1489,  1491,  1492,  1494,
-    1496,  1497,  1498,  1499,  1500,  1501,  1502,  1503,  1504,  1505,
-    1506,  1507,  1508,  1509,  1510,  1511,  1512,  1513,  1514,  1515,
-    1516,  1517,  1518,  1519,  1520,  1521,  1522,  1523,  1524,  1525,
-    1526,  1527,  1528,  1529,  1530,  1531,  1532,  1533,  1534,  1535,
-    1536,  1537,  1538,  1539,  1540,  1541,  1542,  1543,  1544,  1545,
-    1546,  1547,  1548,  1549,  1550,  1551,  1552,  1553,  1554,  1555,
-    1556,  1557,  1558,  1559,  1560,  1561,  1562,  1563,  1564,  1565,
-    1566,  1567,  1568,  1569,  1570,  1571,  1572,  1573,  1574,  1575,
-    1576,  1577,  1578,  1579,  1580,  1581,  1582,  1583,  1584,  1585,
-    1586,  1587,  1588
+       0,   715,   715,   717,   719,   727,   728,   730,   731,   733,
+     734,   736,   737,   739,   740,   742,   750,   751,   753,   761,
+     771,   772,   773,   776,   787,   788,   790,   797,   798,   806,
+     807,   814,   816,   817,   825,   826,   835,   843,   844,   846,
+     847,   848,   849,   851,   853,   855,   858,   859,   861,   862,
+     864,   866,   868,   869,   870,   874,   876,   877,   879,   880,
+     882,   883,   886,   888,   889,   896,   897,   898,   899,   900,
+     901,   902,   903,   904,   905,   906,   908,   909,   911,   912,
+     914,   915,   917,   918,   920,   921,   925,   933,   934,   936,
+     937,   939,   940,   942,   944,   947,   948,   949,   950,   951,
+     952,   954,   955,   956,   957,   958,   960,   961,   962,   963,
+     964,   965,   966,   967,   969,   971,   973,   975,   977,   987,
+     999,  1011,  1021,  1031,  1046,  1060,  1061,  1064,  1065,  1067,
+    1068,  1070,  1071,  1073,  1075,  1076,  1078,  1079,  1082,  1083,
+    1085,  1087,  1098,  1100,  1101,  1103,  1104,  1107,  1109,  1110,
+    1111,  1112,  1113,  1114,  1115,  1117,  1119,  1121,  1123,  1125,
+    1126,  1127,  1128,  1129,  1131,  1132,  1133,  1134,  1136,  1145,
+    1154,  1164,  1165,  1166,  1167,  1169,  1177,  1178,  1179,  1180,
+    1181,  1182,  1183,  1184,  1185,  1186,  1187,  1188,  1190,  1191,
+    1192,  1194,  1195,  1197,  1199,  1200,  1210,  1211,  1219,  1220,
+    1228,  1229,  1237,  1238,  1246,  1247,  1255,  1256,  1263,  1271,
+    1272,  1279,  1286,  1293,  1300,  1308,  1309,  1316,  1323,  1331,
+    1332,  1339,  1347,  1348,  1355,  1362,  1371,  1372,  1374,  1375,
+    1377,  1378,  1379,  1380,  1381,  1382,  1384,  1385,  1387,  1388,
+    1390,  1392,  1400,  1407,  1416,  1424,  1433,  1434,  1436,  1437,
+    1438,  1445,  1446,  1447,  1448,  1450,  1451,  1452,  1453,  1454,
+    1455,  1456,  1458,  1468,  1476,  1486,  1497,  1498,  1500,  1501,
+    1509,  1510,  1512,  1519,  1526,  1534,  1542,  1551,  1552,  1554,
+    1555,  1562,  1563,  1565,  1573,  1583,  1584,  1586,  1587,  1594,
+    1602,  1603,  1605,  1606,  1613,  1614,  1616,  1618,  1619,  1621,
+    1623,  1624,  1625,  1626,  1627,  1628,  1629,  1630,  1631,  1632,
+    1633,  1634,  1635,  1636,  1637,  1638,  1639,  1640,  1641,  1642,
+    1643,  1644,  1645,  1646,  1647,  1648,  1649,  1650,  1651,  1652,
+    1653,  1654,  1655,  1656,  1657,  1658,  1659,  1660,  1661,  1662,
+    1663,  1664,  1665,  1666,  1667,  1668,  1669,  1670,  1671,  1672,
+    1673,  1674,  1675,  1676,  1677,  1678,  1679,  1680,  1681,  1682,
+    1683,  1684,  1685,  1686,  1687,  1688,  1689,  1690,  1691,  1692,
+    1693,  1694,  1695,  1696,  1697,  1698,  1699,  1700,  1701,  1702,
+    1703,  1704,  1705,  1706,  1707,  1708,  1709,  1710,  1711,  1712,
+    1713,  1714,  1715
 };
 #endif
 
@@ -2479,19 +2606,19 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* input: Program  */
-#line 588 "parser.y"
+#line 715 "parser.y"
                                   {print();}
-#line 2485 "parser.tab.c"
+#line 2612 "parser.tab.c"
     break;
 
   case 3: /* Program: CompilationUnit  */
-#line 590 "parser.y"
+#line 717 "parser.y"
                                             {int uid = makenode("Program"); root=uid; int child = makenode(""); addChild(uid,(yyvsp[0].id)); addChild(uid, child); (yyval.id)=(yyvsp[0].id);}
-#line 2491 "parser.tab.c"
+#line 2618 "parser.tab.c"
     break;
 
   case 4: /* CompilationUnit: PackageDeclaration2 ImportDeclarations2 TypeDeclarations2  */
-#line 592 "parser.y"
+#line 719 "parser.y"
                                                                                         {
                                 int uid = makenode("CompilationUnit"); 
                                 addChild(uid, (yyvsp[-2].id)); 
@@ -2499,71 +2626,71 @@ yyreduce:
                                 addChild(uid, (yyvsp[0].id));
                                 (yyval.id)=uid;
 }
-#line 2503 "parser.tab.c"
+#line 2630 "parser.tab.c"
     break;
 
   case 5: /* PackageDeclaration2: %empty  */
-#line 600 "parser.y"
+#line 727 "parser.y"
                             {(yyval.id)=-1;}
-#line 2509 "parser.tab.c"
+#line 2636 "parser.tab.c"
     break;
 
   case 6: /* PackageDeclaration2: PackageDeclaration  */
-#line 601 "parser.y"
+#line 728 "parser.y"
                                              {(yyval.id)=(yyvsp[0].id);}
-#line 2515 "parser.tab.c"
+#line 2642 "parser.tab.c"
     break;
 
   case 7: /* ImportDeclarations2: %empty  */
-#line 603 "parser.y"
+#line 730 "parser.y"
                             {(yyval.id)=-1;}
-#line 2521 "parser.tab.c"
+#line 2648 "parser.tab.c"
     break;
 
   case 8: /* ImportDeclarations2: ImportDeclarations  */
-#line 604 "parser.y"
+#line 731 "parser.y"
                                                 {(yyval.id)=(yyvsp[0].id);}
-#line 2527 "parser.tab.c"
+#line 2654 "parser.tab.c"
     break;
 
   case 9: /* TypeDeclarations2: %empty  */
-#line 606 "parser.y"
+#line 733 "parser.y"
                             {(yyval.id)=-1;}
-#line 2533 "parser.tab.c"
+#line 2660 "parser.tab.c"
     break;
 
   case 10: /* TypeDeclarations2: TypeDeclarations  */
-#line 607 "parser.y"
+#line 734 "parser.y"
                                               {(yyval.id)=(yyvsp[0].id);}
-#line 2539 "parser.tab.c"
+#line 2666 "parser.tab.c"
     break;
 
   case 11: /* ImportDeclarations: ImportDeclaration  */
-#line 609 "parser.y"
+#line 736 "parser.y"
                                             {(yyval.id)=(yyvsp[0].id);}
-#line 2545 "parser.tab.c"
+#line 2672 "parser.tab.c"
     break;
 
   case 12: /* ImportDeclarations: ImportDeclarations ImportDeclaration  */
-#line 610 "parser.y"
+#line 737 "parser.y"
                                                                 {int uid = makenode("ImportDeclarations"); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id)); (yyval.id)=uid;}
-#line 2551 "parser.tab.c"
+#line 2678 "parser.tab.c"
     break;
 
   case 13: /* TypeDeclarations: TypeDeclaration  */
-#line 612 "parser.y"
+#line 739 "parser.y"
                                             {(yyval.id)=(yyvsp[0].id);}
-#line 2557 "parser.tab.c"
+#line 2684 "parser.tab.c"
     break;
 
   case 14: /* TypeDeclarations: TypeDeclarations TypeDeclaration  */
-#line 613 "parser.y"
+#line 740 "parser.y"
                                                             {int uid = makenode("TypeDeclarations"); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id)); (yyval.id)=uid;}
-#line 2563 "parser.tab.c"
+#line 2690 "parser.tab.c"
     break;
 
   case 15: /* PackageDeclaration: PACKAGE Name SEMICOL  */
-#line 615 "parser.y"
+#line 742 "parser.y"
                                                 {
                                 int uid = makenode("PackageDeclaration"); 
                                 addChild(uid, (yyvsp[-2].id)); 
@@ -2571,23 +2698,23 @@ yyreduce:
                                 addChild(uid, (yyvsp[0].id));
                                 (yyval.id)=uid;
                         }
-#line 2575 "parser.tab.c"
+#line 2702 "parser.tab.c"
     break;
 
   case 16: /* ImportDeclaration: SingleTypeImportDeclaration  */
-#line 623 "parser.y"
+#line 750 "parser.y"
                                                         {(yyval.id)=(yyvsp[0].id);}
-#line 2581 "parser.tab.c"
+#line 2708 "parser.tab.c"
     break;
 
   case 17: /* ImportDeclaration: TypeImportOnDemandDeclaration  */
-#line 624 "parser.y"
+#line 751 "parser.y"
                                                         {(yyval.id)=(yyvsp[0].id);}
-#line 2587 "parser.tab.c"
+#line 2714 "parser.tab.c"
     break;
 
   case 18: /* SingleTypeImportDeclaration: IMPORT Name SEMICOL  */
-#line 626 "parser.y"
+#line 753 "parser.y"
                                                     {
                                 int uid = makenode("SingleTypeImportDeclaration"); 
                                 addChild(uid, (yyvsp[-2].id)); 
@@ -2595,11 +2722,11 @@ yyreduce:
                                 addChild(uid, (yyvsp[0].id));
                                 (yyval.id)=uid;
                         }
-#line 2599 "parser.tab.c"
+#line 2726 "parser.tab.c"
     break;
 
   case 19: /* TypeImportOnDemandDeclaration: IMPORT Name DOT MUL SEMICOL  */
-#line 634 "parser.y"
+#line 761 "parser.y"
                                                             {
                                 int uid = makenode("TypeImportOnDemandDeclaration"); 
                                 addChild(uid, (yyvsp[-4].id)); 
@@ -2609,29 +2736,29 @@ yyreduce:
                                 addChild(uid, (yyvsp[0].id));
                                 (yyval.id)=uid;
                         }
-#line 2613 "parser.tab.c"
+#line 2740 "parser.tab.c"
     break;
 
   case 20: /* TypeDeclaration: ClassDeclaration  */
-#line 644 "parser.y"
+#line 771 "parser.y"
                                                     {(yyval.id)=(yyvsp[0].id);}
-#line 2619 "parser.tab.c"
+#line 2746 "parser.tab.c"
     break;
 
   case 21: /* TypeDeclaration: InterfaceDeclaration  */
-#line 645 "parser.y"
+#line 772 "parser.y"
                                                     {(yyval.id)=(yyvsp[0].id);}
-#line 2625 "parser.tab.c"
+#line 2752 "parser.tab.c"
     break;
 
   case 22: /* TypeDeclaration: SEMICOL  */
-#line 646 "parser.y"
+#line 773 "parser.y"
                                                     {(yyval.id)=(yyvsp[0].id);}
-#line 2631 "parser.tab.c"
+#line 2758 "parser.tab.c"
     break;
 
   case 23: /* ClassDeclaration: Modifiers1 CLASS identifier SuperClass Interfaces2 ClassBody  */
-#line 649 "parser.y"
+#line 776 "parser.y"
                                                                                        {
                                 int uid = makenode("ClassDeclaration"); 
                                 addChild(uid, (yyvsp[-5].id)); 
@@ -2642,40 +2769,40 @@ yyreduce:
                                 addChild(uid, (yyvsp[0].id));
                                 (yyval.id)=uid;
                         }
-#line 2646 "parser.tab.c"
+#line 2773 "parser.tab.c"
     break;
 
   case 24: /* Interfaces2: %empty  */
-#line 660 "parser.y"
+#line 787 "parser.y"
                           {(yyval.id) = -1;}
-#line 2652 "parser.tab.c"
+#line 2779 "parser.tab.c"
     break;
 
   case 25: /* Interfaces2: Interfaces  */
-#line 661 "parser.y"
+#line 788 "parser.y"
                                      {(yyval.id)=(yyvsp[0].id);}
-#line 2658 "parser.tab.c"
+#line 2785 "parser.tab.c"
     break;
 
   case 26: /* Interfaces: IMPLEMENTS InterfaceTypeList  */
-#line 663 "parser.y"
+#line 790 "parser.y"
                                                        {
                                 int uid = makenode("Interfaces"); 
                                 addChild(uid, (yyvsp[-1].id));
                                 addChild(uid, (yyvsp[0].id));
                                 (yyval.id)=uid;
                         }
-#line 2669 "parser.tab.c"
+#line 2796 "parser.tab.c"
     break;
 
   case 27: /* InterfaceTypeList: InterfaceType  */
-#line 670 "parser.y"
+#line 797 "parser.y"
                                         {(yyval.id)=(yyvsp[0].id);}
-#line 2675 "parser.tab.c"
+#line 2802 "parser.tab.c"
     break;
 
   case 28: /* InterfaceTypeList: InterfaceTypeList COMMA InterfaceType  */
-#line 671 "parser.y"
+#line 798 "parser.y"
                                                                 {
                                 int uid = makenode("InterfaceTypeList"); 
                                 addChild(uid, (yyvsp[-2].id));
@@ -2683,40 +2810,40 @@ yyreduce:
                                 addChild(uid, (yyvsp[0].id));
                                 (yyval.id)=uid;
                         }
-#line 2687 "parser.tab.c"
+#line 2814 "parser.tab.c"
     break;
 
   case 29: /* SuperClass: %empty  */
-#line 679 "parser.y"
+#line 806 "parser.y"
                           {(yyval.id) = -1;}
-#line 2693 "parser.tab.c"
+#line 2820 "parser.tab.c"
     break;
 
   case 30: /* SuperClass: EXTENDS ClassType  */
-#line 680 "parser.y"
+#line 807 "parser.y"
                                             {
                                 int uid = makenode("SuperClass"); 
                                 addChild(uid, (yyvsp[-1].id));
                                 addChild(uid, (yyvsp[0].id));
                                 (yyval.id)=uid;
                         }
-#line 2704 "parser.tab.c"
+#line 2831 "parser.tab.c"
     break;
 
   case 31: /* ClassType: TypeName  */
-#line 687 "parser.y"
+#line 814 "parser.y"
                                    {(yyval.id)=(yyvsp[0].id);}
-#line 2710 "parser.tab.c"
+#line 2837 "parser.tab.c"
     break;
 
   case 32: /* TypeName: identifier  */
-#line 689 "parser.y"
+#line 816 "parser.y"
                                       { (yyval.id) = (yyvsp[0].id);}
-#line 2716 "parser.tab.c"
+#line 2843 "parser.tab.c"
     break;
 
   case 33: /* TypeName: PackageName DOT identifier  */
-#line 690 "parser.y"
+#line 817 "parser.y"
                                                        {
                              int uid = makenode("TypeName");
                              addChild(uid,(yyvsp[-2].id));
@@ -2724,17 +2851,17 @@ yyreduce:
                              addChild(uid, (yyvsp[0].id));
                              (yyval.id) = uid;
                         }
-#line 2728 "parser.tab.c"
+#line 2855 "parser.tab.c"
     break;
 
   case 34: /* PackageName: identifier  */
-#line 698 "parser.y"
+#line 825 "parser.y"
                                       { (yyval.id) = (yyvsp[0].id);}
-#line 2734 "parser.tab.c"
+#line 2861 "parser.tab.c"
     break;
 
   case 35: /* PackageName: PackageName DOT identifier  */
-#line 699 "parser.y"
+#line 826 "parser.y"
                                                        {
                              int uid = makenode("PackageName");
                              addChild(uid,(yyvsp[-2].id));
@@ -2742,11 +2869,11 @@ yyreduce:
                              addChild(uid, (yyvsp[0].id));
                              (yyval.id) = uid;
                         }
-#line 2746 "parser.tab.c"
+#line 2873 "parser.tab.c"
     break;
 
   case 36: /* ClassBody: OPEN_CURLY ClassBodyDeclarations CLOSE_CURLY  */
-#line 708 "parser.y"
+#line 835 "parser.y"
                                                                        {
                                 int uid = makenode("ClassBody"); 
                                 addChild(uid, (yyvsp[-2].id));
@@ -2754,304 +2881,304 @@ yyreduce:
                                 addChild(uid, (yyvsp[0].id));
                                 (yyval.id)=uid;
                         }
-#line 2758 "parser.tab.c"
+#line 2885 "parser.tab.c"
     break;
 
   case 37: /* ClassBodyDeclarations: %empty  */
-#line 716 "parser.y"
+#line 843 "parser.y"
                            {(yyval.id) = -1;}
-#line 2764 "parser.tab.c"
+#line 2891 "parser.tab.c"
     break;
 
   case 38: /* ClassBodyDeclarations: ClassBodyDeclaration ClassBodyDeclarations  */
-#line 717 "parser.y"
+#line 844 "parser.y"
                                                                      {int uid = makenode("ClassBodyDeclarations"); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id)); (yyval.id)=uid;}
-#line 2770 "parser.tab.c"
+#line 2897 "parser.tab.c"
     break;
 
   case 39: /* ClassBodyDeclaration: ClassMemberDeclaration  */
-#line 719 "parser.y"
+#line 846 "parser.y"
                                                  {(yyval.id) = (yyvsp[0].id);}
-#line 2776 "parser.tab.c"
+#line 2903 "parser.tab.c"
     break;
 
   case 40: /* ClassBodyDeclaration: StaticInitializer  */
-#line 720 "parser.y"
+#line 847 "parser.y"
                                               {(yyval.id) = (yyvsp[0].id);}
-#line 2782 "parser.tab.c"
+#line 2909 "parser.tab.c"
     break;
 
   case 41: /* ClassBodyDeclaration: ConstructorDeclaration  */
-#line 721 "parser.y"
+#line 848 "parser.y"
                                                  {(yyval.id) = (yyvsp[0].id);}
-#line 2788 "parser.tab.c"
+#line 2915 "parser.tab.c"
     break;
 
   case 42: /* ClassBodyDeclaration: Block  */
-#line 722 "parser.y"
+#line 849 "parser.y"
                                 {(yyval.id) = (yyvsp[0].id);}
-#line 2794 "parser.tab.c"
+#line 2921 "parser.tab.c"
     break;
 
   case 43: /* ConstructorDeclaration: Modifiers1 ConstructorDeclarator ConstructorBody  */
-#line 724 "parser.y"
+#line 851 "parser.y"
                                                                             {int uid = makenode("ConstructorDeclaration"); addChild(uid, (yyvsp[-2].id)); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id));  (yyval.id) = uid;}
-#line 2800 "parser.tab.c"
+#line 2927 "parser.tab.c"
     break;
 
   case 44: /* ConstructorDeclarator: SimpleName OPEN_BRACKETS FormalParameterList2 CLOSE_BRACKETS  */
-#line 726 "parser.y"
+#line 853 "parser.y"
                                                                                                 {int uid = makenode("ConstructorDeclarator"); addChild(uid, (yyvsp[-3].id)); addChild(uid, (yyvsp[-2].id));addChild(uid, (yyvsp[-1].id));addChild(uid, (yyvsp[0].id)); (yyval.id) = uid;}
-#line 2806 "parser.tab.c"
+#line 2933 "parser.tab.c"
     break;
 
   case 45: /* ConstructorBody: OPEN_CURLY BlockStatements2 CLOSE_CURLY  */
-#line 728 "parser.y"
+#line 855 "parser.y"
                                                                            {int uid = makenode("ConstructorBody"); addChild(uid, (yyvsp[-2].id)); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id));  (yyval.id) = uid;}
-#line 2812 "parser.tab.c"
+#line 2939 "parser.tab.c"
     break;
 
   case 46: /* FormalParameterList2: %empty  */
-#line 731 "parser.y"
+#line 858 "parser.y"
                                                                     {(yyval.id) = -1;}
-#line 2818 "parser.tab.c"
+#line 2945 "parser.tab.c"
     break;
 
   case 47: /* FormalParameterList2: FormalParameterList  */
-#line 732 "parser.y"
+#line 859 "parser.y"
                                                                     {(yyval.id) = (yyvsp[0].id);}
-#line 2824 "parser.tab.c"
+#line 2951 "parser.tab.c"
     break;
 
   case 48: /* FormalParameterList: FormalParameter  */
-#line 734 "parser.y"
+#line 861 "parser.y"
                                                                     {(yyval.id) = (yyvsp[0].id);}
-#line 2830 "parser.tab.c"
+#line 2957 "parser.tab.c"
     break;
 
   case 49: /* FormalParameterList: FormalParameterList COMMA FormalParameter  */
-#line 735 "parser.y"
+#line 862 "parser.y"
                                                                     {int uid = makenode("FormalParameterList"); addChild(uid, (yyvsp[-2].id)); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id)); (yyval.id) = uid;}
-#line 2836 "parser.tab.c"
+#line 2963 "parser.tab.c"
     break;
 
   case 50: /* FormalParameter: Modifiers1 Type VariableDeclaratorId  */
-#line 737 "parser.y"
+#line 864 "parser.y"
                                                                           {int uid = makenode("FormalParameter"); addChild(uid, (yyvsp[-2].id)); addChild(uid, (yyvsp[-1].id));addChild(uid, (yyvsp[0].id)); (yyval.id) = uid;}
-#line 2842 "parser.tab.c"
+#line 2969 "parser.tab.c"
     break;
 
   case 51: /* StaticInitializer: STATIC Block  */
-#line 739 "parser.y"
+#line 866 "parser.y"
                                                               {int uid = makenode("StaticInitializer"); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id)); (yyval.id) = uid;}
-#line 2848 "parser.tab.c"
+#line 2975 "parser.tab.c"
     break;
 
   case 52: /* ClassMemberDeclaration: FieldDeclaration  */
-#line 741 "parser.y"
+#line 868 "parser.y"
                                            {(yyval.id) = (yyvsp[0].id);}
-#line 2854 "parser.tab.c"
+#line 2981 "parser.tab.c"
     break;
 
   case 53: /* ClassMemberDeclaration: MethodDeclaration  */
-#line 742 "parser.y"
+#line 869 "parser.y"
                                             {(yyval.id) = (yyvsp[0].id);}
-#line 2860 "parser.tab.c"
+#line 2987 "parser.tab.c"
     break;
 
   case 55: /* MethodDeclaration: MethodHeader MethodBody  */
-#line 747 "parser.y"
+#line 874 "parser.y"
                                                                    {int uid = makenode("MethodDeclaration"); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id)); (yyval.id) = uid;}
-#line 2866 "parser.tab.c"
+#line 2993 "parser.tab.c"
     break;
 
   case 56: /* MethodHeader: Modifiers1 Type MethodDeclarator  */
-#line 749 "parser.y"
+#line 876 "parser.y"
                                                            {int uid = makenode("MethodHeader"); addChild(uid, (yyvsp[-2].id)); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id));  (yyval.id) = uid;}
-#line 2872 "parser.tab.c"
+#line 2999 "parser.tab.c"
     break;
 
   case 57: /* MethodHeader: Modifiers1 VOID MethodDeclarator  */
-#line 750 "parser.y"
+#line 877 "parser.y"
                                                            {int uid = makenode("MethodHeader"); addChild(uid, (yyvsp[-2].id)); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id));  (yyval.id) = uid;}
-#line 2878 "parser.tab.c"
+#line 3005 "parser.tab.c"
     break;
 
   case 58: /* MethodDeclarator: identifier OPEN_BRACKETS FormalParameterList2 CLOSE_BRACKETS  */
-#line 752 "parser.y"
+#line 879 "parser.y"
                                                                                        {int uid = makenode("MethodDeclarator"); addChild(uid, (yyvsp[-3].id)); addChild(uid, (yyvsp[-2].id)); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id)); (yyval.id) = uid;}
-#line 2884 "parser.tab.c"
+#line 3011 "parser.tab.c"
     break;
 
   case 59: /* MethodDeclarator: MethodDeclarator OPEN_SQ CLOSE_SQ  */
-#line 753 "parser.y"
+#line 880 "parser.y"
                                                                                        {int uid = makenode("MethodDeclarator"); addChild(uid, (yyvsp[-2].id)); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id)); (yyval.id) = uid;}
-#line 2890 "parser.tab.c"
+#line 3017 "parser.tab.c"
     break;
 
   case 60: /* MethodBody: Block  */
-#line 755 "parser.y"
+#line 882 "parser.y"
                                                                {(yyval.id) = (yyvsp[0].id);}
-#line 2896 "parser.tab.c"
+#line 3023 "parser.tab.c"
     break;
 
   case 61: /* MethodBody: SEMICOL  */
-#line 756 "parser.y"
+#line 883 "parser.y"
                                                                     {(yyval.id) = (yyvsp[0].id);}
-#line 2902 "parser.tab.c"
+#line 3029 "parser.tab.c"
     break;
 
   case 62: /* FieldDeclaration: Modifiers1 Type VariableDeclarators SEMICOL  */
-#line 759 "parser.y"
+#line 886 "parser.y"
                                                                             {int uid = makenode("FieldDeclaration"); addChild(uid, (yyvsp[-3].id)); addChild(uid,(yyvsp[-2].id)); addChild(uid,(yyvsp[-1].id)); addChild(uid,(yyvsp[0].id)); (yyval.id) = uid;}
-#line 2908 "parser.tab.c"
+#line 3035 "parser.tab.c"
     break;
 
   case 63: /* Modifiers1: %empty  */
-#line 761 "parser.y"
+#line 888 "parser.y"
                                             {(yyval.id) = -1;}
-#line 2914 "parser.tab.c"
+#line 3041 "parser.tab.c"
     break;
 
   case 64: /* Modifiers1: Modifier Modifiers1  */
-#line 762 "parser.y"
+#line 889 "parser.y"
                                               {
                                 int uid = makenode("Modifiers"); 
                                 addChild(uid, (yyvsp[-1].id));
                                 addChild(uid, (yyvsp[0].id));
                                 (yyval.id)=uid;
                         }
-#line 2925 "parser.tab.c"
+#line 3052 "parser.tab.c"
     break;
 
   case 65: /* Modifier: PUBLIC  */
-#line 769 "parser.y"
+#line 896 "parser.y"
                                             {(yyval.id) = (yyvsp[0].id);}
-#line 2931 "parser.tab.c"
+#line 3058 "parser.tab.c"
     break;
 
   case 66: /* Modifier: PROTECTED  */
-#line 770 "parser.y"
+#line 897 "parser.y"
                                             {(yyval.id) = (yyvsp[0].id);}
-#line 2937 "parser.tab.c"
+#line 3064 "parser.tab.c"
     break;
 
   case 67: /* Modifier: PRIVATE  */
-#line 771 "parser.y"
+#line 898 "parser.y"
                                             {(yyval.id) = (yyvsp[0].id);}
-#line 2943 "parser.tab.c"
+#line 3070 "parser.tab.c"
     break;
 
   case 68: /* Modifier: STATIC  */
-#line 772 "parser.y"
+#line 899 "parser.y"
                                             {(yyval.id) = (yyvsp[0].id);}
-#line 2949 "parser.tab.c"
+#line 3076 "parser.tab.c"
     break;
 
   case 69: /* Modifier: ABSTRACT  */
-#line 773 "parser.y"
+#line 900 "parser.y"
                                             {(yyval.id) = (yyvsp[0].id);}
-#line 2955 "parser.tab.c"
+#line 3082 "parser.tab.c"
     break;
 
   case 70: /* Modifier: FINAL  */
-#line 774 "parser.y"
+#line 901 "parser.y"
                                             {(yyval.id) = (yyvsp[0].id);}
-#line 2961 "parser.tab.c"
+#line 3088 "parser.tab.c"
     break;
 
   case 71: /* Modifier: NATIVE  */
-#line 775 "parser.y"
+#line 902 "parser.y"
                                             {(yyval.id) = (yyvsp[0].id);}
-#line 2967 "parser.tab.c"
+#line 3094 "parser.tab.c"
     break;
 
   case 72: /* Modifier: SYNCHRONIZED  */
-#line 776 "parser.y"
+#line 903 "parser.y"
                                             {(yyval.id) = (yyvsp[0].id);}
-#line 2973 "parser.tab.c"
+#line 3100 "parser.tab.c"
     break;
 
   case 73: /* Modifier: TRANSIENT  */
-#line 777 "parser.y"
+#line 904 "parser.y"
                                             {(yyval.id) = (yyvsp[0].id);}
-#line 2979 "parser.tab.c"
+#line 3106 "parser.tab.c"
     break;
 
   case 74: /* Modifier: VOLATILE  */
-#line 778 "parser.y"
+#line 905 "parser.y"
                                             {(yyval.id) = (yyvsp[0].id);}
-#line 2985 "parser.tab.c"
+#line 3112 "parser.tab.c"
     break;
 
   case 75: /* Modifier: STRICTFP  */
-#line 779 "parser.y"
+#line 906 "parser.y"
                                             {(yyval.id) = (yyvsp[0].id);}
-#line 2991 "parser.tab.c"
+#line 3118 "parser.tab.c"
     break;
 
   case 76: /* VariableDeclarators: VariableDeclarator  */
-#line 781 "parser.y"
+#line 908 "parser.y"
                                                                         {(yyval.id) = (yyvsp[0].id);}
-#line 2997 "parser.tab.c"
+#line 3124 "parser.tab.c"
     break;
 
   case 77: /* VariableDeclarators: VariableDeclarators COMMA VariableDeclarator  */
-#line 782 "parser.y"
+#line 909 "parser.y"
                                                                         {int uid = makenode("VariableDeclarators"); addChild(uid, (yyvsp[-2].id)); addChild(uid, (yyvsp[-1].id)), addChild(uid, (yyvsp[0].id)); (yyval.id) = uid;}
-#line 3003 "parser.tab.c"
+#line 3130 "parser.tab.c"
     break;
 
   case 78: /* VariableDeclarator: VariableDeclaratorId  */
-#line 784 "parser.y"
+#line 911 "parser.y"
                                                                          {(yyval.id) = (yyvsp[0].id);}
-#line 3009 "parser.tab.c"
+#line 3136 "parser.tab.c"
     break;
 
   case 79: /* VariableDeclarator: VariableDeclaratorId EQUAL VariableInitializer  */
-#line 785 "parser.y"
+#line 912 "parser.y"
                                                                          {int uid = makenode("VariableDeclarator"); addChild(uid, (yyvsp[-2].id)); addChild(uid, (yyvsp[-1].id)), addChild(uid, (yyvsp[0].id)); (yyval.id) = uid;}
-#line 3015 "parser.tab.c"
+#line 3142 "parser.tab.c"
     break;
 
   case 80: /* VariableDeclaratorId: identifier  */
-#line 787 "parser.y"
+#line 914 "parser.y"
                                             {(yyval.id) = (yyvsp[0].id);}
-#line 3021 "parser.tab.c"
+#line 3148 "parser.tab.c"
     break;
 
   case 81: /* VariableDeclaratorId: VariableDeclaratorId OPEN_SQ CLOSE_SQ  */
-#line 788 "parser.y"
+#line 915 "parser.y"
                                                                          {int uid = makenode("VariableDeclaratorId"); addChild(uid, (yyvsp[-2].id)); addChild(uid, (yyvsp[-1].id)), addChild(uid, (yyvsp[0].id)); (yyval.id) = uid;}
-#line 3027 "parser.tab.c"
+#line 3154 "parser.tab.c"
     break;
 
   case 82: /* VariableInitializer: Expression  */
-#line 790 "parser.y"
+#line 917 "parser.y"
                                             {int uid = makenode("Expression"); addChild(uid, (yyvsp[0].id)); (yyval.id) = uid;}
-#line 3033 "parser.tab.c"
+#line 3160 "parser.tab.c"
     break;
 
   case 83: /* VariableInitializer: ArrayInitializer  */
-#line 791 "parser.y"
+#line 918 "parser.y"
                                             {(yyval.id) = (yyvsp[0].id);}
-#line 3039 "parser.tab.c"
+#line 3166 "parser.tab.c"
     break;
 
   case 84: /* Type: PrimitiveType  */
-#line 793 "parser.y"
+#line 920 "parser.y"
                                             {(yyval.id) = (yyvsp[0].id);}
-#line 3045 "parser.tab.c"
+#line 3172 "parser.tab.c"
     break;
 
   case 85: /* Type: ReferenceType  */
-#line 794 "parser.y"
+#line 921 "parser.y"
                                             {(yyval.id) = (yyvsp[0].id);}
-#line 3051 "parser.tab.c"
+#line 3178 "parser.tab.c"
     break;
 
   case 86: /* Block: OPEN_CURLY BlockStatements2 CLOSE_CURLY  */
-#line 798 "parser.y"
+#line 925 "parser.y"
                                                                         {
                                 int uid = makenode("Block"); 
                                 addChild(uid, (yyvsp[-2].id));
@@ -3059,197 +3186,197 @@ yyreduce:
                                 addChild(uid, (yyvsp[0].id));
                                 (yyval.id)=uid;
 }
-#line 3063 "parser.tab.c"
+#line 3190 "parser.tab.c"
     break;
 
   case 87: /* BlockStatements2: %empty  */
-#line 806 "parser.y"
+#line 933 "parser.y"
                                          {(yyval.id) = -1;}
-#line 3069 "parser.tab.c"
+#line 3196 "parser.tab.c"
     break;
 
   case 88: /* BlockStatements2: BlockStatements  */
-#line 807 "parser.y"
+#line 934 "parser.y"
                                             {(yyval.id) = (yyvsp[0].id);}
-#line 3075 "parser.tab.c"
+#line 3202 "parser.tab.c"
     break;
 
   case 89: /* BlockStatements: BlockStatement  */
-#line 809 "parser.y"
+#line 936 "parser.y"
                                                             {(yyval.id) = (yyvsp[0].id);}
-#line 3081 "parser.tab.c"
+#line 3208 "parser.tab.c"
     break;
 
   case 90: /* BlockStatements: BlockStatements BlockStatement  */
-#line 810 "parser.y"
+#line 937 "parser.y"
                                                             {int uid = makenode("BlockStatements"); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id)); (yyval.id) = uid;}
-#line 3087 "parser.tab.c"
+#line 3214 "parser.tab.c"
     break;
 
   case 91: /* BlockStatement: LocalVariableDeclarationStatement  */
-#line 812 "parser.y"
+#line 939 "parser.y"
                                                             {(yyval.id) = (yyvsp[0].id);}
-#line 3093 "parser.tab.c"
+#line 3220 "parser.tab.c"
     break;
 
   case 92: /* BlockStatement: Statement  */
-#line 813 "parser.y"
+#line 940 "parser.y"
                                                             {(yyval.id) = (yyvsp[0].id);}
-#line 3099 "parser.tab.c"
+#line 3226 "parser.tab.c"
     break;
 
   case 93: /* LocalVariableDeclarationStatement: LocalVariableDeclaration SEMICOL  */
-#line 815 "parser.y"
+#line 942 "parser.y"
                                                                         { int uid = makenode("LocalVariableDeclarationStatement"); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id)); (yyval.id) = uid;}
-#line 3105 "parser.tab.c"
+#line 3232 "parser.tab.c"
     break;
 
   case 94: /* LocalVariableDeclaration: Type VariableDeclarators  */
-#line 817 "parser.y"
+#line 944 "parser.y"
                                                         { int uid = makenode("LocalVariableDeclaration"); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id)); (yyval.id) = uid;}
-#line 3111 "parser.tab.c"
+#line 3238 "parser.tab.c"
     break;
 
   case 95: /* Statement: StatementWithoutTrailingSubstatement  */
-#line 820 "parser.y"
+#line 947 "parser.y"
                                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3117 "parser.tab.c"
+#line 3244 "parser.tab.c"
     break;
 
   case 96: /* Statement: LabeledStatement  */
-#line 821 "parser.y"
+#line 948 "parser.y"
                                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3123 "parser.tab.c"
+#line 3250 "parser.tab.c"
     break;
 
   case 97: /* Statement: IfThenStatement  */
-#line 822 "parser.y"
+#line 949 "parser.y"
                                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3129 "parser.tab.c"
+#line 3256 "parser.tab.c"
     break;
 
   case 98: /* Statement: IfThenElseStatement  */
-#line 823 "parser.y"
+#line 950 "parser.y"
                                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3135 "parser.tab.c"
+#line 3262 "parser.tab.c"
     break;
 
   case 99: /* Statement: WhileStatement  */
-#line 824 "parser.y"
+#line 951 "parser.y"
                                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3141 "parser.tab.c"
+#line 3268 "parser.tab.c"
     break;
 
   case 100: /* Statement: ForStatement  */
-#line 825 "parser.y"
+#line 952 "parser.y"
                                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3147 "parser.tab.c"
+#line 3274 "parser.tab.c"
     break;
 
   case 101: /* StatementNoShortIf: StatementWithoutTrailingSubstatement  */
-#line 827 "parser.y"
+#line 954 "parser.y"
                                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3153 "parser.tab.c"
+#line 3280 "parser.tab.c"
     break;
 
   case 102: /* StatementNoShortIf: LabeledStatementNoShortIf  */
-#line 828 "parser.y"
+#line 955 "parser.y"
                                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3159 "parser.tab.c"
+#line 3286 "parser.tab.c"
     break;
 
   case 103: /* StatementNoShortIf: IfThenElseStatementNoShortIf  */
-#line 829 "parser.y"
+#line 956 "parser.y"
                                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3165 "parser.tab.c"
+#line 3292 "parser.tab.c"
     break;
 
   case 104: /* StatementNoShortIf: WhileStatementNoShortIf  */
-#line 830 "parser.y"
+#line 957 "parser.y"
                                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3171 "parser.tab.c"
+#line 3298 "parser.tab.c"
     break;
 
   case 105: /* StatementNoShortIf: ForStatementNoShortIf  */
-#line 831 "parser.y"
+#line 958 "parser.y"
                                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3177 "parser.tab.c"
+#line 3304 "parser.tab.c"
     break;
 
   case 106: /* StatementWithoutTrailingSubstatement: Block  */
-#line 833 "parser.y"
+#line 960 "parser.y"
                                                             {(yyval.id) = (yyvsp[0].id);}
-#line 3183 "parser.tab.c"
+#line 3310 "parser.tab.c"
     break;
 
   case 107: /* StatementWithoutTrailingSubstatement: EmptyStatement  */
-#line 834 "parser.y"
+#line 961 "parser.y"
                                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3189 "parser.tab.c"
+#line 3316 "parser.tab.c"
     break;
 
   case 108: /* StatementWithoutTrailingSubstatement: ExpressionStatement  */
-#line 835 "parser.y"
+#line 962 "parser.y"
                                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3195 "parser.tab.c"
+#line 3322 "parser.tab.c"
     break;
 
   case 109: /* StatementWithoutTrailingSubstatement: BreakStatement  */
-#line 836 "parser.y"
+#line 963 "parser.y"
                                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3201 "parser.tab.c"
+#line 3328 "parser.tab.c"
     break;
 
   case 110: /* StatementWithoutTrailingSubstatement: ContinueStatement  */
-#line 837 "parser.y"
+#line 964 "parser.y"
                                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3207 "parser.tab.c"
+#line 3334 "parser.tab.c"
     break;
 
   case 111: /* StatementWithoutTrailingSubstatement: ReturnStatement  */
-#line 838 "parser.y"
+#line 965 "parser.y"
                                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3213 "parser.tab.c"
+#line 3340 "parser.tab.c"
     break;
 
   case 112: /* StatementWithoutTrailingSubstatement: SynchronizedStatement  */
-#line 839 "parser.y"
+#line 966 "parser.y"
                                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3219 "parser.tab.c"
+#line 3346 "parser.tab.c"
     break;
 
   case 113: /* StatementWithoutTrailingSubstatement: AssertStatement  */
-#line 840 "parser.y"
+#line 967 "parser.y"
                                                       {(yyval.id) = (yyvsp[0].id);}
-#line 3225 "parser.tab.c"
+#line 3352 "parser.tab.c"
     break;
 
   case 114: /* EmptyStatement: SEMICOL  */
-#line 842 "parser.y"
+#line 969 "parser.y"
                                                             {(yyval.id) = (yyvsp[0].id);}
-#line 3231 "parser.tab.c"
+#line 3358 "parser.tab.c"
     break;
 
   case 115: /* LabeledStatement: identifier COLON Statement  */
-#line 844 "parser.y"
+#line 971 "parser.y"
                                                             { int uid = makenode("LabeledStatement"); addChild(uid, (yyvsp[-2].id)); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id)); (yyval.id) = uid;}
-#line 3237 "parser.tab.c"
+#line 3364 "parser.tab.c"
     break;
 
   case 116: /* AssertStatement: ASSERT Expression SEMICOL  */
-#line 846 "parser.y"
+#line 973 "parser.y"
                                                            { int uid = makenode("assertStatement"); addChild(uid, (yyvsp[-2].id)); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id)); (yyval.id) = uid;}
-#line 3243 "parser.tab.c"
+#line 3370 "parser.tab.c"
     break;
 
   case 117: /* LabeledStatementNoShortIf: identifier COLON StatementNoShortIf  */
-#line 848 "parser.y"
+#line 975 "parser.y"
                                                                 { int uid = makenode("LabeledStatementNoShortIf"); addChild(uid, (yyvsp[-2].id)); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id)); (yyval.id) = uid;}
-#line 3249 "parser.tab.c"
+#line 3376 "parser.tab.c"
     break;
 
   case 118: /* IfThenStatement: IF OPEN_BRACKETS Expression CLOSE_BRACKETS Statement  */
-#line 850 "parser.y"
+#line 977 "parser.y"
                                                                                 {
                                                         int uid =  makenode("ifThenStmt");
                                                         addChild(uid, (yyvsp[-4].id));
@@ -3259,11 +3386,11 @@ yyreduce:
                                                         addChild(uid, (yyvsp[0].id));
                                                         (yyval.id) = uid;
 }
-#line 3263 "parser.tab.c"
+#line 3390 "parser.tab.c"
     break;
 
   case 119: /* IfThenElseStatement: IF OPEN_BRACKETS Expression CLOSE_BRACKETS StatementNoShortIf ELSE Statement  */
-#line 860 "parser.y"
+#line 987 "parser.y"
                                                                                                        {
                                                         int uid =  makenode("ifThenElseStmt");
                                                         addChild(uid, (yyvsp[-6].id));
@@ -3275,11 +3402,11 @@ yyreduce:
                                                         addChild(uid, (yyvsp[0].id));
                                                         (yyval.id) = uid;
 }
-#line 3279 "parser.tab.c"
+#line 3406 "parser.tab.c"
     break;
 
   case 120: /* IfThenElseStatementNoShortIf: IF OPEN_BRACKETS Expression CLOSE_BRACKETS StatementNoShortIf ELSE StatementNoShortIf  */
-#line 872 "parser.y"
+#line 999 "parser.y"
                                                                                                                             {
                                                         int uid =  makenode("ifThenElseStmtNoShortIf");
                                                         addChild(uid, (yyvsp[-6].id));
@@ -3291,11 +3418,11 @@ yyreduce:
                                                         addChild(uid, (yyvsp[0].id));
                                                         (yyval.id) = uid;
 }
-#line 3295 "parser.tab.c"
+#line 3422 "parser.tab.c"
     break;
 
   case 121: /* WhileStatement: WHILE OPEN_BRACKETS Expression CLOSE_BRACKETS Statement  */
-#line 884 "parser.y"
+#line 1011 "parser.y"
                                                                                   {
                                                         int uid =  makenode("whileStmt");
                                                         addChild(uid, (yyvsp[-4].id));
@@ -3305,11 +3432,11 @@ yyreduce:
                                                         addChild(uid, (yyvsp[0].id));
                                                         (yyval.id) = uid;
 }
-#line 3309 "parser.tab.c"
+#line 3436 "parser.tab.c"
     break;
 
   case 122: /* WhileStatementNoShortIf: WHILE OPEN_BRACKETS Expression CLOSE_BRACKETS StatementNoShortIf  */
-#line 894 "parser.y"
+#line 1021 "parser.y"
                                                                                             {
                                                         int uid =  makenode("whileStmtNoShortIf");
                                                         addChild(uid, (yyvsp[-4].id));
@@ -3319,11 +3446,11 @@ yyreduce:
                                                         addChild(uid, (yyvsp[0].id));
                                                         (yyval.id) = uid;
 }
-#line 3323 "parser.tab.c"
+#line 3450 "parser.tab.c"
     break;
 
   case 123: /* ForStatement: FOR OPEN_BRACKETS ForInit2 SEMICOL Expression2 SEMICOL ForUpdate2 CLOSE_BRACKETS Statement  */
-#line 904 "parser.y"
+#line 1031 "parser.y"
                                                                                                                       {
                                                         int uid =  makenode("forStmt");
                                                         addChild(uid, (yyvsp[-8].id));
@@ -3337,11 +3464,11 @@ yyreduce:
                                                         addChild(uid, (yyvsp[0].id));
                                                         (yyval.id) = uid;
 }
-#line 3341 "parser.tab.c"
+#line 3468 "parser.tab.c"
     break;
 
   case 124: /* ForStatementNoShortIf: FOR OPEN_BRACKETS ForInit2 SEMICOL Expression2 SEMICOL ForUpdate2 CLOSE_BRACKETS StatementNoShortIf  */
-#line 919 "parser.y"
+#line 1046 "parser.y"
                                                                                                                                 {
                                                         int uid =  makenode("forStmtNoShortIf");
                                                         addChild(uid, (yyvsp[-8].id));
@@ -3355,107 +3482,107 @@ yyreduce:
                                                         addChild(uid, (yyvsp[0].id));
                                                         (yyval.id) = uid;
 }
-#line 3359 "parser.tab.c"
+#line 3486 "parser.tab.c"
     break;
 
   case 125: /* ForInit2: %empty  */
-#line 933 "parser.y"
+#line 1060 "parser.y"
                                { (yyval.id) = -1; }
-#line 3365 "parser.tab.c"
+#line 3492 "parser.tab.c"
     break;
 
   case 126: /* ForInit2: ForInit  */
-#line 934 "parser.y"
+#line 1061 "parser.y"
                                             { (yyval.id) = (yyvsp[0].id); }
-#line 3371 "parser.tab.c"
+#line 3498 "parser.tab.c"
     break;
 
   case 127: /* ForUpdate2: %empty  */
-#line 937 "parser.y"
+#line 1064 "parser.y"
                             { (yyval.id) = -1; }
-#line 3377 "parser.tab.c"
+#line 3504 "parser.tab.c"
     break;
 
   case 128: /* ForUpdate2: ForUpdate  */
-#line 938 "parser.y"
+#line 1065 "parser.y"
                                            { (yyval.id) = (yyvsp[0].id); }
-#line 3383 "parser.tab.c"
+#line 3510 "parser.tab.c"
     break;
 
   case 129: /* Expression2: %empty  */
-#line 940 "parser.y"
+#line 1067 "parser.y"
                             { (yyval.id) = -1; }
-#line 3389 "parser.tab.c"
+#line 3516 "parser.tab.c"
     break;
 
   case 130: /* Expression2: Expression  */
-#line 941 "parser.y"
+#line 1068 "parser.y"
                                         { (yyval.id) = (yyvsp[0].id); }
-#line 3395 "parser.tab.c"
+#line 3522 "parser.tab.c"
     break;
 
   case 131: /* ForInit: StatementExpressionList  */
-#line 943 "parser.y"
+#line 1070 "parser.y"
                                                     {(yyval.id) = (yyvsp[0].id);}
-#line 3401 "parser.tab.c"
+#line 3528 "parser.tab.c"
     break;
 
   case 132: /* ForInit: LocalVariableDeclaration  */
-#line 944 "parser.y"
+#line 1071 "parser.y"
                                                     {(yyval.id) = (yyvsp[0].id);}
-#line 3407 "parser.tab.c"
+#line 3534 "parser.tab.c"
     break;
 
   case 133: /* ForUpdate: StatementExpressionList  */
-#line 946 "parser.y"
+#line 1073 "parser.y"
                                                     {(yyval.id) = (yyvsp[0].id);}
-#line 3413 "parser.tab.c"
+#line 3540 "parser.tab.c"
     break;
 
   case 134: /* StatementExpressionList: StatementExpression  */
-#line 948 "parser.y"
+#line 1075 "parser.y"
                                                     {(yyval.id) = (yyvsp[0].id);}
-#line 3419 "parser.tab.c"
+#line 3546 "parser.tab.c"
     break;
 
   case 135: /* StatementExpressionList: StatementExpressionList COMMA StatementExpression  */
-#line 949 "parser.y"
+#line 1076 "parser.y"
                                                                             { int uid = makenode("StatementExpressionList"); addChild(uid, (yyvsp[-2].id)); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id)); (yyval.id) = uid;}
-#line 3425 "parser.tab.c"
+#line 3552 "parser.tab.c"
     break;
 
   case 136: /* BreakStatement: BREAK identifier SEMICOL  */
-#line 951 "parser.y"
+#line 1078 "parser.y"
                                                         { int uid = makenode("BreakStatement"); addChild(uid, (yyvsp[-2].id)); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id)); (yyval.id) = uid;}
-#line 3431 "parser.tab.c"
+#line 3558 "parser.tab.c"
     break;
 
   case 137: /* BreakStatement: BREAK SEMICOL  */
-#line 952 "parser.y"
+#line 1079 "parser.y"
                                                         { int uid = makenode("BreakStatement"); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id)); (yyval.id) = uid;}
-#line 3437 "parser.tab.c"
+#line 3564 "parser.tab.c"
     break;
 
   case 138: /* ContinueStatement: CONTINUE SEMICOL  */
-#line 955 "parser.y"
+#line 1082 "parser.y"
                                                         { int uid = makenode("ContinueStatement"); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id)); (yyval.id) = uid;}
-#line 3443 "parser.tab.c"
+#line 3570 "parser.tab.c"
     break;
 
   case 139: /* ContinueStatement: CONTINUE identifier SEMICOL  */
-#line 956 "parser.y"
+#line 1083 "parser.y"
                                                             { int uid = makenode("ContinueStatement"); addChild(uid, (yyvsp[-2].id)); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id)); (yyval.id) = uid;}
-#line 3449 "parser.tab.c"
+#line 3576 "parser.tab.c"
     break;
 
   case 140: /* ReturnStatement: RETURN Expression2 SEMICOL  */
-#line 958 "parser.y"
+#line 1085 "parser.y"
                                                         { int uid = makenode("ReturnStatement"); addChild(uid, (yyvsp[-2].id)); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id)); (yyval.id) = uid;}
-#line 3455 "parser.tab.c"
+#line 3582 "parser.tab.c"
     break;
 
   case 141: /* SynchronizedStatement: SYNCHRONIZED OPEN_BRACKETS Expression CLOSE_BRACKETS Block  */
-#line 960 "parser.y"
+#line 1087 "parser.y"
                                                                                         {
                                                         int uid =  makenode("SynchronizedStatement");
                                                         addChild(uid, (yyvsp[-4].id));
@@ -3465,167 +3592,167 @@ yyreduce:
                                                         addChild(uid, (yyvsp[0].id));
                                                         (yyval.id) = uid;
 }
-#line 3469 "parser.tab.c"
+#line 3596 "parser.tab.c"
     break;
 
   case 142: /* ArrayInitializer: OPEN_CURLY VariableInitializers2 CLOSE_CURLY  */
-#line 971 "parser.y"
+#line 1098 "parser.y"
                                                                         { int uid = makenode("ArrayInitializer"); addChild(uid, (yyvsp[-2].id)); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id)); (yyval.id) = uid;}
-#line 3475 "parser.tab.c"
+#line 3602 "parser.tab.c"
     break;
 
   case 143: /* VariableInitializers2: %empty  */
-#line 973 "parser.y"
+#line 1100 "parser.y"
                                 { (yyval.id) = -1; }
-#line 3481 "parser.tab.c"
+#line 3608 "parser.tab.c"
     break;
 
   case 144: /* VariableInitializers2: VariableInitializers  */
-#line 974 "parser.y"
+#line 1101 "parser.y"
                                                 { (yyval.id) = (yyvsp[0].id); }
-#line 3487 "parser.tab.c"
+#line 3614 "parser.tab.c"
     break;
 
   case 145: /* VariableInitializers: VariableInitializer  */
-#line 976 "parser.y"
+#line 1103 "parser.y"
                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3493 "parser.tab.c"
+#line 3620 "parser.tab.c"
     break;
 
   case 146: /* VariableInitializers: VariableInitializers COMMA VariableInitializer  */
-#line 977 "parser.y"
+#line 1104 "parser.y"
                                                                             { int uid = makenode("VariableInitializers"); addChild(uid, (yyvsp[-2].id)); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id)); (yyval.id) = uid;}
-#line 3499 "parser.tab.c"
+#line 3626 "parser.tab.c"
     break;
 
   case 147: /* ExpressionStatement: StatementExpression SEMICOL  */
-#line 980 "parser.y"
+#line 1107 "parser.y"
                                                       {int uid = makenode("ExStatement"); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id));(yyval.id)=uid;}
-#line 3505 "parser.tab.c"
+#line 3632 "parser.tab.c"
     break;
 
   case 148: /* StatementExpression: Assignment  */
-#line 982 "parser.y"
+#line 1109 "parser.y"
                                                     {(yyval.id) = (yyvsp[0].id);}
-#line 3511 "parser.tab.c"
+#line 3638 "parser.tab.c"
     break;
 
   case 149: /* StatementExpression: PreIncrementExpression  */
-#line 983 "parser.y"
+#line 1110 "parser.y"
                                                     {(yyval.id) = (yyvsp[0].id);}
-#line 3517 "parser.tab.c"
+#line 3644 "parser.tab.c"
     break;
 
   case 150: /* StatementExpression: PreDecrementExpression  */
-#line 984 "parser.y"
+#line 1111 "parser.y"
                                                     {(yyval.id) = (yyvsp[0].id);}
-#line 3523 "parser.tab.c"
+#line 3650 "parser.tab.c"
     break;
 
   case 151: /* StatementExpression: PostIncrementExpression  */
-#line 985 "parser.y"
+#line 1112 "parser.y"
                                                     {(yyval.id) = (yyvsp[0].id);}
-#line 3529 "parser.tab.c"
+#line 3656 "parser.tab.c"
     break;
 
   case 152: /* StatementExpression: PostDecrementExpression  */
-#line 986 "parser.y"
+#line 1113 "parser.y"
                                                     {(yyval.id) = (yyvsp[0].id);}
-#line 3535 "parser.tab.c"
+#line 3662 "parser.tab.c"
     break;
 
   case 153: /* StatementExpression: MethodInvocation  */
-#line 987 "parser.y"
+#line 1114 "parser.y"
                                                     {(yyval.id) = (yyvsp[0].id);}
-#line 3541 "parser.tab.c"
+#line 3668 "parser.tab.c"
     break;
 
   case 154: /* StatementExpression: ClassInstanceCreationExpression  */
-#line 988 "parser.y"
+#line 1115 "parser.y"
                                                             {(yyval.id) = (yyvsp[0].id);}
-#line 3547 "parser.tab.c"
+#line 3674 "parser.tab.c"
     break;
 
   case 155: /* PreIncrementExpression: DPLUS UnaryExpression  */
-#line 990 "parser.y"
+#line 1117 "parser.y"
                                                         {int uid = makenode("PreIncExpression"); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id)); (yyval.id)=uid;}
-#line 3553 "parser.tab.c"
+#line 3680 "parser.tab.c"
     break;
 
   case 156: /* PreDecrementExpression: DMINUS UnaryExpression  */
-#line 992 "parser.y"
+#line 1119 "parser.y"
                                                         {int uid = makenode("PreDecExpression"); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id)); (yyval.id)=uid;}
-#line 3559 "parser.tab.c"
+#line 3686 "parser.tab.c"
     break;
 
   case 157: /* PostIncrementExpression: PostfixExpression DPLUS  */
-#line 994 "parser.y"
+#line 1121 "parser.y"
                                                         {int uid = makenode("PostIncExpression"); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id)); (yyval.id)=uid;}
-#line 3565 "parser.tab.c"
+#line 3692 "parser.tab.c"
     break;
 
   case 158: /* PostDecrementExpression: PostfixExpression DMINUS  */
-#line 996 "parser.y"
+#line 1123 "parser.y"
                                                         {int uid = makenode("PostDecExpression"); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id)); (yyval.id)=uid;}
-#line 3571 "parser.tab.c"
+#line 3698 "parser.tab.c"
     break;
 
   case 159: /* UnaryExpression: PLUS UnaryExpression  */
-#line 998 "parser.y"
+#line 1125 "parser.y"
                                                         {int uid = makenode("UnaryExpression"); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id)); (yyval.id)=uid;}
-#line 3577 "parser.tab.c"
+#line 3704 "parser.tab.c"
     break;
 
   case 160: /* UnaryExpression: MINUS UnaryExpression  */
-#line 999 "parser.y"
+#line 1126 "parser.y"
                                                          {int uid = makenode("UnaryExpression"); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id)); (yyval.id)=uid;}
-#line 3583 "parser.tab.c"
+#line 3710 "parser.tab.c"
     break;
 
   case 161: /* UnaryExpression: PreIncrementExpression  */
-#line 1000 "parser.y"
+#line 1127 "parser.y"
                                                          {(yyval.id) = (yyvsp[0].id);}
-#line 3589 "parser.tab.c"
+#line 3716 "parser.tab.c"
     break;
 
   case 162: /* UnaryExpression: PreDecrementExpression  */
-#line 1001 "parser.y"
+#line 1128 "parser.y"
                                                          {(yyval.id) = (yyvsp[0].id);}
-#line 3595 "parser.tab.c"
+#line 3722 "parser.tab.c"
     break;
 
   case 163: /* UnaryExpression: UnaryExpressionNotPlusMinus  */
-#line 1002 "parser.y"
+#line 1129 "parser.y"
                                                          {(yyval.id) = (yyvsp[0].id);}
-#line 3601 "parser.tab.c"
+#line 3728 "parser.tab.c"
     break;
 
   case 164: /* UnaryExpressionNotPlusMinus: PostfixExpression  */
-#line 1004 "parser.y"
+#line 1131 "parser.y"
                                                          {(yyval.id) = (yyvsp[0].id);}
-#line 3607 "parser.tab.c"
+#line 3734 "parser.tab.c"
     break;
 
   case 165: /* UnaryExpressionNotPlusMinus: TILDA UnaryExpression  */
-#line 1005 "parser.y"
+#line 1132 "parser.y"
                                                         {int uid = makenode("UnaryExpressionNot+-"); addChild(uid, (yyvsp[-1].id));  (yyval.id)=uid;}
-#line 3613 "parser.tab.c"
+#line 3740 "parser.tab.c"
     break;
 
   case 166: /* UnaryExpressionNotPlusMinus: EXCLAMATORY UnaryExpression  */
-#line 1006 "parser.y"
+#line 1133 "parser.y"
                                                             {int uid = makenode("UnaryExpressionNot+-"); addChild(uid, (yyvsp[-1].id));  (yyval.id)=uid;}
-#line 3619 "parser.tab.c"
+#line 3746 "parser.tab.c"
     break;
 
   case 167: /* UnaryExpressionNotPlusMinus: CastExpression  */
-#line 1007 "parser.y"
+#line 1134 "parser.y"
                                                            {(yyval.id) = (yyvsp[0].id);}
-#line 3625 "parser.tab.c"
+#line 3752 "parser.tab.c"
     break;
 
   case 168: /* CastExpression: OPEN_BRACKETS PrimitiveType Dims2 CLOSE_BRACKETS UnaryExpression  */
-#line 1009 "parser.y"
+#line 1136 "parser.y"
                                                                                             {
                                                         int uid = makenode("CastExpression");
                                                         addChild(uid,(yyvsp[-4].id));
@@ -3635,11 +3762,11 @@ yyreduce:
                                                         addChild(uid, (yyvsp[0].id));
                                                         (yyval.id) = uid;
 }
-#line 3639 "parser.tab.c"
+#line 3766 "parser.tab.c"
     break;
 
   case 169: /* CastExpression: OPEN_BRACKETS Expression CLOSE_BRACKETS UnaryExpressionNotPlusMinus  */
-#line 1018 "parser.y"
+#line 1145 "parser.y"
                                                                                                 {
                                                         int uid = makenode("CastExpression");
                                                         addChild(uid,(yyvsp[-3].id));
@@ -3649,11 +3776,11 @@ yyreduce:
                                                         
                                                         (yyval.id) = uid;
                         }
-#line 3653 "parser.tab.c"
+#line 3780 "parser.tab.c"
     break;
 
   case 170: /* CastExpression: OPEN_BRACKETS Name Dims CLOSE_BRACKETS UnaryExpressionNotPlusMinus  */
-#line 1027 "parser.y"
+#line 1154 "parser.y"
                                                                                              {
                                                         int uid = makenode("CastExpression");
                                                         addChild(uid,(yyvsp[-4].id));
@@ -3663,35 +3790,35 @@ yyreduce:
                                                         addChild(uid, (yyvsp[0].id));
                                                         (yyval.id) = uid;
                         }
-#line 3667 "parser.tab.c"
+#line 3794 "parser.tab.c"
     break;
 
   case 171: /* PostfixExpression: Name  */
-#line 1037 "parser.y"
+#line 1164 "parser.y"
                                                        {(yyval.id) = (yyvsp[0].id);}
-#line 3673 "parser.tab.c"
+#line 3800 "parser.tab.c"
     break;
 
   case 172: /* PostfixExpression: Primary  */
-#line 1038 "parser.y"
+#line 1165 "parser.y"
                                                       {(yyval.id) = (yyvsp[0].id);}
-#line 3679 "parser.tab.c"
+#line 3806 "parser.tab.c"
     break;
 
   case 173: /* PostfixExpression: PostIncrementExpression  */
-#line 1039 "parser.y"
+#line 1166 "parser.y"
                                                       {(yyval.id) = (yyvsp[0].id);}
-#line 3685 "parser.tab.c"
+#line 3812 "parser.tab.c"
     break;
 
   case 174: /* PostfixExpression: PostDecrementExpression  */
-#line 1040 "parser.y"
+#line 1167 "parser.y"
                                                       {(yyval.id) = (yyvsp[0].id);}
-#line 3691 "parser.tab.c"
+#line 3818 "parser.tab.c"
     break;
 
   case 175: /* Assignment: LeftHandSide AssignmentOperator AssignmentExpression  */
-#line 1042 "parser.y"
+#line 1169 "parser.y"
                                                                                {
                                                         int uid = makenode("Assignment");
                                                         addChild(uid,(yyvsp[-2].id));
@@ -3699,125 +3826,125 @@ yyreduce:
                                                         addChild(uid, (yyvsp[0].id));
                                                         (yyval.id) = uid;
 }
-#line 3703 "parser.tab.c"
+#line 3830 "parser.tab.c"
     break;
 
   case 176: /* AssignmentOperator: EQUAL  */
-#line 1050 "parser.y"
+#line 1177 "parser.y"
                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3709 "parser.tab.c"
+#line 3836 "parser.tab.c"
     break;
 
   case 177: /* AssignmentOperator: MUL_EQUAL  */
-#line 1051 "parser.y"
+#line 1178 "parser.y"
                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3715 "parser.tab.c"
+#line 3842 "parser.tab.c"
     break;
 
   case 178: /* AssignmentOperator: DIVIDE_EQUAL  */
-#line 1052 "parser.y"
+#line 1179 "parser.y"
                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3721 "parser.tab.c"
+#line 3848 "parser.tab.c"
     break;
 
   case 179: /* AssignmentOperator: MODULO_EQUAL  */
-#line 1053 "parser.y"
+#line 1180 "parser.y"
                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3727 "parser.tab.c"
+#line 3854 "parser.tab.c"
     break;
 
   case 180: /* AssignmentOperator: PLUS_EQUAL  */
-#line 1054 "parser.y"
+#line 1181 "parser.y"
                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3733 "parser.tab.c"
+#line 3860 "parser.tab.c"
     break;
 
   case 181: /* AssignmentOperator: MINUS_EQUAL  */
-#line 1055 "parser.y"
+#line 1182 "parser.y"
                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3739 "parser.tab.c"
+#line 3866 "parser.tab.c"
     break;
 
   case 182: /* AssignmentOperator: DLESS_EQUAL  */
-#line 1056 "parser.y"
+#line 1183 "parser.y"
                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3745 "parser.tab.c"
+#line 3872 "parser.tab.c"
     break;
 
   case 183: /* AssignmentOperator: DGREATER_EQUAL  */
-#line 1057 "parser.y"
+#line 1184 "parser.y"
                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3751 "parser.tab.c"
+#line 3878 "parser.tab.c"
     break;
 
   case 184: /* AssignmentOperator: TGREATER_EQUAL  */
-#line 1058 "parser.y"
+#line 1185 "parser.y"
                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3757 "parser.tab.c"
+#line 3884 "parser.tab.c"
     break;
 
   case 185: /* AssignmentOperator: AND_EQUAL  */
-#line 1059 "parser.y"
+#line 1186 "parser.y"
                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3763 "parser.tab.c"
+#line 3890 "parser.tab.c"
     break;
 
   case 186: /* AssignmentOperator: HAT_EQUAL  */
-#line 1060 "parser.y"
+#line 1187 "parser.y"
                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3769 "parser.tab.c"
+#line 3896 "parser.tab.c"
     break;
 
   case 187: /* AssignmentOperator: OR_EQUAL  */
-#line 1061 "parser.y"
+#line 1188 "parser.y"
                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3775 "parser.tab.c"
+#line 3902 "parser.tab.c"
     break;
 
   case 188: /* LeftHandSide: Name  */
-#line 1063 "parser.y"
+#line 1190 "parser.y"
                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3781 "parser.tab.c"
+#line 3908 "parser.tab.c"
     break;
 
   case 189: /* LeftHandSide: FieldAccess  */
-#line 1064 "parser.y"
+#line 1191 "parser.y"
                                                  {(yyval.id) = (yyvsp[0].id);}
-#line 3787 "parser.tab.c"
+#line 3914 "parser.tab.c"
     break;
 
   case 190: /* LeftHandSide: ArrayAccess  */
-#line 1065 "parser.y"
+#line 1192 "parser.y"
                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3793 "parser.tab.c"
+#line 3920 "parser.tab.c"
     break;
 
   case 191: /* AssignmentExpression: ConditionalExpression  */
-#line 1067 "parser.y"
+#line 1194 "parser.y"
                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3799 "parser.tab.c"
+#line 3926 "parser.tab.c"
     break;
 
   case 192: /* AssignmentExpression: Assignment  */
-#line 1068 "parser.y"
+#line 1195 "parser.y"
                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3805 "parser.tab.c"
+#line 3932 "parser.tab.c"
     break;
 
   case 193: /* Expression: AssignmentExpression  */
-#line 1070 "parser.y"
+#line 1197 "parser.y"
                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 3811 "parser.tab.c"
+#line 3938 "parser.tab.c"
     break;
 
   case 194: /* ConditionalExpression: ConditionalOrExpression  */
-#line 1072 "parser.y"
+#line 1199 "parser.y"
                                                     {(yyval.id) = (yyvsp[0].id);}
-#line 3817 "parser.tab.c"
+#line 3944 "parser.tab.c"
     break;
 
   case 195: /* ConditionalExpression: ConditionalOrExpression QUE Expression COLON ConditionalExpression  */
-#line 1073 "parser.y"
+#line 1200 "parser.y"
                                                                                                 {
                             int uid = makenode("ConditionalExpression");
                             addChild(uid, (yyvsp[-4].id));
@@ -3827,17 +3954,17 @@ yyreduce:
                             addChild(uid, (yyvsp[0].id));
                             (yyval.id) = uid;
                         }
-#line 3831 "parser.tab.c"
+#line 3958 "parser.tab.c"
     break;
 
   case 196: /* ConditionalOrExpression: ConditionalAndExpression  */
-#line 1083 "parser.y"
+#line 1210 "parser.y"
                                                             {(yyval.id) = (yyvsp[0].id);}
-#line 3837 "parser.tab.c"
+#line 3964 "parser.tab.c"
     break;
 
   case 197: /* ConditionalOrExpression: ConditionalOrExpression DOR ConditionalAndExpression  */
-#line 1084 "parser.y"
+#line 1211 "parser.y"
                                                                                {
                                     int uid = makenode("ConditionalOrExpression");
                                     addChild(uid, (yyvsp[-2].id));
@@ -3845,17 +3972,17 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
                         }
-#line 3849 "parser.tab.c"
+#line 3976 "parser.tab.c"
     break;
 
   case 198: /* ConditionalAndExpression: InclusiveOrExpression  */
-#line 1092 "parser.y"
+#line 1219 "parser.y"
                                                              {(yyval.id) = (yyvsp[0].id);}
-#line 3855 "parser.tab.c"
+#line 3982 "parser.tab.c"
     break;
 
   case 199: /* ConditionalAndExpression: ConditionalAndExpression DAND InclusiveOrExpression  */
-#line 1093 "parser.y"
+#line 1220 "parser.y"
                                                                                {
                                     int uid = makenode("ConditionalAndExpression");
                                     addChild(uid, (yyvsp[-2].id));
@@ -3863,17 +3990,17 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
                         }
-#line 3867 "parser.tab.c"
+#line 3994 "parser.tab.c"
     break;
 
   case 200: /* InclusiveOrExpression: ExclusiveOrExpression  */
-#line 1101 "parser.y"
+#line 1228 "parser.y"
                                                            {(yyval.id) = (yyvsp[0].id);}
-#line 3873 "parser.tab.c"
+#line 4000 "parser.tab.c"
     break;
 
   case 201: /* InclusiveOrExpression: InclusiveOrExpression OR ExclusiveOrExpression  */
-#line 1102 "parser.y"
+#line 1229 "parser.y"
                                                                           {
                                     int uid = makenode("InclusiveOrExpression");
                                     addChild(uid, (yyvsp[-2].id));
@@ -3881,17 +4008,17 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
                         }
-#line 3885 "parser.tab.c"
+#line 4012 "parser.tab.c"
     break;
 
   case 202: /* ExclusiveOrExpression: AndExpression  */
-#line 1110 "parser.y"
+#line 1237 "parser.y"
                                                             {(yyval.id) = (yyvsp[0].id);}
-#line 3891 "parser.tab.c"
+#line 4018 "parser.tab.c"
     break;
 
   case 203: /* ExclusiveOrExpression: ExclusiveOrExpression HAT AndExpression  */
-#line 1111 "parser.y"
+#line 1238 "parser.y"
                                                                     {
                                     int uid = makenode("ExclusiveOrExpression");
                                     addChild(uid, (yyvsp[-2].id));
@@ -3899,17 +4026,17 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
                         }
-#line 3903 "parser.tab.c"
+#line 4030 "parser.tab.c"
     break;
 
   case 204: /* AndExpression: EqualityExpression  */
-#line 1119 "parser.y"
+#line 1246 "parser.y"
                                                            {(yyval.id) = (yyvsp[0].id);}
-#line 3909 "parser.tab.c"
+#line 4036 "parser.tab.c"
     break;
 
   case 205: /* AndExpression: AndExpression AND EqualityExpression  */
-#line 1120 "parser.y"
+#line 1247 "parser.y"
                                                                 {
                                     int uid = makenode("AndExpression");
                                     addChild(uid, (yyvsp[-2].id));
@@ -3917,17 +4044,17 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
                         }
-#line 3921 "parser.tab.c"
+#line 4048 "parser.tab.c"
     break;
 
   case 206: /* EqualityExpression: RelationalExpression  */
-#line 1128 "parser.y"
+#line 1255 "parser.y"
                                                            {(yyval.id) = (yyvsp[0].id);}
-#line 3927 "parser.tab.c"
+#line 4054 "parser.tab.c"
     break;
 
   case 207: /* EqualityExpression: EqualityExpression DEQUAL RelationalExpression  */
-#line 1129 "parser.y"
+#line 1256 "parser.y"
                                                                            {
                                     int uid = makenode("EqualityExpression");
                                     addChild(uid, (yyvsp[-2].id));
@@ -3935,11 +4062,11 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
                         }
-#line 3939 "parser.tab.c"
+#line 4066 "parser.tab.c"
     break;
 
   case 208: /* EqualityExpression: EqualityExpression NEQUAL RelationalExpression  */
-#line 1136 "parser.y"
+#line 1263 "parser.y"
                                                                           {
                                     int uid = makenode("EqualityExpression");
                                     addChild(uid, (yyvsp[-2].id));
@@ -3947,17 +4074,17 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
                         }
-#line 3951 "parser.tab.c"
+#line 4078 "parser.tab.c"
     break;
 
   case 209: /* RelationalExpression: ShiftExpression  */
-#line 1144 "parser.y"
+#line 1271 "parser.y"
                                                             {(yyval.id) = (yyvsp[0].id);}
-#line 3957 "parser.tab.c"
+#line 4084 "parser.tab.c"
     break;
 
   case 210: /* RelationalExpression: RelationalExpression LESS ShiftExpression  */
-#line 1145 "parser.y"
+#line 1272 "parser.y"
                                                                         {
                                     int uid = makenode("RelationalExpression");
                                     addChild(uid, (yyvsp[-2].id));
@@ -3965,11 +4092,11 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
                         }
-#line 3969 "parser.tab.c"
+#line 4096 "parser.tab.c"
     break;
 
   case 211: /* RelationalExpression: RelationalExpression GREATER ShiftExpression  */
-#line 1152 "parser.y"
+#line 1279 "parser.y"
                                                                          {
                                     int uid = makenode("RelationalExpression");
                                     addChild(uid, (yyvsp[-2].id));
@@ -3977,11 +4104,11 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
                         }
-#line 3981 "parser.tab.c"
+#line 4108 "parser.tab.c"
     break;
 
   case 212: /* RelationalExpression: RelationalExpression LE ShiftExpression  */
-#line 1159 "parser.y"
+#line 1286 "parser.y"
                                                                     {
                                     int uid = makenode("RelationalExpression");
                                     addChild(uid, (yyvsp[-2].id));
@@ -3989,11 +4116,11 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
                         }
-#line 3993 "parser.tab.c"
+#line 4120 "parser.tab.c"
     break;
 
   case 213: /* RelationalExpression: RelationalExpression GE ShiftExpression  */
-#line 1166 "parser.y"
+#line 1293 "parser.y"
                                                                         {
                                     int uid = makenode("RelationalExpression");
                                     addChild(uid, (yyvsp[-2].id));
@@ -4001,11 +4128,11 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
                         }
-#line 4005 "parser.tab.c"
+#line 4132 "parser.tab.c"
     break;
 
   case 214: /* RelationalExpression: RelationalExpression INSTANCEOF ReferenceType  */
-#line 1173 "parser.y"
+#line 1300 "parser.y"
                                                                         {
                                     int uid = makenode("RelationalExpression");
                                     addChild(uid, (yyvsp[-2].id));
@@ -4013,17 +4140,17 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
                         }
-#line 4017 "parser.tab.c"
+#line 4144 "parser.tab.c"
     break;
 
   case 215: /* ShiftExpression: AdditiveExpression  */
-#line 1181 "parser.y"
+#line 1308 "parser.y"
                                                             {(yyval.id) = (yyvsp[0].id);}
-#line 4023 "parser.tab.c"
+#line 4150 "parser.tab.c"
     break;
 
   case 216: /* ShiftExpression: ShiftExpression DLESS AdditiveExpression  */
-#line 1182 "parser.y"
+#line 1309 "parser.y"
                                                                         {
                                     int uid = makenode("ShiftExpression");
                                     addChild(uid, (yyvsp[-2].id));
@@ -4031,11 +4158,11 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
                         }
-#line 4035 "parser.tab.c"
+#line 4162 "parser.tab.c"
     break;
 
   case 217: /* ShiftExpression: ShiftExpression DGREATER AdditiveExpression  */
-#line 1189 "parser.y"
+#line 1316 "parser.y"
                                                                             {
                                     int uid = makenode("ShiftExpression");
                                     addChild(uid, (yyvsp[-2].id));
@@ -4043,11 +4170,11 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
                         }
-#line 4047 "parser.tab.c"
+#line 4174 "parser.tab.c"
     break;
 
   case 218: /* ShiftExpression: ShiftExpression TGREATER AdditiveExpression  */
-#line 1196 "parser.y"
+#line 1323 "parser.y"
                                                                             {
                                     int uid = makenode("ShiftExpression");
                                     addChild(uid, (yyvsp[-2].id));
@@ -4055,17 +4182,17 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
                         }
-#line 4059 "parser.tab.c"
+#line 4186 "parser.tab.c"
     break;
 
   case 219: /* AdditiveExpression: MultiplicativeExpression  */
-#line 1204 "parser.y"
+#line 1331 "parser.y"
                                                             {(yyval.id) = (yyvsp[0].id);}
-#line 4065 "parser.tab.c"
+#line 4192 "parser.tab.c"
     break;
 
   case 220: /* AdditiveExpression: AdditiveExpression PLUS MultiplicativeExpression  */
-#line 1205 "parser.y"
+#line 1332 "parser.y"
                                                                                 {
                                     int uid = makenode("AdditiveExpression");
                                     addChild(uid, (yyvsp[-2].id));
@@ -4073,11 +4200,11 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
                         }
-#line 4077 "parser.tab.c"
+#line 4204 "parser.tab.c"
     break;
 
   case 221: /* AdditiveExpression: AdditiveExpression MINUS MultiplicativeExpression  */
-#line 1212 "parser.y"
+#line 1339 "parser.y"
                                                                                 {
                                     int uid = makenode("AdditiveExpression");
                                     addChild(uid, (yyvsp[-2].id));
@@ -4085,17 +4212,17 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
                         }
-#line 4089 "parser.tab.c"
+#line 4216 "parser.tab.c"
     break;
 
   case 222: /* MultiplicativeExpression: UnaryExpression  */
-#line 1220 "parser.y"
+#line 1347 "parser.y"
                                                             {(yyval.id) = (yyvsp[0].id);}
-#line 4095 "parser.tab.c"
+#line 4222 "parser.tab.c"
     break;
 
   case 223: /* MultiplicativeExpression: MultiplicativeExpression MUL UnaryExpression  */
-#line 1221 "parser.y"
+#line 1348 "parser.y"
                                                                             {
                                     int uid = makenode("MultiplicativeExpression");
                                     addChild(uid, (yyvsp[-2].id));
@@ -4103,11 +4230,11 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
                         }
-#line 4107 "parser.tab.c"
+#line 4234 "parser.tab.c"
     break;
 
   case 224: /* MultiplicativeExpression: MultiplicativeExpression DIVIDE UnaryExpression  */
-#line 1228 "parser.y"
+#line 1355 "parser.y"
                                                                                 {
                                     int uid = makenode("MultiplicativeExpression");
                                     addChild(uid, (yyvsp[-2].id));
@@ -4115,11 +4242,11 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
                         }
-#line 4119 "parser.tab.c"
+#line 4246 "parser.tab.c"
     break;
 
   case 225: /* MultiplicativeExpression: MultiplicativeExpression MODULO UnaryExpression  */
-#line 1235 "parser.y"
+#line 1362 "parser.y"
                                                                                 {
                                     int uid = makenode("MultiplicativeExpression");
                                     addChild(uid, (yyvsp[-2].id));
@@ -4127,101 +4254,101 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
                         }
-#line 4131 "parser.tab.c"
+#line 4258 "parser.tab.c"
     break;
 
   case 226: /* PrimitiveType: NumericType  */
-#line 1244 "parser.y"
+#line 1371 "parser.y"
                                                             {(yyval.id) = (yyvsp[0].id);}
-#line 4137 "parser.tab.c"
+#line 4264 "parser.tab.c"
     break;
 
   case 227: /* PrimitiveType: BOOLEAN  */
-#line 1245 "parser.y"
+#line 1372 "parser.y"
                                                             {(yyval.id) = (yyvsp[0].id);}
-#line 4143 "parser.tab.c"
+#line 4270 "parser.tab.c"
     break;
 
   case 228: /* NumericType: IntegerType  */
-#line 1247 "parser.y"
+#line 1374 "parser.y"
                                                             {(yyval.id) = (yyvsp[0].id);}
-#line 4149 "parser.tab.c"
+#line 4276 "parser.tab.c"
     break;
 
   case 229: /* NumericType: FloatingPointType  */
-#line 1248 "parser.y"
+#line 1375 "parser.y"
                                                             {(yyval.id) = (yyvsp[0].id);}
-#line 4155 "parser.tab.c"
+#line 4282 "parser.tab.c"
     break;
 
   case 230: /* IntegerType: BYTE  */
-#line 1250 "parser.y"
+#line 1377 "parser.y"
                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 4161 "parser.tab.c"
+#line 4288 "parser.tab.c"
     break;
 
   case 231: /* IntegerType: SHORT  */
-#line 1251 "parser.y"
+#line 1378 "parser.y"
                                                  {(yyval.id) = (yyvsp[0].id);}
-#line 4167 "parser.tab.c"
+#line 4294 "parser.tab.c"
     break;
 
   case 232: /* IntegerType: INT  */
-#line 1252 "parser.y"
+#line 1379 "parser.y"
                                                  {(yyval.id) = (yyvsp[0].id);}
-#line 4173 "parser.tab.c"
+#line 4300 "parser.tab.c"
     break;
 
   case 233: /* IntegerType: LONG  */
-#line 1253 "parser.y"
+#line 1380 "parser.y"
                                                  {(yyval.id) = (yyvsp[0].id);}
-#line 4179 "parser.tab.c"
+#line 4306 "parser.tab.c"
     break;
 
   case 234: /* IntegerType: CHAR  */
-#line 1254 "parser.y"
+#line 1381 "parser.y"
                                                  {(yyval.id) = (yyvsp[0].id);}
-#line 4185 "parser.tab.c"
+#line 4312 "parser.tab.c"
     break;
 
   case 235: /* IntegerType: STRING  */
-#line 1255 "parser.y"
+#line 1382 "parser.y"
                                                  {(yyval.id) = (yyvsp[0].id);}
-#line 4191 "parser.tab.c"
+#line 4318 "parser.tab.c"
     break;
 
   case 236: /* FloatingPointType: FLOAT  */
-#line 1257 "parser.y"
+#line 1384 "parser.y"
                                                  {(yyval.id) = (yyvsp[0].id);}
-#line 4197 "parser.tab.c"
+#line 4324 "parser.tab.c"
     break;
 
   case 237: /* FloatingPointType: DOUBLE  */
-#line 1258 "parser.y"
+#line 1385 "parser.y"
                                                      {(yyval.id) = (yyvsp[0].id);}
-#line 4203 "parser.tab.c"
+#line 4330 "parser.tab.c"
     break;
 
   case 238: /* Name: SimpleName  */
-#line 1260 "parser.y"
+#line 1387 "parser.y"
                                                  {(yyval.id) = (yyvsp[0].id);}
-#line 4209 "parser.tab.c"
+#line 4336 "parser.tab.c"
     break;
 
   case 239: /* Name: QualifiedName  */
-#line 1261 "parser.y"
+#line 1388 "parser.y"
                                                  {(yyval.id) = (yyvsp[0].id);}
-#line 4215 "parser.tab.c"
+#line 4342 "parser.tab.c"
     break;
 
   case 240: /* SimpleName: identifier  */
-#line 1263 "parser.y"
+#line 1390 "parser.y"
                                                  {(yyval.id) = (yyvsp[0].id);}
-#line 4221 "parser.tab.c"
+#line 4348 "parser.tab.c"
     break;
 
   case 241: /* QualifiedName: Name DOT identifier  */
-#line 1265 "parser.y"
+#line 1392 "parser.y"
                                                     {
                                     int uid = makenode("QualifiedName");
                                     addChild(uid, (yyvsp[-2].id));
@@ -4229,11 +4356,11 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
                         }
-#line 4233 "parser.tab.c"
+#line 4360 "parser.tab.c"
     break;
 
   case 242: /* FieldAccess: SUPER DOT identifier  */
-#line 1273 "parser.y"
+#line 1400 "parser.y"
                                                     {
                                     int uid = makenode("FieldAccess");
                                     addChild(uid, (yyvsp[-2].id));
@@ -4241,11 +4368,11 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
                         }
-#line 4245 "parser.tab.c"
+#line 4372 "parser.tab.c"
     break;
 
   case 243: /* FieldAccess: Primary DOT identifier  */
-#line 1280 "parser.y"
+#line 1407 "parser.y"
                                                   {
                                     int uid = makenode("FieldAccess");
                                     addChild(uid, (yyvsp[-2].id));
@@ -4253,11 +4380,11 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
                         }
-#line 4257 "parser.tab.c"
+#line 4384 "parser.tab.c"
     break;
 
   case 244: /* ArrayAccess: Name OPEN_SQ Expression CLOSE_SQ  */
-#line 1289 "parser.y"
+#line 1416 "parser.y"
                                                                 {
                                     int uid = makenode("ArrayAccess");
                                     addChild(uid, (yyvsp[-3].id));
@@ -4266,11 +4393,11 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
 }
-#line 4270 "parser.tab.c"
+#line 4397 "parser.tab.c"
     break;
 
   case 245: /* ArrayAccess: PrimaryNoNewArray OPEN_SQ Expression CLOSE_SQ  */
-#line 1297 "parser.y"
+#line 1424 "parser.y"
                                                                             {
                                     int uid = makenode("ArrayAccess");
                                     addChild(uid, (yyvsp[-3].id));
@@ -4279,35 +4406,35 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
                         }
-#line 4283 "parser.tab.c"
+#line 4410 "parser.tab.c"
     break;
 
   case 246: /* Primary: PrimaryNoNewArray  */
-#line 1306 "parser.y"
+#line 1433 "parser.y"
                                                          {(yyval.id) = (yyvsp[0].id);}
-#line 4289 "parser.tab.c"
+#line 4416 "parser.tab.c"
     break;
 
   case 247: /* Primary: ArrayCreationExpression  */
-#line 1307 "parser.y"
+#line 1434 "parser.y"
                                                          {(yyval.id) = (yyvsp[0].id);}
-#line 4295 "parser.tab.c"
+#line 4422 "parser.tab.c"
     break;
 
   case 248: /* PrimaryNoNewArray: Literal  */
-#line 1309 "parser.y"
+#line 1436 "parser.y"
                                                          {(yyval.id) = (yyvsp[0].id);}
-#line 4301 "parser.tab.c"
+#line 4428 "parser.tab.c"
     break;
 
   case 249: /* PrimaryNoNewArray: THIS  */
-#line 1310 "parser.y"
+#line 1437 "parser.y"
                                                          {(yyval.id) = (yyvsp[0].id);}
-#line 4307 "parser.tab.c"
+#line 4434 "parser.tab.c"
     break;
 
   case 250: /* PrimaryNoNewArray: OPEN_BRACKETS Expression CLOSE_BRACKETS  */
-#line 1311 "parser.y"
+#line 1438 "parser.y"
                                                                   {
                                                         int uid = makenode("PrimaryNoNewArray");
                                                         addChild(uid, (yyvsp[-2].id));
@@ -4315,77 +4442,77 @@ yyreduce:
                                                         addChild(uid, (yyvsp[0].id));
                                                         (yyval.id) = uid;
                         }
-#line 4319 "parser.tab.c"
+#line 4446 "parser.tab.c"
     break;
 
   case 251: /* PrimaryNoNewArray: ClassInstanceCreationExpression  */
-#line 1318 "parser.y"
+#line 1445 "parser.y"
                                                              {(yyval.id) = (yyvsp[0].id);}
-#line 4325 "parser.tab.c"
+#line 4452 "parser.tab.c"
     break;
 
   case 252: /* PrimaryNoNewArray: FieldAccess  */
-#line 1319 "parser.y"
+#line 1446 "parser.y"
                                                              {(yyval.id) = (yyvsp[0].id);}
-#line 4331 "parser.tab.c"
+#line 4458 "parser.tab.c"
     break;
 
   case 253: /* PrimaryNoNewArray: MethodInvocation  */
-#line 1320 "parser.y"
+#line 1447 "parser.y"
                                                              {(yyval.id) = (yyvsp[0].id);}
-#line 4337 "parser.tab.c"
+#line 4464 "parser.tab.c"
     break;
 
   case 254: /* PrimaryNoNewArray: ArrayAccess  */
-#line 1321 "parser.y"
+#line 1448 "parser.y"
                                                              {(yyval.id) = (yyvsp[0].id);}
-#line 4343 "parser.tab.c"
+#line 4470 "parser.tab.c"
     break;
 
   case 255: /* Literal: IntegerLiteral  */
-#line 1323 "parser.y"
+#line 1450 "parser.y"
                                                              {(yyval.id) = (yyvsp[0].id);}
-#line 4349 "parser.tab.c"
+#line 4476 "parser.tab.c"
     break;
 
   case 256: /* Literal: FloatingPointLiteral  */
-#line 1324 "parser.y"
+#line 1451 "parser.y"
                                                              {(yyval.id) = (yyvsp[0].id);}
-#line 4355 "parser.tab.c"
+#line 4482 "parser.tab.c"
     break;
 
   case 257: /* Literal: BooleanLiteral  */
-#line 1325 "parser.y"
+#line 1452 "parser.y"
                                                              {(yyval.id) = (yyvsp[0].id);}
-#line 4361 "parser.tab.c"
+#line 4488 "parser.tab.c"
     break;
 
   case 258: /* Literal: CharacterLiteral  */
-#line 1326 "parser.y"
+#line 1453 "parser.y"
                                                              {(yyval.id) = (yyvsp[0].id);}
-#line 4367 "parser.tab.c"
+#line 4494 "parser.tab.c"
     break;
 
   case 259: /* Literal: StringLiteral  */
-#line 1327 "parser.y"
+#line 1454 "parser.y"
                                                              {(yyval.id) = (yyvsp[0].id);}
-#line 4373 "parser.tab.c"
+#line 4500 "parser.tab.c"
     break;
 
   case 260: /* Literal: TextBlock  */
-#line 1328 "parser.y"
+#line 1455 "parser.y"
                                                              {(yyval.id) = (yyvsp[0].id);}
-#line 4379 "parser.tab.c"
+#line 4506 "parser.tab.c"
     break;
 
   case 261: /* Literal: NullLiteral  */
-#line 1329 "parser.y"
+#line 1456 "parser.y"
                                                              {(yyval.id) = (yyvsp[0].id);}
-#line 4385 "parser.tab.c"
+#line 4512 "parser.tab.c"
     break;
 
   case 262: /* ClassInstanceCreationExpression: NEW Name OPEN_BRACKETS ArgumentList2 CLOSE_BRACKETS  */
-#line 1331 "parser.y"
+#line 1458 "parser.y"
                                                                                         {
                                     int uid = makenode("ClassInstanceCreationExpression");
                                     addChild(uid, (yyvsp[-4].id));
@@ -4395,11 +4522,11 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
 }
-#line 4399 "parser.tab.c"
+#line 4526 "parser.tab.c"
     break;
 
   case 263: /* MethodInvocation: Name OPEN_BRACKETS ArgumentList2 CLOSE_BRACKETS  */
-#line 1341 "parser.y"
+#line 1468 "parser.y"
                                                                                {
                                     int uid = makenode("MethodIncovation");
                                     addChild(uid, (yyvsp[-3].id));
@@ -4408,11 +4535,11 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
 }
-#line 4412 "parser.tab.c"
+#line 4539 "parser.tab.c"
     break;
 
   case 264: /* MethodInvocation: Primary DOT identifier OPEN_BRACKETS ArgumentList2 CLOSE_BRACKETS  */
-#line 1349 "parser.y"
+#line 1476 "parser.y"
                                                                                                 {
                                     int uid = makenode("MethodIncovation");
                                     addChild(uid, (yyvsp[-5].id));
@@ -4423,11 +4550,11 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
                         }
-#line 4427 "parser.tab.c"
+#line 4554 "parser.tab.c"
     break;
 
   case 265: /* MethodInvocation: SUPER DOT identifier OPEN_BRACKETS ArgumentList2 CLOSE_BRACKETS  */
-#line 1359 "parser.y"
+#line 1486 "parser.y"
                                                                                                 {
                                     int uid = makenode("MethodIncovation");
                                     addChild(uid, (yyvsp[-5].id));
@@ -4438,29 +4565,29 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
                         }
-#line 4442 "parser.tab.c"
+#line 4569 "parser.tab.c"
     break;
 
   case 266: /* ArgumentList2: %empty  */
-#line 1370 "parser.y"
+#line 1497 "parser.y"
                           {(yyval.id) = -1;}
-#line 4448 "parser.tab.c"
+#line 4575 "parser.tab.c"
     break;
 
   case 267: /* ArgumentList2: ArgumentList  */
-#line 1371 "parser.y"
+#line 1498 "parser.y"
                                                  {(yyval.id)=(yyvsp[0].id);}
-#line 4454 "parser.tab.c"
+#line 4581 "parser.tab.c"
     break;
 
   case 268: /* ArgumentList: Expression  */
-#line 1373 "parser.y"
+#line 1500 "parser.y"
                                                  {(yyval.id) = (yyvsp[0].id);}
-#line 4460 "parser.tab.c"
+#line 4587 "parser.tab.c"
     break;
 
   case 269: /* ArgumentList: ArgumentList COMMA Expression  */
-#line 1374 "parser.y"
+#line 1501 "parser.y"
                                                         {
                                                 int uid = makenode("ArgumentList");
                                                 addChild(uid, (yyvsp[-2].id));
@@ -4468,23 +4595,23 @@ yyreduce:
                                                 addChild(uid, (yyvsp[0].id));
                                                 (yyval.id) = uid;
                         }
-#line 4472 "parser.tab.c"
+#line 4599 "parser.tab.c"
     break;
 
   case 270: /* ReferenceType: Name  */
-#line 1382 "parser.y"
+#line 1509 "parser.y"
                                                  {(yyval.id) = (yyvsp[0].id);}
-#line 4478 "parser.tab.c"
+#line 4605 "parser.tab.c"
     break;
 
   case 271: /* ReferenceType: ArrayType  */
-#line 1383 "parser.y"
+#line 1510 "parser.y"
                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 4484 "parser.tab.c"
+#line 4611 "parser.tab.c"
     break;
 
   case 272: /* ArrayType: PrimitiveType OPEN_SQ CLOSE_SQ  */
-#line 1385 "parser.y"
+#line 1512 "parser.y"
                                                             {
                                     int uid = makenode("ArrayType");
                                     addChild(uid, (yyvsp[-2].id));
@@ -4492,11 +4619,11 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
                         }
-#line 4496 "parser.tab.c"
+#line 4623 "parser.tab.c"
     break;
 
   case 273: /* ArrayType: Name OPEN_SQ CLOSE_SQ  */
-#line 1392 "parser.y"
+#line 1519 "parser.y"
                                                             {
                                     int uid = makenode("ArrayType");
                                     addChild(uid, (yyvsp[-2].id));
@@ -4504,11 +4631,11 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
                         }
-#line 4508 "parser.tab.c"
+#line 4635 "parser.tab.c"
     break;
 
   case 274: /* ArrayType: ArrayType OPEN_SQ CLOSE_SQ  */
-#line 1399 "parser.y"
+#line 1526 "parser.y"
                                                             {
                                     int uid = makenode("ArrayType");
                                     addChild(uid, (yyvsp[-2].id));
@@ -4516,11 +4643,11 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
                         }
-#line 4520 "parser.tab.c"
+#line 4647 "parser.tab.c"
     break;
 
   case 275: /* ArrayCreationExpression: NEW PrimitiveType DimExprs Dims2  */
-#line 1407 "parser.y"
+#line 1534 "parser.y"
                                                            {
                                     int uid = makenode("ArrayCreationExpr");
                                     addChild(uid, (yyvsp[-3].id));
@@ -4529,11 +4656,11 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
 }
-#line 4533 "parser.tab.c"
+#line 4660 "parser.tab.c"
     break;
 
   case 276: /* ArrayCreationExpression: NEW Name DimExprs Dims2  */
-#line 1415 "parser.y"
+#line 1542 "parser.y"
                                                         {
                                     int uid = makenode("ArrayCreationExpr");
                                     addChild(uid, (yyvsp[-3].id));
@@ -4542,29 +4669,29 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
                         }
-#line 4546 "parser.tab.c"
+#line 4673 "parser.tab.c"
     break;
 
   case 277: /* Dims2: %empty  */
-#line 1424 "parser.y"
+#line 1551 "parser.y"
                            {(yyval.id) = -1;}
-#line 4552 "parser.tab.c"
+#line 4679 "parser.tab.c"
     break;
 
   case 278: /* Dims2: Dims  */
-#line 1425 "parser.y"
+#line 1552 "parser.y"
                                                  {(yyval.id)=(yyvsp[0].id);}
-#line 4558 "parser.tab.c"
+#line 4685 "parser.tab.c"
     break;
 
   case 279: /* Dims: OPEN_SQ CLOSE_SQ  */
-#line 1427 "parser.y"
+#line 1554 "parser.y"
                                                 {int uid = makenode("Dims"); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id)); (yyval.id)=uid;}
-#line 4564 "parser.tab.c"
+#line 4691 "parser.tab.c"
     break;
 
   case 280: /* Dims: Dims OPEN_SQ CLOSE_SQ  */
-#line 1428 "parser.y"
+#line 1555 "parser.y"
                                                   {
                                     int uid = makenode("Dims");
                                     addChild(uid, (yyvsp[-2].id));
@@ -4572,23 +4699,23 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
                         }
-#line 4576 "parser.tab.c"
+#line 4703 "parser.tab.c"
     break;
 
   case 281: /* DimExprs: DimExpr  */
-#line 1435 "parser.y"
+#line 1562 "parser.y"
                                                  {(yyval.id) = (yyvsp[0].id);}
-#line 4582 "parser.tab.c"
+#line 4709 "parser.tab.c"
     break;
 
   case 282: /* DimExprs: DimExprs DimExpr  */
-#line 1436 "parser.y"
+#line 1563 "parser.y"
                                                     {int uid = makenode("DimExprs"); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id)); (yyval.id)=uid;}
-#line 4588 "parser.tab.c"
+#line 4715 "parser.tab.c"
     break;
 
   case 283: /* DimExpr: OPEN_SQ Expression CLOSE_SQ  */
-#line 1438 "parser.y"
+#line 1565 "parser.y"
                                                         {
                                     int uid = makenode("DimExpr");
                                     addChild(uid, (yyvsp[-2].id));
@@ -4596,11 +4723,11 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
 }
-#line 4600 "parser.tab.c"
+#line 4727 "parser.tab.c"
     break;
 
   case 284: /* InterfaceDeclaration: Modifiers1 INTERFACE identifier ExtendsInterfaces2 InterfaceBody  */
-#line 1446 "parser.y"
+#line 1573 "parser.y"
                                                                                            {
                                     int uid = makenode("InterfaceDeclaration");
                                     addChild(uid, (yyvsp[-4].id));
@@ -4610,29 +4737,29 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
 }
-#line 4614 "parser.tab.c"
+#line 4741 "parser.tab.c"
     break;
 
   case 285: /* ExtendsInterfaces2: %empty  */
-#line 1456 "parser.y"
+#line 1583 "parser.y"
                             {(yyval.id) = -1;}
-#line 4620 "parser.tab.c"
+#line 4747 "parser.tab.c"
     break;
 
   case 286: /* ExtendsInterfaces2: ExtendsInterfaces  */
-#line 1457 "parser.y"
+#line 1584 "parser.y"
                                             {(yyval.id) = (yyvsp[0].id);}
-#line 4626 "parser.tab.c"
+#line 4753 "parser.tab.c"
     break;
 
   case 287: /* ExtendsInterfaces: EXTENDS InterfaceType  */
-#line 1459 "parser.y"
+#line 1586 "parser.y"
                                                 { int uid = makenode("ExtendsInterfaces"); addChild(uid, (yyvsp[-1].id)); addChild(uid, (yyvsp[0].id));}
-#line 4632 "parser.tab.c"
+#line 4759 "parser.tab.c"
     break;
 
   case 288: /* ExtendsInterfaces: ExtendsInterfaces COMMA InterfaceType  */
-#line 1460 "parser.y"
+#line 1587 "parser.y"
                                                                 {
                                     int uid = makenode("ExtendsInterfaces");
                                     addChild(uid, (yyvsp[-2].id));
@@ -4640,11 +4767,11 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
                         }
-#line 4644 "parser.tab.c"
+#line 4771 "parser.tab.c"
     break;
 
   case 289: /* InterfaceBody: OPEN_CURLY InterfaceMemberDeclarations2 CLOSE_CURLY  */
-#line 1467 "parser.y"
+#line 1594 "parser.y"
                                                                                 {
                                     int uid = makenode("InterfaceBody");
                                     addChild(uid, (yyvsp[-2].id));
@@ -4652,634 +4779,634 @@ yyreduce:
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
 }
-#line 4656 "parser.tab.c"
+#line 4783 "parser.tab.c"
     break;
 
   case 290: /* InterfaceMemberDeclarations2: %empty  */
-#line 1475 "parser.y"
+#line 1602 "parser.y"
                                     {(yyval.id) = -1;}
-#line 4662 "parser.tab.c"
+#line 4789 "parser.tab.c"
     break;
 
   case 291: /* InterfaceMemberDeclarations2: InterfaceMemberDeclarations  */
-#line 1476 "parser.y"
+#line 1603 "parser.y"
                                                         {(yyval.id) = (yyvsp[0].id);}
-#line 4668 "parser.tab.c"
+#line 4795 "parser.tab.c"
     break;
 
   case 292: /* InterfaceMemberDeclarations: InterfaceMemberDeclaration  */
-#line 1478 "parser.y"
+#line 1605 "parser.y"
                                                                 {(yyval.id) = (yyvsp[0].id);}
-#line 4674 "parser.tab.c"
+#line 4801 "parser.tab.c"
     break;
 
   case 293: /* InterfaceMemberDeclarations: InterfaceMemberDeclarations InterfaceMemberDeclaration  */
-#line 1479 "parser.y"
+#line 1606 "parser.y"
                                                                                     {
                                     int uid = makenode("InterfaceMemberDeclarations");
                                     addChild(uid, (yyvsp[-1].id));
                                     addChild(uid, (yyvsp[0].id));
                                     (yyval.id) = uid;
                         }
-#line 4685 "parser.tab.c"
+#line 4812 "parser.tab.c"
     break;
 
   case 294: /* InterfaceMemberDeclaration: ConstantDeclaration  */
-#line 1486 "parser.y"
+#line 1613 "parser.y"
                                                             {(yyval.id) = (yyvsp[0].id);}
-#line 4691 "parser.tab.c"
+#line 4818 "parser.tab.c"
     break;
 
   case 295: /* InterfaceMemberDeclaration: AbstractMethodDeclaration  */
-#line 1487 "parser.y"
+#line 1614 "parser.y"
                                                             {(yyval.id) = (yyvsp[0].id);}
-#line 4697 "parser.tab.c"
+#line 4824 "parser.tab.c"
     break;
 
   case 296: /* ConstantDeclaration: FieldDeclaration  */
-#line 1489 "parser.y"
+#line 1616 "parser.y"
                                                             {(yyval.id) = (yyvsp[0].id);}
-#line 4703 "parser.tab.c"
+#line 4830 "parser.tab.c"
     break;
 
   case 297: /* AbstractMethodDeclaration: MethodHeader  */
-#line 1491 "parser.y"
+#line 1618 "parser.y"
                                                             {(yyval.id) = (yyvsp[0].id);}
-#line 4709 "parser.tab.c"
+#line 4836 "parser.tab.c"
     break;
 
   case 298: /* AbstractMethodDeclaration: SEMICOL  */
-#line 1492 "parser.y"
+#line 1619 "parser.y"
                                                             {(yyval.id) = (yyvsp[0].id);}
-#line 4715 "parser.tab.c"
+#line 4842 "parser.tab.c"
     break;
 
   case 299: /* InterfaceType: TypeName  */
-#line 1494 "parser.y"
+#line 1621 "parser.y"
                                                             {(yyval.id) = (yyvsp[0].id);}
-#line 4721 "parser.tab.c"
+#line 4848 "parser.tab.c"
     break;
 
   case 300: /* identifier: identifierT  */
-#line 1496 "parser.y"
+#line 1623 "parser.y"
                                                                                         {(yyval.id) = makenode((yyvsp[0].tit), "identifier");}
-#line 4727 "parser.tab.c"
+#line 4854 "parser.tab.c"
     break;
 
   case 301: /* IntegerLiteral: IntegerLiteralT  */
-#line 1497 "parser.y"
+#line 1624 "parser.y"
                                                                                             {(yyval.id) = makenode((yyvsp[0].tit), "IntegerLiteral");}
-#line 4733 "parser.tab.c"
+#line 4860 "parser.tab.c"
     break;
 
   case 302: /* FloatingPointLiteral: FloatingPointLiteralT  */
-#line 1498 "parser.y"
+#line 1625 "parser.y"
                                                                                                   {(yyval.id) = makenode((yyvsp[0].tit), "FloatingPointLiteral");}
-#line 4739 "parser.tab.c"
+#line 4866 "parser.tab.c"
     break;
 
   case 303: /* BooleanLiteral: BooleanLiteralT  */
-#line 1499 "parser.y"
+#line 1626 "parser.y"
                                                                                             {(yyval.id) = makenode((yyvsp[0].tit), "BooleanLiteral");}
-#line 4745 "parser.tab.c"
+#line 4872 "parser.tab.c"
     break;
 
   case 304: /* CharacterLiteral: CharacterLiteralT  */
-#line 1500 "parser.y"
+#line 1627 "parser.y"
                                                                                               {(yyval.id) = makenode((yyvsp[0].tit), "CharacterLiteral");}
-#line 4751 "parser.tab.c"
+#line 4878 "parser.tab.c"
     break;
 
   case 305: /* StringLiteral: StringLiteralT  */
-#line 1501 "parser.y"
+#line 1628 "parser.y"
                                                                                            {(yyval.id) = makenode((yyvsp[0].tit), "StringLiteral");}
-#line 4757 "parser.tab.c"
+#line 4884 "parser.tab.c"
     break;
 
   case 306: /* NullLiteral: NullLiteralT  */
-#line 1502 "parser.y"
+#line 1629 "parser.y"
                                                                                          {(yyval.id) = makenode((yyvsp[0].tit), "NullLiteral");}
-#line 4763 "parser.tab.c"
+#line 4890 "parser.tab.c"
     break;
 
   case 307: /* TextBlock: TextBlockT  */
-#line 1503 "parser.y"
+#line 1630 "parser.y"
                                                                                        {(yyval.id) = makenode((yyvsp[0].tit), (yyvsp[0].tit));}
-#line 4769 "parser.tab.c"
+#line 4896 "parser.tab.c"
     break;
 
   case 308: /* NEW: NEWT  */
-#line 1504 "parser.y"
+#line 1631 "parser.y"
                                                                                  {(yyval.id) = makenode((yyvsp[0].tit), (yyvsp[0].tit));}
-#line 4775 "parser.tab.c"
+#line 4902 "parser.tab.c"
     break;
 
   case 309: /* SYNCHRONIZED: SYNCHRONIZEDT  */
-#line 1505 "parser.y"
+#line 1632 "parser.y"
                                                                                           {(yyval.id) = makenode((yyvsp[0].tit), "modifier");}
-#line 4781 "parser.tab.c"
+#line 4908 "parser.tab.c"
     break;
 
   case 310: /* RETURN: RETURNT  */
-#line 1506 "parser.y"
+#line 1633 "parser.y"
                                                                                     {(yyval.id) = makenode((yyvsp[0].tit), (yyvsp[0].tit));}
-#line 4787 "parser.tab.c"
+#line 4914 "parser.tab.c"
     break;
 
   case 311: /* BREAK: BREAKT  */
-#line 1507 "parser.y"
+#line 1634 "parser.y"
                                                                                    {(yyval.id) = makenode((yyvsp[0].tit), (yyvsp[0].tit));}
-#line 4793 "parser.tab.c"
+#line 4920 "parser.tab.c"
     break;
 
   case 312: /* CONTINUE: CONTINUET  */
-#line 1508 "parser.y"
+#line 1635 "parser.y"
                                                                                       {(yyval.id) = makenode((yyvsp[0].tit), (yyvsp[0].tit));}
-#line 4799 "parser.tab.c"
+#line 4926 "parser.tab.c"
     break;
 
   case 313: /* IF: IFT  */
-#line 1509 "parser.y"
+#line 1636 "parser.y"
                                                                                 {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 4805 "parser.tab.c"
+#line 4932 "parser.tab.c"
     break;
 
   case 314: /* ELSE: ELSET  */
-#line 1510 "parser.y"
+#line 1637 "parser.y"
                                                                                   {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 4811 "parser.tab.c"
+#line 4938 "parser.tab.c"
     break;
 
   case 315: /* FOR: FORT  */
-#line 1511 "parser.y"
+#line 1638 "parser.y"
                                                                                  {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 4817 "parser.tab.c"
+#line 4944 "parser.tab.c"
     break;
 
   case 316: /* WHILE: WHILET  */
-#line 1512 "parser.y"
+#line 1639 "parser.y"
                                                                                    {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 4823 "parser.tab.c"
+#line 4950 "parser.tab.c"
     break;
 
   case 317: /* CLASS: CLASST  */
-#line 1513 "parser.y"
+#line 1640 "parser.y"
                                                                                    {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 4829 "parser.tab.c"
+#line 4956 "parser.tab.c"
     break;
 
   case 318: /* INSTANCEOF: INSTANCEOFT  */
-#line 1514 "parser.y"
+#line 1641 "parser.y"
                                                                                         {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 4835 "parser.tab.c"
+#line 4962 "parser.tab.c"
     break;
 
   case 319: /* THIS: THIST  */
-#line 1515 "parser.y"
+#line 1642 "parser.y"
                                                                                   {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 4841 "parser.tab.c"
+#line 4968 "parser.tab.c"
     break;
 
   case 320: /* SUPER: SUPERT  */
-#line 1516 "parser.y"
+#line 1643 "parser.y"
                                                                                    {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 4847 "parser.tab.c"
+#line 4974 "parser.tab.c"
     break;
 
   case 321: /* ABSTRACT: ABSTRACTT  */
-#line 1517 "parser.y"
+#line 1644 "parser.y"
                                                                                       {(yyval.id) = makenode((yyvsp[0].tit),"modifier"); }
-#line 4853 "parser.tab.c"
+#line 4980 "parser.tab.c"
     break;
 
   case 322: /* ASSERT: ASSERTT  */
-#line 1518 "parser.y"
+#line 1645 "parser.y"
                                                                                     {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 4859 "parser.tab.c"
+#line 4986 "parser.tab.c"
     break;
 
   case 323: /* BOOLEAN: BOOLEANT  */
-#line 1519 "parser.y"
+#line 1646 "parser.y"
                                                                                      {(yyval.id) = makenode((yyvsp[0].tit),"type"); }
-#line 4865 "parser.tab.c"
+#line 4992 "parser.tab.c"
     break;
 
   case 324: /* BYTE: BYTET  */
-#line 1520 "parser.y"
+#line 1647 "parser.y"
                                                                                   {(yyval.id) = makenode((yyvsp[0].tit),"type"); }
-#line 4871 "parser.tab.c"
+#line 4998 "parser.tab.c"
     break;
 
   case 325: /* SHORT: SHORTT  */
-#line 1521 "parser.y"
+#line 1648 "parser.y"
                                                                                    {(yyval.id) = makenode((yyvsp[0].tit),"type"); }
-#line 4877 "parser.tab.c"
+#line 5004 "parser.tab.c"
     break;
 
   case 326: /* INT: INTT  */
-#line 1522 "parser.y"
+#line 1649 "parser.y"
                                                                                  {(yyval.id) = makenode((yyvsp[0].tit),"type"); }
-#line 4883 "parser.tab.c"
+#line 5010 "parser.tab.c"
     break;
 
   case 327: /* LONG: LONGT  */
-#line 1523 "parser.y"
+#line 1650 "parser.y"
                                                                                   {(yyval.id) = makenode((yyvsp[0].tit),"type"); }
-#line 4889 "parser.tab.c"
+#line 5016 "parser.tab.c"
     break;
 
   case 328: /* CHAR: CHART  */
-#line 1524 "parser.y"
+#line 1651 "parser.y"
                                                                                   {(yyval.id) = makenode((yyvsp[0].tit),"type"); }
-#line 4895 "parser.tab.c"
+#line 5022 "parser.tab.c"
     break;
 
   case 329: /* STRING: STRINGT  */
-#line 1525 "parser.y"
+#line 1652 "parser.y"
                                                                                     {(yyval.id) = makenode((yyvsp[0].tit),"type"); }
-#line 4901 "parser.tab.c"
+#line 5028 "parser.tab.c"
     break;
 
   case 330: /* FLOAT: FLOATT  */
-#line 1526 "parser.y"
+#line 1653 "parser.y"
                                                                                    {(yyval.id) = makenode((yyvsp[0].tit),"type"); }
-#line 4907 "parser.tab.c"
+#line 5034 "parser.tab.c"
     break;
 
   case 331: /* DOUBLE: DOUBLET  */
-#line 1527 "parser.y"
+#line 1654 "parser.y"
                                                                                     {(yyval.id) = makenode((yyvsp[0].tit),"type"); }
-#line 4913 "parser.tab.c"
+#line 5040 "parser.tab.c"
     break;
 
   case 332: /* EXTENDS: EXTENDST  */
-#line 1528 "parser.y"
+#line 1655 "parser.y"
                                                                                      {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 4919 "parser.tab.c"
+#line 5046 "parser.tab.c"
     break;
 
   case 333: /* PACKAGE: PACKAGET  */
-#line 1529 "parser.y"
+#line 1656 "parser.y"
                                                                                      {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 4925 "parser.tab.c"
+#line 5052 "parser.tab.c"
     break;
 
   case 334: /* IMPORT: IMPORTT  */
-#line 1530 "parser.y"
+#line 1657 "parser.y"
                                                                                     {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 4931 "parser.tab.c"
+#line 5058 "parser.tab.c"
     break;
 
   case 335: /* STATIC: STATICT  */
-#line 1531 "parser.y"
+#line 1658 "parser.y"
                                                                                     {(yyval.id) = makenode((yyvsp[0].tit),"modifier"); }
-#line 4937 "parser.tab.c"
+#line 5064 "parser.tab.c"
     break;
 
   case 336: /* PROTECTED: PROTECTEDT  */
-#line 1532 "parser.y"
+#line 1659 "parser.y"
                                                                                        {(yyval.id) = makenode((yyvsp[0].tit),"modifier"); }
-#line 4943 "parser.tab.c"
+#line 5070 "parser.tab.c"
     break;
 
   case 337: /* PRIVATE: PRIVATET  */
-#line 1533 "parser.y"
+#line 1660 "parser.y"
                                                                                      {(yyval.id) = makenode((yyvsp[0].tit),"modifier"); }
-#line 4949 "parser.tab.c"
+#line 5076 "parser.tab.c"
     break;
 
   case 338: /* PUBLIC: PUBLICT  */
-#line 1534 "parser.y"
+#line 1661 "parser.y"
                                                                                     {(yyval.id) = makenode((yyvsp[0].tit),"modifier"); }
-#line 4955 "parser.tab.c"
+#line 5082 "parser.tab.c"
     break;
 
   case 339: /* FINAL: FINALT  */
-#line 1535 "parser.y"
+#line 1662 "parser.y"
                                                                                    {(yyval.id) = makenode((yyvsp[0].tit),"modifier"); }
-#line 4961 "parser.tab.c"
+#line 5088 "parser.tab.c"
     break;
 
   case 340: /* TRANSIENT: TRANSIENTT  */
-#line 1536 "parser.y"
+#line 1663 "parser.y"
                                                                                        {(yyval.id) = makenode((yyvsp[0].tit),"modifier"); }
-#line 4967 "parser.tab.c"
+#line 5094 "parser.tab.c"
     break;
 
   case 341: /* VOLATILE: VOLATILET  */
-#line 1537 "parser.y"
+#line 1664 "parser.y"
                                                                                       {(yyval.id) = makenode((yyvsp[0].tit),"modifier"); }
-#line 4973 "parser.tab.c"
+#line 5100 "parser.tab.c"
     break;
 
   case 342: /* IMPLEMENTS: IMPLEMENTST  */
-#line 1538 "parser.y"
+#line 1665 "parser.y"
                                                                                         {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 4979 "parser.tab.c"
+#line 5106 "parser.tab.c"
     break;
 
   case 343: /* VOID: VOIDT  */
-#line 1539 "parser.y"
+#line 1666 "parser.y"
                                                                                   {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 4985 "parser.tab.c"
+#line 5112 "parser.tab.c"
     break;
 
   case 344: /* INTERFACE: INTERFACET  */
-#line 1540 "parser.y"
+#line 1667 "parser.y"
                                                                                        {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 4991 "parser.tab.c"
+#line 5118 "parser.tab.c"
     break;
 
   case 345: /* NATIVE: NATIVET  */
-#line 1541 "parser.y"
+#line 1668 "parser.y"
                                                                                     {(yyval.id) = makenode((yyvsp[0].tit),"modifier"); }
-#line 4997 "parser.tab.c"
+#line 5124 "parser.tab.c"
     break;
 
   case 346: /* OPEN_BRACKETS: OPEN_BRACKETST  */
-#line 1542 "parser.y"
+#line 1669 "parser.y"
                                                                                            {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5003 "parser.tab.c"
+#line 5130 "parser.tab.c"
     break;
 
   case 347: /* CLOSE_BRACKETS: CLOSE_BRACKETST  */
-#line 1543 "parser.y"
+#line 1670 "parser.y"
                                                                                             {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5009 "parser.tab.c"
+#line 5136 "parser.tab.c"
     break;
 
   case 348: /* OPEN_CURLY: OPEN_CURLYT  */
-#line 1544 "parser.y"
+#line 1671 "parser.y"
                                                                                         {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5015 "parser.tab.c"
+#line 5142 "parser.tab.c"
     break;
 
   case 349: /* CLOSE_CURLY: CLOSE_CURLYT  */
-#line 1545 "parser.y"
+#line 1672 "parser.y"
                                                                                          {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5021 "parser.tab.c"
+#line 5148 "parser.tab.c"
     break;
 
   case 350: /* OPEN_SQ: OPEN_SQT  */
-#line 1546 "parser.y"
+#line 1673 "parser.y"
                                                                                      {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5027 "parser.tab.c"
+#line 5154 "parser.tab.c"
     break;
 
   case 351: /* CLOSE_SQ: CLOSE_SQT  */
-#line 1547 "parser.y"
+#line 1674 "parser.y"
                                                                                       {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5033 "parser.tab.c"
+#line 5160 "parser.tab.c"
     break;
 
   case 352: /* SEMICOL: SEMICOLT  */
-#line 1548 "parser.y"
+#line 1675 "parser.y"
                                                                                      {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5039 "parser.tab.c"
+#line 5166 "parser.tab.c"
     break;
 
   case 353: /* COMMA: COMMAT  */
-#line 1549 "parser.y"
+#line 1676 "parser.y"
                                                                                    {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5045 "parser.tab.c"
+#line 5172 "parser.tab.c"
     break;
 
   case 354: /* DOT: DOTT  */
-#line 1550 "parser.y"
+#line 1677 "parser.y"
                                                                                  {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5051 "parser.tab.c"
+#line 5178 "parser.tab.c"
     break;
 
   case 355: /* EQUAL: EQUALT  */
-#line 1551 "parser.y"
+#line 1678 "parser.y"
                                                                                    {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5057 "parser.tab.c"
+#line 5184 "parser.tab.c"
     break;
 
   case 356: /* LESS: LESST  */
-#line 1552 "parser.y"
+#line 1679 "parser.y"
                                                                                  {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5063 "parser.tab.c"
+#line 5190 "parser.tab.c"
     break;
 
   case 357: /* GREATER: GREATERT  */
-#line 1553 "parser.y"
+#line 1680 "parser.y"
                                                                                     {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5069 "parser.tab.c"
+#line 5196 "parser.tab.c"
     break;
 
   case 358: /* EXCLAMATORY: EXCLAMATORYT  */
-#line 1554 "parser.y"
+#line 1681 "parser.y"
                                                                                         {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5075 "parser.tab.c"
+#line 5202 "parser.tab.c"
     break;
 
   case 359: /* TILDA: TILDAT  */
-#line 1555 "parser.y"
+#line 1682 "parser.y"
                                                                                   {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5081 "parser.tab.c"
+#line 5208 "parser.tab.c"
     break;
 
   case 360: /* QUE: QUET  */
-#line 1556 "parser.y"
+#line 1683 "parser.y"
                                                                                 {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5087 "parser.tab.c"
+#line 5214 "parser.tab.c"
     break;
 
   case 361: /* COLON: COLONT  */
-#line 1557 "parser.y"
+#line 1684 "parser.y"
                                                                                   {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5093 "parser.tab.c"
+#line 5220 "parser.tab.c"
     break;
 
   case 362: /* DEQUAL: DEQUALT  */
-#line 1558 "parser.y"
+#line 1685 "parser.y"
                                                                                    {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5099 "parser.tab.c"
+#line 5226 "parser.tab.c"
     break;
 
   case 363: /* LE: LET  */
-#line 1559 "parser.y"
+#line 1686 "parser.y"
                                                                                {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5105 "parser.tab.c"
+#line 5232 "parser.tab.c"
     break;
 
   case 364: /* GE: GET  */
-#line 1560 "parser.y"
+#line 1687 "parser.y"
                                                                                {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5111 "parser.tab.c"
+#line 5238 "parser.tab.c"
     break;
 
   case 365: /* NEQUAL: NEQUALT  */
-#line 1561 "parser.y"
+#line 1688 "parser.y"
                                                                                    {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5117 "parser.tab.c"
+#line 5244 "parser.tab.c"
     break;
 
   case 366: /* DAND: DANDT  */
-#line 1562 "parser.y"
+#line 1689 "parser.y"
                                                                                  {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5123 "parser.tab.c"
+#line 5250 "parser.tab.c"
     break;
 
   case 367: /* DOR: DORT  */
-#line 1563 "parser.y"
+#line 1690 "parser.y"
                                                                                 {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5129 "parser.tab.c"
+#line 5256 "parser.tab.c"
     break;
 
   case 368: /* DPLUS: DPLUST  */
-#line 1564 "parser.y"
+#line 1691 "parser.y"
                                                                                   {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5135 "parser.tab.c"
+#line 5262 "parser.tab.c"
     break;
 
   case 369: /* DMINUS: DMINUST  */
-#line 1565 "parser.y"
+#line 1692 "parser.y"
                                                                                    {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5141 "parser.tab.c"
+#line 5268 "parser.tab.c"
     break;
 
   case 370: /* PLUS: PLUST  */
-#line 1566 "parser.y"
+#line 1693 "parser.y"
                                                                                  {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5147 "parser.tab.c"
+#line 5274 "parser.tab.c"
     break;
 
   case 371: /* MINUS: MINUST  */
-#line 1567 "parser.y"
+#line 1694 "parser.y"
                                                                                   {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5153 "parser.tab.c"
+#line 5280 "parser.tab.c"
     break;
 
   case 372: /* MUL: MULT  */
-#line 1568 "parser.y"
+#line 1695 "parser.y"
                                                                                 {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5159 "parser.tab.c"
+#line 5286 "parser.tab.c"
     break;
 
   case 373: /* DIVIDE: DIVIDET  */
-#line 1569 "parser.y"
+#line 1696 "parser.y"
                                                                                    {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5165 "parser.tab.c"
+#line 5292 "parser.tab.c"
     break;
 
   case 374: /* AND: ANDT  */
-#line 1570 "parser.y"
+#line 1697 "parser.y"
                                                                                 {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5171 "parser.tab.c"
+#line 5298 "parser.tab.c"
     break;
 
   case 375: /* HAT: HATT  */
-#line 1571 "parser.y"
+#line 1698 "parser.y"
                                                                                 {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5177 "parser.tab.c"
+#line 5304 "parser.tab.c"
     break;
 
   case 376: /* MODULO: MODULOT  */
-#line 1572 "parser.y"
+#line 1699 "parser.y"
                                                                                    {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5183 "parser.tab.c"
+#line 5310 "parser.tab.c"
     break;
 
   case 377: /* DLESS: DLESST  */
-#line 1573 "parser.y"
+#line 1700 "parser.y"
                                                                                   {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5189 "parser.tab.c"
+#line 5316 "parser.tab.c"
     break;
 
   case 378: /* DGREATER: DGREATERT  */
-#line 1574 "parser.y"
+#line 1701 "parser.y"
                                                                                      {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5195 "parser.tab.c"
+#line 5322 "parser.tab.c"
     break;
 
   case 379: /* TGREATER: TGREATERT  */
-#line 1575 "parser.y"
+#line 1702 "parser.y"
                                                                                      {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5201 "parser.tab.c"
+#line 5328 "parser.tab.c"
     break;
 
   case 380: /* PLUS_EQUAL: PLUS_EQUALT  */
-#line 1576 "parser.y"
+#line 1703 "parser.y"
                                                                                        {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5207 "parser.tab.c"
+#line 5334 "parser.tab.c"
     break;
 
   case 381: /* MINUS_EQUAL: MINUS_EQUALT  */
-#line 1577 "parser.y"
+#line 1704 "parser.y"
                                                                                         {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5213 "parser.tab.c"
+#line 5340 "parser.tab.c"
     break;
 
   case 382: /* MUL_EQUAL: MUL_EQUALT  */
-#line 1578 "parser.y"
+#line 1705 "parser.y"
                                                                                       {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5219 "parser.tab.c"
+#line 5346 "parser.tab.c"
     break;
 
   case 383: /* DIVIDE_EQUAL: DIVIDE_EQUALT  */
-#line 1579 "parser.y"
+#line 1706 "parser.y"
                                                                                          {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5225 "parser.tab.c"
+#line 5352 "parser.tab.c"
     break;
 
   case 384: /* AND_EQUAL: AND_EQUALT  */
-#line 1580 "parser.y"
+#line 1707 "parser.y"
                                                                                       {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5231 "parser.tab.c"
+#line 5358 "parser.tab.c"
     break;
 
   case 385: /* OR_EQUAL: OR_EQUALT  */
-#line 1581 "parser.y"
+#line 1708 "parser.y"
                                                                                      {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5237 "parser.tab.c"
+#line 5364 "parser.tab.c"
     break;
 
   case 386: /* HAT_EQUAL: HAT_EQUALT  */
-#line 1582 "parser.y"
+#line 1709 "parser.y"
                                                                                       {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5243 "parser.tab.c"
+#line 5370 "parser.tab.c"
     break;
 
   case 387: /* MODULO_EQUAL: MODULO_EQUALT  */
-#line 1583 "parser.y"
+#line 1710 "parser.y"
                                                                                          {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5249 "parser.tab.c"
+#line 5376 "parser.tab.c"
     break;
 
   case 388: /* DLESS_EQUAL: DLESS_EQUALT  */
-#line 1584 "parser.y"
+#line 1711 "parser.y"
                                                                                         {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5255 "parser.tab.c"
+#line 5382 "parser.tab.c"
     break;
 
   case 389: /* DGREATER_EQUAL: DGREATER_EQUALT  */
-#line 1585 "parser.y"
+#line 1712 "parser.y"
                                                                                            {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5261 "parser.tab.c"
+#line 5388 "parser.tab.c"
     break;
 
   case 390: /* TGREATER_EQUAL: TGREATER_EQUALT  */
-#line 1586 "parser.y"
+#line 1713 "parser.y"
                                                                                            {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5267 "parser.tab.c"
+#line 5394 "parser.tab.c"
     break;
 
   case 391: /* OR: ORT  */
-#line 1587 "parser.y"
+#line 1714 "parser.y"
                                                                                {(yyval.id) = makenode((yyvsp[0].tit),(yyvsp[0].tit)); }
-#line 5273 "parser.tab.c"
+#line 5400 "parser.tab.c"
     break;
 
   case 392: /* STRICTFP: STRICTFPT  */
-#line 1588 "parser.y"
+#line 1715 "parser.y"
                                                                                     {(yyval.id) = makenode((yyvsp[0].tit), "modifier");}
-#line 5279 "parser.tab.c"
+#line 5406 "parser.tab.c"
     break;
 
 
-#line 5283 "parser.tab.c"
+#line 5410 "parser.tab.c"
 
       default: break;
     }
@@ -5472,7 +5599,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 1589 "parser.y"
+#line 1716 "parser.y"
  
 
 
@@ -5530,10 +5657,10 @@ int main(int argc, char *argv[]) {
 
     }
     fclose(yyin);
-    for(auto it : table){
+    /* for(auto it : table){
         printSymbolTable(it.first);
         cout << "***" << endl;
-    }
+    } */
 }
 
 void yyerror(const char* s) {
