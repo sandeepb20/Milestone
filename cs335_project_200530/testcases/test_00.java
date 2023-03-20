@@ -1,7 +1,7 @@
 class ReverseString {
   {
   int a =0;
-  int i = 0;
+  int c = i < (a+b-c);
   for( i = 0;i < a+b-c ;i++){
     a = a + i;
   }

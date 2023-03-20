@@ -47,6 +47,12 @@ typedef struct ThreeAC {
     string arg1;
     string arg2;
     string res;
+
+    bool isGoto = false;
+    string gotoLabel;
+    string arg;
+    string g = "goto";
+    string label = "";
 } tac;
 vector<tac*> tacVector;
 
@@ -54,11 +60,15 @@ string createArg(int id){
     if(additionalInfo.find(id) != additionalInfo.end()){
         return tree[id].first;
     }
-    else return "t" + to_string(id);
+    else return "_v" + to_string(id);
 }
 
 void printThreeAC(){
     for(int i = 0; i < tacVector.size(); i++){
+        if(tacVector[i] -> isGoto == true){
+            cout << i << " " << tacVector[i] -> gotoLabel << " " << tacVector[i] -> arg << " " << tacVector[i] -> g << " "<< tacVector[i] -> label << endl;
+            continue;
+        }
         cout << i << " " << tacVector[i] -> op << " " << tacVector[i] -> arg1 << " " << tacVector[i] -> arg2 << " " << tacVector[i] -> res << endl;
     }
 }
@@ -81,6 +91,8 @@ tac* createTac1(int id){
     t -> arg1 = createArg(temp[2]);
     return  t;
 }
+
+
 
 void ThreeACHelperFunc(int id){
     int childcallistrue = 1;
@@ -120,15 +132,13 @@ void ThreeACHelperFunc(int id){
                 ThreeACHelperFunc(temp[i]);
             if(tree[temp[i]].first == ";"){
                     if(tree[temp[i+2]].first == ";"){
-                        vector<int> relchild = tree[temp[i+1]].second;
-                        ThreeACHelperFunc(relchild[0]);
-                        int for1 = tacVector.size();
-                        ThreeACHelperFunc(relchild[2]);
-                        int for2 = tacVector.size();
+                         int for2 = tacVector.size();
+                        ThreeACHelperFunc(temp[i+1]);
+                       
                         tac* t = new tac();
-
-                        t -> op = "ifFalse ( " + tacVector[for1-1] -> res + tree[relchild[1]].first + tacVector[for2-1] -> res + " ) " + "goto " ;
-                        t -> arg2 = "";
+                        t -> isGoto = true;
+                        t -> gotoLabel = "ifFalse";
+                        t -> arg = tacVector[for2] -> res;
                         tacVector.push_back(t);
                     }
             }
