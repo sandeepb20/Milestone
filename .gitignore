@@ -1,0 +1,7 @@
+src/parser.tab.c
+src/parser.tab.h
+src/out.dot
+src/graph.png
+src/lex.yy.c
+src/final
+src/parser.output
