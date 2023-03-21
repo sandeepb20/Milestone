@@ -124,6 +124,9 @@ void backpatch(int n, int id){
 void ThreeACHelperFunc(int id){
     int childcallistrue = 1;
     vector<int> temp = tree[id].second;
+    if(tree[id].first == "Assignment"){
+        tacVector.push_back(createTac2(id));
+    }
     if(tree[id].first == "ConditionalOrExpression"){
         tacVector.push_back(createTac2(id));
     }
@@ -203,26 +206,22 @@ void ThreeACHelperFunc(int id){
         createTacGoto("");
         backlist[loopId.top()].push_back(tacVector.size() - 1);
     } 
-    if(tree[id].first == "ifThenElseStmt"){
+    if(tree[id].first == "ifThenElseStmt" || tree[id].first == "ifThenStmt"){
         childcallistrue = 0;
+         int blockId1 = -1, ifStatelabel = -1, blockId2 = -1;
          for(int i = 0; i < temp.size(); i++){
-            if(tree[temp[i]].first == "RelationalExpression"){
-                int for2 = tacVector.size();
-                    ThreeACHelperFunc(temp[i]);
-                       
-                    tac* t = new tac();
-                    t -> isGoto = true;
-                    t -> gotoLabel = "ifFalse";
-                    t -> arg = tacVector[for2] -> res;
-                    tacVector.push_back(t);
-                    backlist[temp[i]].push_back(tacVector.size()-1);
-            }
-            else if(tree[temp[i]].first == "else"){
-                ThreeACHelperFunc(temp[i-1]);
-                backpatch(tacVector.size(), temp[i-3]);
+            if(tree[temp[i]].first == "(" && tree[temp[i+2]].first == ")" && tree[temp[i+1]].first != ""){
+                ifStatelabel = tacVector.size();
                 ThreeACHelperFunc(temp[i+1]);
+                createTacGotoL("ifFalse", tacVector[ifStatelabel] -> res, "");
+                backlist[id].push_back(tacVector.size()-1);
             }
+            if(tree[temp[i]].first == ")" && tree[temp[i]].first != "") blockId1 = temp[i+1];
+            if(tree[temp[i]].first == "else" && tree[temp[i]].first != "") blockId2 = temp[i+1];
         }
+        if(blockId1 != -1) ThreeACHelperFunc(blockId1);
+        backpatch(tacVector.size(), id);
+        if(blockId2 != -1) ThreeACHelperFunc(blockId2);
     }
 
     else if(tree[id].first == "LocalVariableDeclarationStatement" || tree[id].first == "LocalVariableDeclaration" ){
