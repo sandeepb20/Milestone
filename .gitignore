@@ -1,7 +1,6 @@
-src/parser.tab.c
-src/parser.tab.h
-src/out.dot
-src/graph.png
-src/lex.yy.c
-src/final
-src/parser.output
+cs335_project_200530/src/final
+cs335_project_200530/src/lex.yy.c
+cs335_project_200530/src/parser.output
+cs335_project_200530/src/parser.tab.c
+cs335_project_200530/src/parser.tab.h
+cs335_project_200530/src/graph.ps
