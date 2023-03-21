@@ -47,6 +47,12 @@ typedef struct ThreeAC {
     string arg1;
     string arg2;
     string res;
+
+    bool isGoto = false;
+    string gotoLabel;
+    string arg;
+    string g = "goto";
+    string label = "";
 } tac;
 vector<tac*> tacVector;
 
@@ -54,11 +60,15 @@ string createArg(int id){
     if(additionalInfo.find(id) != additionalInfo.end()){
         return tree[id].first;
     }
-    else return "t" + to_string(id);
+    else return "_v" + to_string(id);
 }
 
 void printThreeAC(){
     for(int i = 0; i < tacVector.size(); i++){
+        if(tacVector[i] -> isGoto == true){
+            cout << i << " " << tacVector[i] -> gotoLabel << " " << tacVector[i] -> arg << " " << tacVector[i] -> g << " "<< tacVector[i] -> label << endl;
+            continue;
+        }
         cout << i << " " << tacVector[i] -> op << " " << tacVector[i] -> arg1 << " " << tacVector[i] -> arg2 << " " << tacVector[i] -> res << endl;
     }
 }
@@ -80,6 +90,14 @@ tac* createTac1(int id){
     t -> res = createArg(temp[0]);
     t -> arg1 = createArg(temp[2]);
     return  t;
+}
+
+void backpatch(int n, int id){
+    
+    for(auto i : backlist[id]){
+        tacVector[i]->label = to_string(n);
+    }
+    return;
 }
 
 void ThreeACHelperFunc(int id){
@@ -113,29 +131,55 @@ void ThreeACHelperFunc(int id){
         tacVector.push_back(createTac1(id));
     }
     if(tree[id].first == "forStmt"){
-
         childcallistrue = 0;
          for(int i = 0; i < temp.size(); i++){
             if(tree[temp[i]].first == "Assignment")
                 ThreeACHelperFunc(temp[i]);
             if(tree[temp[i]].first == ";"){
                     if(tree[temp[i+2]].first == ";"){
-                        vector<int> relchild = tree[temp[i+1]].second;
-                        ThreeACHelperFunc(relchild[0]);
-                        int for1 = tacVector.size();
-                        ThreeACHelperFunc(relchild[2]);
                         int for2 = tacVector.size();
+                        ThreeACHelperFunc(temp[i+1]);
+                       
                         tac* t = new tac();
-
-                        t -> op = "ifFalse ( " + tacVector[for1-1] -> res + tree[relchild[1]].first + tacVector[for2-1] -> res + " ) " + "goto " ;
-                        t -> arg2 = "";
+                        t -> isGoto = true;
+                        t -> gotoLabel = "ifFalse";
+                        t -> arg = tacVector[for2] -> res;
                         tacVector.push_back(t);
+                        backlist[temp[i+1]].push_back(tacVector.size()-1);
                     }
             }
         }
-
-        
     }
+
+    else if(tree[id].first == "ifThenElseStmt"){
+        childcallistrue = 0;
+         for(int i = 0; i < temp.size(); i++){
+            if(tree[temp[i]].first == "RelationalExpression"){
+                int for2 = tacVector.size();
+                    ThreeACHelperFunc(temp[i]);
+                       
+                    tac* t = new tac();
+                    t -> isGoto = true;
+                    t -> gotoLabel = "ifFalse";
+                    t -> arg = tacVector[for2] -> res;
+                    tacVector.push_back(t);
+                    backlist[temp[i]].push_back(tacVector.size()-1);
+            }
+            else if(tree[temp[i]].first == "else"){
+                ThreeACHelperFunc(temp[i-1]);
+                backpatch(tacVector.size(), temp[i-3]);
+                ThreeACHelperFunc(temp[i+1]);
+            }
+        }
+    }
+
+    else if(tree[id].first == "LocalVariableDeclarationStatement" || tree[id].first == "LocalVariableDeclaration" ){
+        childcallistrue = 0;
+         for(int i = 0; i < temp.size(); i++){
+            ThreeACHelperFunc(temp[i]);
+        }
+    }
+
     if(childcallistrue){
                
         for(int i = 0; i < temp.size(); i++){
@@ -902,7 +946,7 @@ VariableDeclarator      : VariableDeclaratorId                           {$$ = $
 VariableDeclaratorId    : identifier        {$$ = $1;}
                         | VariableDeclaratorId OPEN_SQ CLOSE_SQ          {int uid = makenode("VariableDeclaratorId"); addChild(uid, $1); addChild(uid, $2), addChild(uid, $3); $$ = uid;}
                         ;
-VariableInitializer     : Expression        {int uid = makenode("Expression"); addChild(uid, $1); $$ = uid;}
+VariableInitializer     : Expression        {$$ = $1;}
                         | ArrayInitializer  {$$ = $1;}
                         ;
 Type                    : PrimitiveType     {$$ = $1;}
