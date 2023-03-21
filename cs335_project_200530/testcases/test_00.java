@@ -1,15 +1,15 @@
 class ReverseString {
-  {
-  int a =0;
-  int c = i < (a+b-c);
-  for( i = 0;i < a+b-c ;i++){
+  { int i = 1;
+    if(i < 1) {
+      i = 2 + 5 + 9;
+    } else {
+      i = 3;
+    }
+    int b,c,a;
+  for(int i = 0; ;i = i+2 * b ){
     a = a + i;
   }
-  int b = 0;
-  while(b<10){
-    b = b + 1;
-  }
-  int c = 10;
+  
 
 // int a = 1 + 1*(2-3)+ (2-3)*4/3+3%2;
 }

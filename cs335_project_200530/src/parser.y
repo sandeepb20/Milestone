@@ -66,10 +66,10 @@ string createArg(int id){
 void printThreeAC(){
     for(int i = 0; i < tacVector.size(); i++){
         if(tacVector[i] -> isGoto == true){
-            cout << i << " " << tacVector[i] -> gotoLabel << " " << tacVector[i] -> arg << " " << tacVector[i] -> g << " "<< tacVector[i] -> label << endl;
+            cout << i << ": " << tacVector[i] -> gotoLabel << "  " << tacVector[i] -> arg << "  " << tacVector[i] -> g << "  "<< tacVector[i] -> label << endl;
             continue;
         }
-        cout << i << " " << tacVector[i] -> op << " " << tacVector[i] -> arg1 << " " << tacVector[i] -> arg2 << " " << tacVector[i] -> res << endl;
+        cout << i << ": " << tacVector[i] -> op << "  " << tacVector[i] -> arg1 << "  " << tacVector[i] -> arg2 << "  " << tacVector[i] -> res << endl;
     }
 }
 
@@ -132,23 +132,33 @@ void ThreeACHelperFunc(int id){
     }
     if(tree[id].first == "forStmt"){
         childcallistrue = 0;
-         for(int i = 0; i < temp.size(); i++){
-            if(tree[temp[i]].first == "Assignment")
-                ThreeACHelperFunc(temp[i]);
-            if(tree[temp[i]].first == ";"){
-                    if(tree[temp[i+2]].first == ";"){
-                        int for2 = tacVector.size();
-                        ThreeACHelperFunc(temp[i+1]);
-                       
-                        tac* t = new tac();
-                        t -> isGoto = true;
-                        t -> gotoLabel = "ifFalse";
-                        t -> arg = tacVector[for2] -> res;
-                        tacVector.push_back(t);
-                        backlist[temp[i+1]].push_back(tacVector.size()-1);
-                    }
+        int blockId = -1;
+        int incId = -1;
+        int forStatelabel = -1;
+        for(int i = 0; i < temp.size(); i++){
+            if(tree[temp[i]].first == "(" && tree[temp[i+2]].first == ";"){ThreeACHelperFunc(temp[i+1]);}
+            if(tree[temp[i]].first == ";" && tree[temp[i+2]].first == ";" && tree[temp[i+1]].first != ""){ 
+                forStatelabel = tacVector.size();
+                ThreeACHelperFunc(temp[i+1]);
+                tac* t = new tac();
+                t -> isGoto = true;
+                t -> gotoLabel = "ifFalse";
+                t -> arg = tacVector[forStatelabel] -> res;
+                tacVector.push_back(t);
+                backlist[id].push_back(tacVector.size()-1);
             }
+            if(tree[temp[i]].first == ")") blockId = temp[i+1];
+            if(tree[temp[i]].first == ";" && tree[temp[i+2]].first == ")") incId = temp[i+1];
         }
+        if(forStatelabel == -1) forStatelabel = tacVector.size(); // if there is no condition  in for loop goto block
+        if(blockId != -1) ThreeACHelperFunc(blockId);
+        if(incId != -1) ThreeACHelperFunc(incId);
+        tac* t = new tac();
+        t -> isGoto = true;
+        t -> label = to_string(forStatelabel);
+        tacVector.push_back(t);
+        // backpatch End of for loop
+        backpatch(tacVector.size(), id);
     }
 
     else if(tree[id].first == "ifThenElseStmt"){
