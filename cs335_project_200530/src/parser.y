@@ -55,6 +55,8 @@ typedef struct ThreeAC {
     string label = "";
 } tac;
 vector<tac*> tacVector;
+stack<int> loopStart;
+stack<int> loopId;
 
 string createArg(int id){
     if(additionalInfo.find(id) != additionalInfo.end()){
@@ -91,6 +93,25 @@ tac* createTac1(int id){
     t -> arg1 = createArg(temp[2]);
     return  t;
 }
+
+tac* createTacGoto(string label){
+    tac* t = new tac();
+    t -> isGoto = true;
+    t -> label = label;
+    tacVector.push_back(t);
+    return  t;
+}
+
+tac* createTacGotoL(string gotoLabel, string arg, string label){
+    tac* t = new tac();
+    t -> isGoto = true;
+    t -> gotoLabel = "ifFalse";
+    t -> arg = arg;
+    t -> label = label;
+    tacVector.push_back(t);
+    return  t;
+}
+
 
 void backpatch(int n, int id){
     
@@ -132,36 +153,57 @@ void ThreeACHelperFunc(int id){
     }
     if(tree[id].first == "forStmt"){
         childcallistrue = 0;
-        int blockId = -1;
-        int incId = -1;
-        int forStatelabel = -1;
+        int blockId = -1, incId = -1, forStatelabel = -1;
         for(int i = 0; i < temp.size(); i++){
             if(tree[temp[i]].first == "(" && tree[temp[i+2]].first == ";"){ThreeACHelperFunc(temp[i+1]);}
             if(tree[temp[i]].first == ";" && tree[temp[i+2]].first == ";" && tree[temp[i+1]].first != ""){ 
                 forStatelabel = tacVector.size();
                 ThreeACHelperFunc(temp[i+1]);
-                tac* t = new tac();
-                t -> isGoto = true;
-                t -> gotoLabel = "ifFalse";
-                t -> arg = tacVector[forStatelabel] -> res;
-                tacVector.push_back(t);
+                createTacGotoL("ifFalse", tacVector[forStatelabel] -> res, "");
                 backlist[id].push_back(tacVector.size()-1);
             }
             if(tree[temp[i]].first == ")") blockId = temp[i+1];
             if(tree[temp[i]].first == ";" && tree[temp[i+2]].first == ")") incId = temp[i+1];
         }
         if(forStatelabel == -1) forStatelabel = tacVector.size(); // if there is no condition  in for loop goto block
+        loopStart.push(forStatelabel); loopId.push(id);
         if(blockId != -1) ThreeACHelperFunc(blockId);
         if(incId != -1) ThreeACHelperFunc(incId);
-        tac* t = new tac();
-        t -> isGoto = true;
-        t -> label = to_string(forStatelabel);
-        tacVector.push_back(t);
+        createTacGoto(to_string(forStatelabel));
+        loopStart.pop(); loopId.pop();
         // backpatch End of for loop
         backpatch(tacVector.size(), id);
     }
-
-    else if(tree[id].first == "ifThenElseStmt"){
+    if(tree[id].first == "whileStmt"){
+        childcallistrue = 0;
+        int blockId = -1, incId = -1, whileStatelabel = -1;
+        for(int i = 0; i < temp.size(); i++){
+            if(tree[temp[i]].first == "(" && tree[temp[i+2]].first == ")" && tree[temp[i+1]].first != ""){ 
+                whileStatelabel = tacVector.size();
+                ThreeACHelperFunc(temp[i+1]);
+                createTacGotoL("ifFalse", tacVector[whileStatelabel] -> res, "");
+                backlist[id].push_back(tacVector.size()-1);
+            }
+            if(tree[temp[i]].first == ")") blockId = temp[i+1];
+        }
+        if(whileStatelabel == -1) whileStatelabel = tacVector.size(); // if there is no condition  in for loop goto block
+        loopStart.push(whileStatelabel); loopId.push(id);
+        if(blockId != -1) ThreeACHelperFunc(blockId);
+        createTacGoto(to_string(whileStatelabel));
+        loopStart.pop(); loopId.pop();
+        // backpatch End of for loop
+        backpatch(tacVector.size(), id);
+    }
+    if(tree[id].first == "continue"){
+        childcallistrue = 0;
+        createTacGoto(to_string(loopStart.top()));
+    } 
+    if(tree[id].first == "break"){
+        childcallistrue = 0;
+        createTacGoto("");
+        backlist[loopId.top()].push_back(tacVector.size() - 1);
+    } 
+    if(tree[id].first == "ifThenElseStmt"){
         childcallistrue = 0;
          for(int i = 0; i < temp.size(); i++){
             if(tree[temp[i]].first == "RelationalExpression"){

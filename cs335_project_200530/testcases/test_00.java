@@ -6,11 +6,25 @@ class ReverseString {
       i = 3;
     }
     int b,c,a;
-  for(int i = 0; ;i = i+2 * b ){
-    a = a + i;
-  }
-  
-
-// int a = 1 + 1*(2-3)+ (2-3)*4/3+3%2;
+    while(a==b){
+      int s = 3;
+      for(int i = 0; i < 8; i = i +1){
+        k = k +1;
+        break;
+        c = c+1;
+      }
+      continue;
+      d = d+1;
+    }
+  // for(int i = 0; i < 3 ;i = i+2 * b ){
+  //   a = a + i;
+  //   for(int j = 0;  j < 6; j = j+1){
+  //     int k = 0;
+  //     continue;
+  //     int s = 3;
+  //   }
+  //   break;
+  //   c = c+1;
+  // }
 }
 }
