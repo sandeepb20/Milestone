@@ -1,22 +1,21 @@
-class ReverseString {
-  {
-  int a =0;
-  int c = i < (a+b-c);
-  for(int i = 0;i < a+b-c ;i++){
-    a = a + i;
+class Vehicle {
+  protected String brand = "Ford";        // Vehicle attribute
+  public void honk() {                    // Vehicle method
+    System.out.println("Tuut, tuut!");
   }
-  int b = 0;
-  if(a>b+c){
-    b = a+c;
-  }
-  else{
-    b = a-c;
-  }
-  while(b<10){
-    b = b + 1;
-  }
-  int c = 10;
-
-// int a = 1 + 1*(2-3)+ (2-3)*4/3+3%2;
 }
+
+class Car extends Vehicle {
+  private String modelName = "Mustang";    // Car attribute
+  public static void main(String[] args) {
+
+    // Create a myCar object
+    Car myCar = new Car();
+
+    // Call the honk() method (from the Vehicle class) on the myCar object
+    myCar.honk();
+
+    // Display the value of the brand attribute (from the Vehicle class) and the value of the modelName from the Car class
+    System.out.println(myCar.brand + " " + myCar.modelName);
+  }
 }

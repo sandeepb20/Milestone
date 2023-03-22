@@ -55,6 +55,8 @@ typedef struct ThreeAC {
     string label = "";
 } tac;
 vector<tac*> tacVector;
+stack<int> loopStart;
+stack<int> loopId;
 
 string createArg(int id){
     if(additionalInfo.find(id) != additionalInfo.end()){
@@ -91,6 +93,25 @@ tac* createTac1(int id){
     t -> arg1 = createArg(temp[2]);
     return  t;
 }
+
+tac* createTacGoto(string label){
+    tac* t = new tac();
+    t -> isGoto = true;
+    t -> label = label;
+    tacVector.push_back(t);
+    return  t;
+}
+
+tac* createTacGotoL(string gotoLabel, string arg, string label){
+    tac* t = new tac();
+    t -> isGoto = true;
+    t -> gotoLabel = "ifFalse";
+    t -> arg = arg;
+    t -> label = label;
+    tacVector.push_back(t);
+    return  t;
+}
+
 
 void backpatch(int n, int id){
     
@@ -132,36 +153,57 @@ void ThreeACHelperFunc(int id){
     }
     if(tree[id].first == "forStmt"){
         childcallistrue = 0;
-        int blockId = -1;
-        int incId = -1;
-        int forStatelabel = -1;
+        int blockId = -1, incId = -1, forStatelabel = -1;
         for(int i = 0; i < temp.size(); i++){
             if(tree[temp[i]].first == "(" && tree[temp[i+2]].first == ";"){ThreeACHelperFunc(temp[i+1]);}
             if(tree[temp[i]].first == ";" && tree[temp[i+2]].first == ";" && tree[temp[i+1]].first != ""){ 
                 forStatelabel = tacVector.size();
                 ThreeACHelperFunc(temp[i+1]);
-                tac* t = new tac();
-                t -> isGoto = true;
-                t -> gotoLabel = "ifFalse";
-                t -> arg = tacVector[forStatelabel] -> res;
-                tacVector.push_back(t);
+                createTacGotoL("ifFalse", tacVector[forStatelabel] -> res, "");
                 backlist[id].push_back(tacVector.size()-1);
             }
             if(tree[temp[i]].first == ")") blockId = temp[i+1];
             if(tree[temp[i]].first == ";" && tree[temp[i+2]].first == ")") incId = temp[i+1];
         }
         if(forStatelabel == -1) forStatelabel = tacVector.size(); // if there is no condition  in for loop goto block
+        loopStart.push(forStatelabel); loopId.push(id);
         if(blockId != -1) ThreeACHelperFunc(blockId);
         if(incId != -1) ThreeACHelperFunc(incId);
-        tac* t = new tac();
-        t -> isGoto = true;
-        t -> label = to_string(forStatelabel);
-        tacVector.push_back(t);
+        createTacGoto(to_string(forStatelabel));
+        loopStart.pop(); loopId.pop();
         // backpatch End of for loop
         backpatch(tacVector.size(), id);
     }
-
-    else if(tree[id].first == "ifThenElseStmt"){
+    if(tree[id].first == "whileStmt"){
+        childcallistrue = 0;
+        int blockId = -1, incId = -1, whileStatelabel = -1;
+        for(int i = 0; i < temp.size(); i++){
+            if(tree[temp[i]].first == "(" && tree[temp[i+2]].first == ")" && tree[temp[i+1]].first != ""){ 
+                whileStatelabel = tacVector.size();
+                ThreeACHelperFunc(temp[i+1]);
+                createTacGotoL("ifFalse", tacVector[whileStatelabel] -> res, "");
+                backlist[id].push_back(tacVector.size()-1);
+            }
+            if(tree[temp[i]].first == ")") blockId = temp[i+1];
+        }
+        if(whileStatelabel == -1) whileStatelabel = tacVector.size(); // if there is no condition  in for loop goto block
+        loopStart.push(whileStatelabel); loopId.push(id);
+        if(blockId != -1) ThreeACHelperFunc(blockId);
+        createTacGoto(to_string(whileStatelabel));
+        loopStart.pop(); loopId.pop();
+        // backpatch End of for loop
+        backpatch(tacVector.size(), id);
+    }
+    if(tree[id].first == "continue"){
+        childcallistrue = 0;
+        createTacGoto(to_string(loopStart.top()));
+    } 
+    if(tree[id].first == "break"){
+        childcallistrue = 0;
+        createTacGoto("");
+        backlist[loopId.top()].push_back(tacVector.size() - 1);
+    } 
+    if(tree[id].first == "ifThenElseStmt"){
         childcallistrue = 0;
          for(int i = 0; i < temp.size(); i++){
             if(tree[temp[i]].first == "RelationalExpression"){
@@ -320,6 +362,19 @@ bool lookup(string id){
 	return 0;
 }
 
+bool curr_lookup(string id){
+    string temp = curr_table;
+    if((table[temp]).find(id)!=(table[temp]).end()) return 1;
+    return 0;
+}
+
+bool scope_lookup(string id, string scope){
+    string temp = scope;
+    if((table[temp]).find(id)!=(table[temp]).end()) return 1;
+    return 0;
+}
+
+
 void symTable(int n){
 
     vector<int> temp = (tree[n].second);
@@ -328,7 +383,7 @@ void symTable(int n){
         if(additionalInfo[n] == "modifier"){
             stmodifiers.push_back(tree[n].first);
         }
-        else if(additionalInfo[n] == "type"){
+        else if(additionalInfo[n] == "type" || additionalInfo[n] == "referencetype"){
             sttype = tree[n].first;
             stsize = getSize(tree[n].first);
             if(flag == 1){
@@ -337,13 +392,17 @@ void symTable(int n){
         }
         else if(additionalInfo[n] == "identifier" && (tree[parent[n]].first == "VariableDeclarator" || tree[parent[n]].first == "VariableDeclarators" || tree[parent[n]].first == "ConstructorDeclarator" || tree[parent[n]].first == "MethodDeclarator" || tree[parent[n]].first == "ClassDeclaration" || tree[parent[n]].first == "FormalParameter" || tree[parent[n]].first == "LocalVariableDeclaration" || tree[parent[n]].first == "FieldDeclaration")){
             stname = tree[n].first;
-            createEntry(curr_table, stname, stmodifiers, sttype, LineNumber[n], stsize, 0, stwhat, curr_table);
+            if(!scope_lookup(stname, curr_table)){
+            createEntry(curr_table, stname, stmodifiers, sttype, LineNumber[n], stsize, 0, stwhat, curr_table);}
+            else{
+                cout << "Variable " << stname << " already declared in " << LineNumber[n] << "!!" << endl;
+            }
             stmodifiers.clear();
         }
         if(tree[n].first == "{" && (tree[parent[n]].first == "ClassBody")){
             makeSymbolTable(stname);
         }
-        else if(tree[n].first == "{" && (tree[parent[parent[n]]].first == "forStmt")){
+        else if(tree[n].first == "(" && (tree[parent[n]].first == "forStmt")){
             stname = "for" + to_string(fornum);
             fornum++;
             makeSymbolTable(stname);
@@ -378,7 +437,12 @@ void symTable(int n){
             mname.pop_back();
             mname += ")";
             parameters.clear();
-            table.insert(make_pair(mname, new_table));
+            if(table.find(mname) != table.end()){
+                cout << "Method " << mname << " already declared !!" << endl;
+                exit(0);
+            }
+            else{
+            table.insert(make_pair(mname, new_table));}
             for(auto it : table[mname]){
                 (it.second)->scope = mname;
             }
@@ -386,29 +450,12 @@ void symTable(int n){
             string par = parent_table[oname];
             parent_table.erase(oname);
             parent_table.insert(make_pair(mname,par));
-            // string parpar = parent_table[par];
-            // sym_table ptable = table[par];
-            
-            // if(ptable.find(oname) != ptable.end()){
-            //     sym_entry* newentry = ptable[oname];
-                // ptable.erase(oname);
-                // ptable.insert(make_pair(mname, newentry));
-            // }
-            // table.erase(par);
-            // table.insert(make_pair(par,ptable));
-            // parent_table.erase(oname);
-            // parent_table.insert(make_pair(mname,par));
-            // parent_table.erase(par);
-            // parent_table.insert(make_pair(par, parpar));
 
             curr_table = mname;
             flag2 = 0;
             change(parent[n]);
 
         }
-        // else if(tree[n].first == "}" && (tree[parent[parent[n]]].first == "forStmt")){
-        //     curr_table = parent_table[curr_table];
-        // }
         else if(tree[n].first == "}" && (tree[parent[n]].first == "ClassBody" || tree[parent[n]].first == "Block" || tree[parent[n]].first == "ConstructorBody")){
             curr_table = parent_table[curr_table];
         }
@@ -422,7 +469,7 @@ void symTable(int n){
         else if(tree[n].first == "MethodDeclaration"){
             stwhat = "method";
         }
-        else if(tree[n].first == "FieldDeclaration"){
+        else if(tree[n].first == "FieldDeclaration" || tree[n].first == "LocalVariableDeclaration" || tree[n].first == "FormalParameter"){
             stwhat = "variable";
         }
         else if(tree[n].first == "ConstructorDeclaration"){
@@ -430,6 +477,23 @@ void symTable(int n){
         }
         symTable(temp[i]);  
     }
+}
+
+void checkMethodCall(int n){
+    vector<int> temp = (tree[n].second);
+    // if(tree[temp[0]].first == "QualifiedName"){
+    //     if(tree[(tree[temp[0]].second)[0]].first!= "QualifiedName" && !scope_lookup(tree[(tree[temp[0]].second)[2]].first)){
+    //         cout << "Method " << tree[(tree[temp[0]].second)[0]].first << " not declared in line " << LineNumber[temp[0]] << "!!" << endl;
+    //     }
+    // }
+    if(additionalInfo[temp[0]] == "identifier"){
+    if(!lookup(tree[temp[0]].first)) 
+    {
+        cout << "Method " << tree[temp[0]].first << " not declared in line " << LineNumber[temp[0]] << "!!" << endl;
+        exit(0);
+    }
+    }
+    return;
 }
 
 void checkScope(int n){
@@ -460,12 +524,26 @@ void checkScope(int n){
         if(additionalInfo[n] == "identifier" && tree[n].first != "System" && tree[n].first != "out" && tree[n].first != "println"){
             
             if(!(lookup(tree[n].first))){
-                cout << tree[n].first << " not declared!!" << endl;}
+                cout << tree[n].first << " not declared!!" << endl;
+                exit(0);
+            }
+        }
+        if(additionalInfo[n] == "referencetype"){
+            if(!scope_lookup(tree[n].first, "program")){
+                cout << "class " << tree[n].first << " not defined!!" << endl;
+                // exit(0);
+            }
         }
     }
-
-    for(int i = 0; i < temp.size(); i++){
-        checkScope(temp[i]);  
+    if(tree[n].first == "MethodInvocation"){
+        checkMethodCall(n);
+        return;
+    }
+    else{
+        for(int i = 0; i < temp.size(); i++){
+        
+            checkScope(temp[i]);  
+        }
     }
 }
 
@@ -475,9 +553,9 @@ void print(){
     checkScope(root);
 
     // ***************************
-    cout << "******************** Three AC Print Statements**************" << endl;
-    ThreeACHelperFunc(root);
-    printThreeAC();
+    // cout << "******************** Three AC Print Statements**************" << endl;
+    // ThreeACHelperFunc(root);
+    // printThreeAC();
     // ***************************
     ofstream fout;
     fout.open(OutputFileName);
@@ -956,11 +1034,11 @@ VariableDeclarator      : VariableDeclaratorId                           {$$ = $
 VariableDeclaratorId    : identifier        {$$ = $1;}
                         | VariableDeclaratorId OPEN_SQ CLOSE_SQ          {int uid = makenode("VariableDeclaratorId"); addChild(uid, $1); addChild(uid, $2), addChild(uid, $3); $$ = uid;}
                         ;
-VariableInitializer     : Expression        {$$ = $1;}
+VariableInitializer     : Expression        {int uid = makenode("Expression"); addChild(uid, $1); $$ = uid;}
                         | ArrayInitializer  {$$ = $1;}
                         ;
 Type                    : PrimitiveType     {$$ = $1;}
-                        | ReferenceType     {$$ = $1;}
+                        | ReferenceType     {$$ = $1; additionalInfo[$1] = "referencetype";}
                         ;
  
 
@@ -1508,7 +1586,7 @@ ClassInstanceCreationExpression : NEW Name OPEN_BRACKETS ArgumentList2 CLOSE_BRA
 }
                         ;
 MethodInvocation        : Name OPEN_BRACKETS ArgumentList2 CLOSE_BRACKETS      {
-                                    int uid = makenode("MethodIncovation");
+                                    int uid = makenode("MethodInvocation");
                                     addChild(uid, $1);
                                     addChild(uid, $2);
                                     addChild(uid, $3);
@@ -1516,7 +1594,7 @@ MethodInvocation        : Name OPEN_BRACKETS ArgumentList2 CLOSE_BRACKETS      {
                                     $$ = uid;
 }
                         | Primary DOT identifier OPEN_BRACKETS ArgumentList2 CLOSE_BRACKETS     {
-                                    int uid = makenode("MethodIncovation");
+                                    int uid = makenode("MethodInvocation");
                                     addChild(uid, $1);
                                     addChild(uid, $2);
                                     addChild(uid, $3);
@@ -1526,7 +1604,7 @@ MethodInvocation        : Name OPEN_BRACKETS ArgumentList2 CLOSE_BRACKETS      {
                                     $$ = uid;
                         }
                         | SUPER DOT identifier OPEN_BRACKETS ArgumentList2 CLOSE_BRACKETS       {
-                                    int uid = makenode("MethodIncovation");
+                                    int uid = makenode("MethodInvocation");
                                     addChild(uid, $1);
                                     addChild(uid, $2);
                                     addChild(uid, $3);
@@ -1548,7 +1626,7 @@ ArgumentList            : Expression             {$$ = $1;}
                                                 $$ = uid;
                         }
                         ;   
-ReferenceType           : Name                   {$$ = $1;}
+ReferenceType           : Name                  {$$ = $1;}
                         | ArrayType             {$$ = $1;}
                         ;
 ArrayType               : PrimitiveType OPEN_SQ CLOSE_SQ    {
@@ -1812,10 +1890,10 @@ int main(int argc, char *argv[]) {
 
     }
     fclose(yyin);
-    /* for(auto it : table){
+     for(auto it : table){
         printSymbolTable(it.first);
-        cout << "***" << endl;
-    } */
+        cout << "*******" << endl;
+    } 
 }
 
 void yyerror(const char* s) {
