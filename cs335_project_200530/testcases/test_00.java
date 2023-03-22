@@ -1,20 +1,9 @@
 class ReverseString {
-  public static int binarySearch(int[] arr, int x) {
-    int left = i++, right = arr.length - 1;
-    while (left <= right) {
-      int mid = left + (right - left) / 2;
-      if (arr[mid] == x << y) {
-        return mid;
-      } else if (arr[mid] < x) {
-        left = mid + 1;
-      } else {
-        right = mid - 1;
-      }
-    }
-    return -1; // element not found
-    a=c;
+  public static int binarySearch(int[][] arr, int x) {
+    double[] arr1 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    int t = arr[i+1][j-1] + arr1[k+2];
   }
-  int c = BinarySearch(arr, x);
+  // int c = BinarySearch(arr, x);
 
   // {
   //   int i = 3, p = 9 + 1;
@@ -35,7 +24,7 @@ class ReverseString {
   //   int b, c, a;
   //   while (a == b) {
   //     int s = 3;
-  //     for (int i = 0; i < 8; i = i + 1) {
+  //     for (int i = 0; i < 8; i++) {
   //       k = k + 1;
   //       break;
   //       c = c + 1;

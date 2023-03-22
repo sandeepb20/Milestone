@@ -23,6 +23,38 @@ map<int, int> LineNumber;
 map<int, int> parent;
 map<int, string> scope;
 map<int, vector<int>> backlist;
+
+
+
+string stname = "program";
+string mname;
+string sttype;
+int stline;
+ull stsize = 8;
+ull stoffset;
+vector<string> stmodifiers;
+string stwhat;
+vector<string> parameters;
+int flag = 0;
+
+typedef struct sym_entry{
+	string type;
+    int line = 0;
+	ull size = 0;
+	ull offset = 0;
+    vector<string> modifiers;
+    string what;
+    string scope;
+}sym_entry;
+
+
+typedef map<string, sym_entry* > sym_table;
+string curr_table = "null";
+map<string, sym_table> table;
+map<string, string> parent_table;
+vector<string> key_words = {"abstract","continue","for","new","switch","assert","default","if","package","synchronized","boolean","do","goto","private","this","break","double","implements","protected","throw","byte","else","import","public","throws","case","enum","instanceof","return","transient","catch","extends","int","short","try","String","char","final","interface","static","void","class","finally","long","strictfp","volatile","const","float","native","super","while","_","exports","opens","requires","uses","module","permit","sealed","var","non-sealed","provides","to","with","open","record","transitive","yield"}; 
+map<string, int> keywords;
+
 int makenode( string name){
     countnode++;
     vector<int> childs;
@@ -40,6 +72,26 @@ int makenode( string name, string type){
     return countnode;
 }
 
+string customtypeof(int id){
+    // cout << tree[id].first << " id " << id << endl;
+    curr_table = scope[id];
+    for(auto i : table[curr_table]){
+        // cout << i.first << endl;
+        if(i.first == tree[id].first){
+            return i.second->type;
+        }
+    }
+    return "null";
+}
+int getSize(string id){
+  if(id == "char") return sizeof(char);
+  if(id == "short") return sizeof(short);
+  if(id == "int") return sizeof(int);
+  if(id == "float") return sizeof(float);
+  if(id == "double") return sizeof(double);
+
+  return 8; // for any ptr
+}
 
 // ******************************* THREE AC CODE **********************************************
 typedef struct ThreeAC {
@@ -94,6 +146,14 @@ tac* createTac1(int id){
     return  t;
 }
 
+tac* createTacCustom(string op, string arg1, string arg2, string res){
+    tac* t = new tac();
+    t -> op = op;
+    t -> arg1 = arg1;
+    t -> arg2 = arg2;
+    t -> res = res;
+    return t;
+}
 tac* createTac1Dplus(int id){
     vector<int> temp = tree[id].second;
     tac* t = new tac();
@@ -218,6 +278,40 @@ void ThreeACHelperFunc(int id){
         backpatch(tacVector.size(), id);
         if(blockId2 != -1) ThreeACHelperFunc(blockId2);
     }
+    if(tree[id].first == "ArrayAccess"){
+        childcallistrue = 0;
+        ThreeACHelperFunc(temp[2]);
+        if(tree[temp[0]].first == "ArrayAccess") {
+            int nodeNum = temp[0];
+            vector<int> ArrayAccessChild = tree[nodeNum].second;
+            ThreeACHelperFunc(ArrayAccessChild[2]);
+            string sizeofVar = to_string(getSize(customtypeof(ArrayAccessChild[0])));
+            string arrsize = "n";
+            tac *t = createTacCustom("*", arrsize, createArg(ArrayAccessChild[2]), createArg(ArrayAccessChild[2]));
+            tacVector.push_back(t);
+
+            tac *t1 = createTacCustom("+", t-> res, createArg(temp[2]), createArg(temp[2]));
+            tacVector.push_back(t1);
+            
+            tac *t2 = createTacCustom("*", t1 -> res, sizeofVar, t1->res );
+            tacVector.push_back(t2);
+
+            string ar3 = tree[ArrayAccessChild[0]].first + "[" + t1-> res + "]";
+            tac *t3 = createTacCustom("=", ar3, "", createArg(id));
+            tacVector.push_back(t3);
+        }
+        else{
+            string arrindex  = createArg(temp[2]);
+            string sizeofVar = to_string(getSize(customtypeof(temp[0])));
+            vector<int> temp = tree[id].second;
+            tac *t = createTacCustom("*", createArg(temp[2]), sizeofVar, createArg(temp[2]));
+            tacVector.push_back(t);
+
+            string tempvar = tree[temp[0]].first + "[" + t-> res + "]";
+            tac *t1 = createTacCustom("=", tempvar, "", createArg(id));
+            tacVector.push_back(t1);
+        }
+    }
     // if(tree[id].first == "MethodInvocation"){
     //     childcallistrue = 0;
     //     int argId = -1;
@@ -227,9 +321,7 @@ void ThreeACHelperFunc(int id){
     //     if(argId != -1) ThreeACHelperFunc(argId);
     //     tacVector.push_back(createTac1(id));
     // }
-
-    if(childcallistrue){
-               
+    if(childcallistrue){         
         for(int i = 0; i < temp.size(); i++){
             ThreeACHelperFunc(temp[i]);
         }
@@ -251,13 +343,7 @@ void ThreeACHelperFunc(int id){
     if(tree[id].first == "InclusiveOrExpression"){tacVector.push_back(createTac2(id));}
     if(tree[id].first == "ExclusiveOrExpression"){tacVector.push_back(createTac2(id));}
     if(tree[id].first == "AndExpression"){tacVector.push_back(createTac2(id));}
-    if(tree[id].first == "ShiftExpression"){tacVector.push_back(createTac2(id));}
-    
-    
-
-    
-    // cout << tree[id].first << endl;
-    
+    if(tree[id].first == "ShiftExpression"){tacVector.push_back(createTac2(id));} 
 }
 // ****************************************************************
 
@@ -286,45 +372,8 @@ void tempfunc1(ofstream& fout, unordered_map<int,int> &visited, int id){
 
 }
 
-int getSize(string id){
-  if(id == "char") return sizeof(char);
-  if(id == "short") return sizeof(short);
-  if(id == "int") return sizeof(int);
-  if(id == "float") return sizeof(float);
-  if(id == "double") return sizeof(double);
-
-  return 8; // for any ptr
-}
 
 
-string stname = "program";
-string mname;
-string sttype;
-int stline;
-ull stsize = 8;
-ull stoffset;
-vector<string> stmodifiers;
-string stwhat;
-vector<string> parameters;
-int flag = 0;
-
-typedef struct sym_entry{
-	string type;
-    int line = 0;
-	ull size = 0;
-	ull offset = 0;
-    vector<string> modifiers;
-    string what;
-    string scope;
-}sym_entry;
-
-
-typedef map<string, sym_entry* > sym_table;
-string curr_table = "null";
-map<string, sym_table> table;
-map<string, string> parent_table;
-vector<string> key_words = {"abstract","continue","for","new","switch","assert","default","if","package","synchronized","boolean","do","goto","private","this","break","double","implements","protected","throw","byte","else","import","public","throws","case","enum","instanceof","return","transient","catch","extends","int","short","try","String","char","final","interface","static","void","class","finally","long","strictfp","volatile","const","float","native","super","while","_","exports","opens","requires","uses","module","permit","sealed","var","non-sealed","provides","to","with","open","record","transitive","yield"}; 
-map<string, int> keywords;
 
 void printSymbolTable(string curr_table){
   	for(auto it: (table[curr_table])){
@@ -1194,7 +1243,7 @@ SynchronizedStatement   : SYNCHRONIZED OPEN_BRACKETS Expression CLOSE_BRACKETS B
                                                         addChild(uid, $4);
                                                         addChild(uid, $5);
                                                         $$ = uid;
-}
+                        }
                         ;
 
 ArrayInitializer        : OPEN_CURLY VariableInitializers2 CLOSE_CURLY  { int uid = makenode("ArrayInitializer"); addChild(uid, $1); addChild(uid, $2); addChild(uid, $3); $$ = uid;}
