@@ -1,7 +1,12 @@
 class ReverseString {
-  public static int binarySearch(int[][] arr, int x) {
-    double[] arr1 = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-    int t = arr[i+1][j-1] + arr1[k+2];
+  public int foo(){
+    int a;
+    a = 0;
+
+    while( a < 10){
+      a = a + 1;
+    }
+    return a;
   }
   // int c = BinarySearch(arr, x);
 

@@ -107,6 +107,8 @@ typedef struct ThreeAC {
     string label = "";
 } tac;
 vector<tac*> tacVector;
+map<string,  tacVector> tacMap;
+string currTacVec = "-1";
 stack<int> loopStart;
 stack<int> loopId;
 
@@ -203,6 +205,16 @@ void backpatch(int n, int id){
         tacVector[i]->label = to_string(n);
     }
     return;
+}
+
+void  ArrayInitHelper(int id){
+    vector<int> temp = tree[id].second;
+    if(tree[id].first == "VariableInitializers"){
+        ArrayInitHelper(temp[0]);
+        ThreeACHelperFunc(temp[2]);
+        tac* t = new tac();
+        t -> op = "=";
+    }
 }
 
 void ThreeACHelperFunc(int id){
@@ -311,6 +323,19 @@ void ThreeACHelperFunc(int id){
             tac *t1 = createTacCustom("=", tempvar, "", createArg(id));
             tacVector.push_back(t1);
         }
+    }
+    if(tree[id].first == "ArrayInitializer"){
+        childcallistrue = 0;
+        if(temp.size()>2){
+            int idtempvar = temp[1];
+            // ArrayInitHelper(temp[1]);
+        }
+    }
+    if(tree[id].first == "MethodDeclaration"){
+        childcallistrue = 0;
+    }
+    if(tree[id].first == "methodHeader"){
+        
     }
     // if(tree[id].first == "MethodInvocation"){
     //     childcallistrue = 0;
