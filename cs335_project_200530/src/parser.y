@@ -94,6 +94,30 @@ tac* createTac1(int id){
     return  t;
 }
 
+tac* createTac1Dplus(int id){
+    vector<int> temp = tree[id].second;
+    tac* t = new tac();
+    t -> op = tree[temp[0]].first;
+    t -> arg1 = createArg(temp[1]);
+    t -> res = "_v" + to_string(id);
+    return  t;
+}
+
+void createTac2Dplus(int id){
+    vector<int> temp = tree[id].second;
+    tac* t = new tac();
+    t -> op = "=";
+    t -> arg1 = createArg(temp[0]);
+    t -> res = "_v" + to_string(id);
+    tacVector.push_back(t);
+    tac* t1 = new tac();
+    t1 -> op = tree[temp[1]].first;
+    t1 -> arg1 = createArg(temp[0]);
+    t1 -> res = createArg(temp[0]);
+    tacVector.push_back(t1);
+    return ;
+}
+
 tac* createTacGoto(string label){
     tac* t = new tac();
     t -> isGoto = true;
@@ -122,46 +146,17 @@ void backpatch(int n, int id){
 }
 
 void ThreeACHelperFunc(int id){
+    // cout << tree[id].first << " " << id << endl;
     int childcallistrue = 1;
     vector<int> temp = tree[id].second;
-    if(tree[id].first == "Assignment"){
-        tacVector.push_back(createTac2(id));
-    }
-    if(tree[id].first == "ConditionalOrExpression"){
-        tacVector.push_back(createTac2(id));
-    }
-    if(tree[id].first == "ConditionalAndExpression"){
-        tacVector.push_back(createTac2(id));
-    }
-    if(tree[id].first == "AdditiveExpression"){
-        tacVector.push_back(createTac2(id));
-    }
-    if(tree[id].first == "MultiplicativeExpression"){
-        tacVector.push_back(createTac2(id));
-    }
-    if(tree[id].first == "RelationalExpression"){
-        tacVector.push_back(createTac2(id));
-    }
-    if(tree[id].first == "EqualityExpression"){
-        tacVector.push_back(createTac2(id));
-    }
-    if(tree[id].first == "AssignmentExpression"){
-        tacVector.push_back(createTac1(id));
-    }
-    if(tree[id].first == "PrimaryExpression"){
-        tacVector.push_back(createTac1(id));
-    }
-    if(tree[id].first == "VariableDeclarator"){
-        tacVector.push_back(createTac1(id));
-    }
     if(tree[id].first == "forStmt"){
         childcallistrue = 0;
         int blockId = -1, incId = -1, forStatelabel = -1;
         for(int i = 0; i < temp.size(); i++){
             if(tree[temp[i]].first == "(" && tree[temp[i+2]].first == ";"){ThreeACHelperFunc(temp[i+1]);}
             if(tree[temp[i]].first == ";" && tree[temp[i+2]].first == ";" && tree[temp[i+1]].first != ""){ 
-                forStatelabel = tacVector.size();
                 ThreeACHelperFunc(temp[i+1]);
+                forStatelabel = tacVector.size()-1;
                 createTacGotoL("ifFalse", tacVector[forStatelabel] -> res, "");
                 backlist[id].push_back(tacVector.size()-1);
             }
@@ -182,8 +177,8 @@ void ThreeACHelperFunc(int id){
         int blockId = -1, incId = -1, whileStatelabel = -1;
         for(int i = 0; i < temp.size(); i++){
             if(tree[temp[i]].first == "(" && tree[temp[i+2]].first == ")" && tree[temp[i+1]].first != ""){ 
-                whileStatelabel = tacVector.size();
                 ThreeACHelperFunc(temp[i+1]);
+                whileStatelabel = tacVector.size()-1;
                 createTacGotoL("ifFalse", tacVector[whileStatelabel] -> res, "");
                 backlist[id].push_back(tacVector.size()-1);
             }
@@ -211,8 +206,8 @@ void ThreeACHelperFunc(int id){
          int blockId1 = -1, ifStatelabel = -1, blockId2 = -1;
          for(int i = 0; i < temp.size(); i++){
             if(tree[temp[i]].first == "(" && tree[temp[i+2]].first == ")" && tree[temp[i+1]].first != ""){
-                ifStatelabel = tacVector.size();
                 ThreeACHelperFunc(temp[i+1]);
+                ifStatelabel = tacVector.size()-1;
                 createTacGotoL("ifFalse", tacVector[ifStatelabel] -> res, "");
                 backlist[id].push_back(tacVector.size()-1);
             }
@@ -223,13 +218,15 @@ void ThreeACHelperFunc(int id){
         backpatch(tacVector.size(), id);
         if(blockId2 != -1) ThreeACHelperFunc(blockId2);
     }
-
-    else if(tree[id].first == "LocalVariableDeclarationStatement" || tree[id].first == "LocalVariableDeclaration" ){
-        childcallistrue = 0;
-         for(int i = 0; i < temp.size(); i++){
-            ThreeACHelperFunc(temp[i]);
-        }
-    }
+    // if(tree[id].first == "MethodInvocation"){
+    //     childcallistrue = 0;
+    //     int argId = -1;
+    //     for(int i = 0; i < temp.size(); i++){
+    //         if(tree[temp[i]].first == "(" && tree[temp[i+2]].first == ")" && tree[temp[i+1]].first != "") argId = temp[i+1];
+    //     }
+    //     if(argId != -1) ThreeACHelperFunc(argId);
+    //     tacVector.push_back(createTac1(id));
+    // }
 
     if(childcallistrue){
                
@@ -237,6 +234,28 @@ void ThreeACHelperFunc(int id){
             ThreeACHelperFunc(temp[i]);
         }
     }
+    if(tree[id].first == "Assignment") tacVector.push_back(createTac1(id));
+    if(tree[id].first == "PreIncExpression") tacVector.push_back(createTac1Dplus(id));
+    if(tree[id].first == "PreDecExpression") tacVector.push_back(createTac1Dplus(id));
+    if(tree[id].first == "PostIncExpression") {createTac2Dplus(id);}
+    if(tree[id].first == "PostDecExpression") {createTac2Dplus(id);}
+    if(tree[id].first == "ConditionalOrExpression"){tacVector.push_back(createTac2(id));}
+    if(tree[id].first == "ConditionalAndExpression"){tacVector.push_back(createTac2(id));}
+    if(tree[id].first == "AdditiveExpression"){tacVector.push_back(createTac2(id)); }
+    if(tree[id].first == "MultiplicativeExpression"){tacVector.push_back(createTac2(id)); }
+    if(tree[id].first == "RelationalExpression"){tacVector.push_back(createTac2(id)); }
+    if(tree[id].first == "EqualityExpression"){tacVector.push_back(createTac2(id));}
+    if(tree[id].first == "AssignmentExpression"){tacVector.push_back(createTac1(id));}
+    if(tree[id].first == "PrimaryExpression"){tacVector.push_back(createTac1(id));}
+    if(tree[id].first == "VariableDeclarator"){tacVector.push_back(createTac1(id));}
+    if(tree[id].first == "InclusiveOrExpression"){tacVector.push_back(createTac2(id));}
+    if(tree[id].first == "ExclusiveOrExpression"){tacVector.push_back(createTac2(id));}
+    if(tree[id].first == "AndExpression"){tacVector.push_back(createTac2(id));}
+    if(tree[id].first == "ShiftExpression"){tacVector.push_back(createTac2(id));}
+    
+    
+
+    
     // cout << tree[id].first << endl;
     
 }
