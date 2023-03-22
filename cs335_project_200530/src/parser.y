@@ -23,6 +23,38 @@ map<int, int> LineNumber;
 map<int, int> parent;
 map<int, string> scope;
 map<int, vector<int>> backlist;
+
+
+
+string stname = "program";
+string mname;
+string sttype;
+int stline;
+ull stsize = 8;
+ull stoffset;
+vector<string> stmodifiers;
+string stwhat;
+vector<string> parameters;
+int flag = 0;
+
+typedef struct sym_entry{
+	string type;
+    int line = 0;
+	ull size = 0;
+	ull offset = 0;
+    vector<string> modifiers;
+    string what;
+    string scope;
+}sym_entry;
+
+
+typedef map<string, sym_entry* > sym_table;
+string curr_table = "null";
+map<string, sym_table> table;
+map<string, string> parent_table;
+vector<string> key_words = {"abstract","continue","for","new","switch","assert","default","if","package","synchronized","boolean","do","goto","private","this","break","double","implements","protected","throw","byte","else","import","public","throws","case","enum","instanceof","return","transient","catch","extends","int","short","try","String","char","final","interface","static","void","class","finally","long","strictfp","volatile","const","float","native","super","while","_","exports","opens","requires","uses","module","permit","sealed","var","non-sealed","provides","to","with","open","record","transitive","yield"}; 
+map<string, int> keywords;
+
 int makenode( string name){
     countnode++;
     vector<int> childs;
@@ -40,6 +72,26 @@ int makenode( string name, string type){
     return countnode;
 }
 
+string customtypeof(int id){
+    // cout << tree[id].first << " id " << id << endl;
+    curr_table = scope[id];
+    for(auto i : table[curr_table]){
+        // cout << i.first << endl;
+        if(i.first == tree[id].first){
+            return i.second->type;
+        }
+    }
+    return "null";
+}
+int getSize(string id){
+  if(id == "char") return sizeof(char);
+  if(id == "short") return sizeof(short);
+  if(id == "int") return sizeof(int);
+  if(id == "float") return sizeof(float);
+  if(id == "double") return sizeof(double);
+
+  return 8; // for any ptr
+}
 
 // ******************************* THREE AC CODE **********************************************
 typedef struct ThreeAC {
@@ -94,6 +146,38 @@ tac* createTac1(int id){
     return  t;
 }
 
+tac* createTacCustom(string op, string arg1, string arg2, string res){
+    tac* t = new tac();
+    t -> op = op;
+    t -> arg1 = arg1;
+    t -> arg2 = arg2;
+    t -> res = res;
+    return t;
+}
+tac* createTac1Dplus(int id){
+    vector<int> temp = tree[id].second;
+    tac* t = new tac();
+    t -> op = tree[temp[0]].first;
+    t -> arg1 = createArg(temp[1]);
+    t -> res = "_v" + to_string(id);
+    return  t;
+}
+
+void createTac2Dplus(int id){
+    vector<int> temp = tree[id].second;
+    tac* t = new tac();
+    t -> op = "=";
+    t -> arg1 = createArg(temp[0]);
+    t -> res = "_v" + to_string(id);
+    tacVector.push_back(t);
+    tac* t1 = new tac();
+    t1 -> op = tree[temp[1]].first;
+    t1 -> arg1 = createArg(temp[0]);
+    t1 -> res = createArg(temp[0]);
+    tacVector.push_back(t1);
+    return ;
+}
+
 tac* createTacGoto(string label){
     tac* t = new tac();
     t -> isGoto = true;
@@ -122,43 +206,17 @@ void backpatch(int n, int id){
 }
 
 void ThreeACHelperFunc(int id){
+    // cout << tree[id].first << " " << id << endl;
     int childcallistrue = 1;
     vector<int> temp = tree[id].second;
-    if(tree[id].first == "ConditionalOrExpression"){
-        tacVector.push_back(createTac2(id));
-    }
-    if(tree[id].first == "ConditionalAndExpression"){
-        tacVector.push_back(createTac2(id));
-    }
-    if(tree[id].first == "AdditiveExpression"){
-        tacVector.push_back(createTac2(id));
-    }
-    if(tree[id].first == "MultiplicativeExpression"){
-        tacVector.push_back(createTac2(id));
-    }
-    if(tree[id].first == "RelationalExpression"){
-        tacVector.push_back(createTac2(id));
-    }
-    if(tree[id].first == "EqualityExpression"){
-        tacVector.push_back(createTac2(id));
-    }
-    if(tree[id].first == "AssignmentExpression"){
-        tacVector.push_back(createTac1(id));
-    }
-    if(tree[id].first == "PrimaryExpression"){
-        tacVector.push_back(createTac1(id));
-    }
-    if(tree[id].first == "VariableDeclarator"){
-        tacVector.push_back(createTac1(id));
-    }
     if(tree[id].first == "forStmt"){
         childcallistrue = 0;
         int blockId = -1, incId = -1, forStatelabel = -1;
         for(int i = 0; i < temp.size(); i++){
             if(tree[temp[i]].first == "(" && tree[temp[i+2]].first == ";"){ThreeACHelperFunc(temp[i+1]);}
             if(tree[temp[i]].first == ";" && tree[temp[i+2]].first == ";" && tree[temp[i+1]].first != ""){ 
-                forStatelabel = tacVector.size();
                 ThreeACHelperFunc(temp[i+1]);
+                forStatelabel = tacVector.size()-1;
                 createTacGotoL("ifFalse", tacVector[forStatelabel] -> res, "");
                 backlist[id].push_back(tacVector.size()-1);
             }
@@ -179,8 +237,8 @@ void ThreeACHelperFunc(int id){
         int blockId = -1, incId = -1, whileStatelabel = -1;
         for(int i = 0; i < temp.size(); i++){
             if(tree[temp[i]].first == "(" && tree[temp[i+2]].first == ")" && tree[temp[i+1]].first != ""){ 
-                whileStatelabel = tacVector.size();
                 ThreeACHelperFunc(temp[i+1]);
+                whileStatelabel = tacVector.size()-1;
                 createTacGotoL("ifFalse", tacVector[whileStatelabel] -> res, "");
                 backlist[id].push_back(tacVector.size()-1);
             }
@@ -203,43 +261,89 @@ void ThreeACHelperFunc(int id){
         createTacGoto("");
         backlist[loopId.top()].push_back(tacVector.size() - 1);
     } 
-    if(tree[id].first == "ifThenElseStmt"){
+    if(tree[id].first == "ifThenElseStmt" || tree[id].first == "ifThenStmt"){
         childcallistrue = 0;
+         int blockId1 = -1, ifStatelabel = -1, blockId2 = -1;
          for(int i = 0; i < temp.size(); i++){
-            if(tree[temp[i]].first == "RelationalExpression"){
-                int for2 = tacVector.size();
-                    ThreeACHelperFunc(temp[i]);
-                       
-                    tac* t = new tac();
-                    t -> isGoto = true;
-                    t -> gotoLabel = "ifFalse";
-                    t -> arg = tacVector[for2] -> res;
-                    tacVector.push_back(t);
-                    backlist[temp[i]].push_back(tacVector.size()-1);
-            }
-            else if(tree[temp[i]].first == "else"){
-                ThreeACHelperFunc(temp[i-1]);
-                backpatch(tacVector.size(), temp[i-3]);
+            if(tree[temp[i]].first == "(" && tree[temp[i+2]].first == ")" && tree[temp[i+1]].first != ""){
                 ThreeACHelperFunc(temp[i+1]);
+                ifStatelabel = tacVector.size()-1;
+                createTacGotoL("ifFalse", tacVector[ifStatelabel] -> res, "");
+                backlist[id].push_back(tacVector.size()-1);
             }
+            if(tree[temp[i]].first == ")" && tree[temp[i]].first != "") blockId1 = temp[i+1];
+            if(tree[temp[i]].first == "else" && tree[temp[i]].first != "") blockId2 = temp[i+1];
         }
+        if(blockId1 != -1) ThreeACHelperFunc(blockId1);
+        backpatch(tacVector.size(), id);
+        if(blockId2 != -1) ThreeACHelperFunc(blockId2);
     }
-
-    else if(tree[id].first == "LocalVariableDeclarationStatement" || tree[id].first == "LocalVariableDeclaration" ){
+    if(tree[id].first == "ArrayAccess"){
         childcallistrue = 0;
-         for(int i = 0; i < temp.size(); i++){
-            ThreeACHelperFunc(temp[i]);
+        ThreeACHelperFunc(temp[2]);
+        if(tree[temp[0]].first == "ArrayAccess") {
+            int nodeNum = temp[0];
+            vector<int> ArrayAccessChild = tree[nodeNum].second;
+            ThreeACHelperFunc(ArrayAccessChild[2]);
+            string sizeofVar = to_string(getSize(customtypeof(ArrayAccessChild[0])));
+            string arrsize = "n";
+            tac *t = createTacCustom("*", arrsize, createArg(ArrayAccessChild[2]), createArg(ArrayAccessChild[2]));
+            tacVector.push_back(t);
+
+            tac *t1 = createTacCustom("+", t-> res, createArg(temp[2]), createArg(temp[2]));
+            tacVector.push_back(t1);
+            
+            tac *t2 = createTacCustom("*", t1 -> res, sizeofVar, t1->res );
+            tacVector.push_back(t2);
+
+            string ar3 = tree[ArrayAccessChild[0]].first + "[" + t1-> res + "]";
+            tac *t3 = createTacCustom("=", ar3, "", createArg(id));
+            tacVector.push_back(t3);
+        }
+        else{
+            string arrindex  = createArg(temp[2]);
+            string sizeofVar = to_string(getSize(customtypeof(temp[0])));
+            vector<int> temp = tree[id].second;
+            tac *t = createTacCustom("*", createArg(temp[2]), sizeofVar, createArg(temp[2]));
+            tacVector.push_back(t);
+
+            string tempvar = tree[temp[0]].first + "[" + t-> res + "]";
+            tac *t1 = createTacCustom("=", tempvar, "", createArg(id));
+            tacVector.push_back(t1);
         }
     }
-
-    if(childcallistrue){
-               
+    // if(tree[id].first == "MethodInvocation"){
+    //     childcallistrue = 0;
+    //     int argId = -1;
+    //     for(int i = 0; i < temp.size(); i++){
+    //         if(tree[temp[i]].first == "(" && tree[temp[i+2]].first == ")" && tree[temp[i+1]].first != "") argId = temp[i+1];
+    //     }
+    //     if(argId != -1) ThreeACHelperFunc(argId);
+    //     tacVector.push_back(createTac1(id));
+    // }
+    if(childcallistrue){         
         for(int i = 0; i < temp.size(); i++){
             ThreeACHelperFunc(temp[i]);
         }
     }
-    // cout << tree[id].first << endl;
-    
+    if(tree[id].first == "Assignment") tacVector.push_back(createTac1(id));
+    if(tree[id].first == "PreIncExpression") tacVector.push_back(createTac1Dplus(id));
+    if(tree[id].first == "PreDecExpression") tacVector.push_back(createTac1Dplus(id));
+    if(tree[id].first == "PostIncExpression") {createTac2Dplus(id);}
+    if(tree[id].first == "PostDecExpression") {createTac2Dplus(id);}
+    if(tree[id].first == "ConditionalOrExpression"){tacVector.push_back(createTac2(id));}
+    if(tree[id].first == "ConditionalAndExpression"){tacVector.push_back(createTac2(id));}
+    if(tree[id].first == "AdditiveExpression"){tacVector.push_back(createTac2(id)); }
+    if(tree[id].first == "MultiplicativeExpression"){tacVector.push_back(createTac2(id)); }
+    if(tree[id].first == "RelationalExpression"){tacVector.push_back(createTac2(id)); }
+    if(tree[id].first == "EqualityExpression"){tacVector.push_back(createTac2(id));}
+    if(tree[id].first == "AssignmentExpression"){tacVector.push_back(createTac1(id));}
+    if(tree[id].first == "PrimaryExpression"){tacVector.push_back(createTac1(id));}
+    if(tree[id].first == "VariableDeclarator"){tacVector.push_back(createTac1(id));}
+    if(tree[id].first == "InclusiveOrExpression"){tacVector.push_back(createTac2(id));}
+    if(tree[id].first == "ExclusiveOrExpression"){tacVector.push_back(createTac2(id));}
+    if(tree[id].first == "AndExpression"){tacVector.push_back(createTac2(id));}
+    if(tree[id].first == "ShiftExpression"){tacVector.push_back(createTac2(id));} 
 }
 // ****************************************************************
 
@@ -268,45 +372,8 @@ void tempfunc1(ofstream& fout, unordered_map<int,int> &visited, int id){
 
 }
 
-int getSize(string id){
-  if(id == "char") return sizeof(char);
-  if(id == "short") return sizeof(short);
-  if(id == "int") return sizeof(int);
-  if(id == "float") return sizeof(float);
-  if(id == "double") return sizeof(double);
-
-  return 8; // for any ptr
-}
 
 
-string stname = "program";
-string mname;
-string sttype;
-int stline;
-ull stsize = 8;
-ull stoffset;
-vector<string> stmodifiers;
-string stwhat;
-vector<string> parameters;
-int flag = 0;
-
-typedef struct sym_entry{
-	string type;
-    int line = 0;
-	ull size = 0;
-	ull offset = 0;
-    vector<string> modifiers;
-    string what;
-    string scope;
-}sym_entry;
-
-
-typedef map<string, sym_entry* > sym_table;
-string curr_table = "null";
-map<string, sym_table> table;
-map<string, string> parent_table;
-vector<string> key_words = {"abstract","continue","for","new","switch","assert","default","if","package","synchronized","boolean","do","goto","private","this","break","double","implements","protected","throw","byte","else","import","public","throws","case","enum","instanceof","return","transient","catch","extends","int","short","try","String","char","final","interface","static","void","class","finally","long","strictfp","volatile","const","float","native","super","while","_","exports","opens","requires","uses","module","permit","sealed","var","non-sealed","provides","to","with","open","record","transitive","yield"}; 
-map<string, int> keywords;
 
 void printSymbolTable(string curr_table){
   	for(auto it: (table[curr_table])){
@@ -1212,7 +1279,7 @@ SynchronizedStatement   : SYNCHRONIZED OPEN_BRACKETS Expression CLOSE_BRACKETS B
                                                         addChild(uid, $4);
                                                         addChild(uid, $5);
                                                         $$ = uid;
-}
+                        }
                         ;
 
 ArrayInitializer        : OPEN_CURLY VariableInitializers2 CLOSE_CURLY  { int uid = makenode("ArrayInitializer"); addChild(uid, $1); addChild(uid, $2); addChild(uid, $3); $$ = uid;}

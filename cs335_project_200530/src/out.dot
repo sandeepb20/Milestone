@@ -41,247 +41,267 @@ n25 [label="args"]
 n26 [label="FormalParameter"]
 n26->n25;
 n26->n24;
-n27 [label=")"]
-n28 [label="MethodDeclarator"]
-n28->n27;
-n28->n26;
-n28->n20;
-n28->n19;
-n29 [label="MethodHeader"]
+n26->n23;
+n27 [label="+"]
+n28 [label="9"]
+n29 [label="AdditiveExpression"]
 n29->n28;
-n29->n18;
-n29->n17;
-n30 [label="{"]
-n31 [label="int"]
-n32 [label="result"]
-n33 [label="="]
-n34 [label="sum"]
-n35 [label="("]
-n36 [label="10"]
-n37 [label=")"]
-n38 [label="MethodInvocation"]
-n38->n37;
-n38->n36;
-n38->n35;
-n38->n34;
-n39 [label="Expression"]
-n39->n38;
-n40 [label="VariableDeclarator"]
+n29->n27;
+n29->n26;
+n30 [label="Assignment"]
+n30->n29;
+n30->n22;
+n30->n21;
+n31 [label=";"]
+n32 [label="ExStatement"]
+n32->n31;
+n32->n30;
+n33 [label="}"]
+n34 [label="Block"]
+n34->n33;
+n34->n32;
+n34->n20;
+n35 [label="else"]
+n36 [label="{"]
+n37 [label="i"]
+n38 [label="="]
+n39 [label="3"]
+n40 [label="Assignment"]
 n40->n39;
-n40->n33;
-n40->n32;
-n41 [label="LocalVariableDeclaration"]
-n41->n40;
-n41->n31;
-n42 [label=";"]
-n43 [label="LocalVariableDeclarationStatement"]
-n43->n42;
-n43->n41;
-n44 [label="System"]
-n45 [label="."]
-n46 [label="out"]
-n47 [label="QualifiedName"]
-n47->n46;
-n47->n45;
-n47->n44;
-n48 [label="."]
-n49 [label="println"]
-n50 [label="QualifiedName"]
-n50->n49;
-n50->n48;
-n50->n47;
-n51 [label="("]
-n52 [label="result"]
-n53 [label=")"]
-n54 [label="MethodInvocation"]
+n40->n38;
+n40->n37;
+n41 [label=";"]
+n42 [label="ExStatement"]
+n42->n41;
+n42->n40;
+n43 [label="}"]
+n44 [label="Block"]
+n44->n43;
+n44->n42;
+n44->n36;
+n45 [label="ifThenElseStmt"]
+n45->n44;
+n45->n35;
+n45->n34;
+n45->n19;
+n45->n18;
+n45->n14;
+n45->n13;
+n46 [label="BlockStatements"]
+n46->n45;
+n46->n12;
+n47 [label="int"]
+n48 [label="b"]
+n49 [label=","]
+n50 [label="c"]
+n51 [label="VariableDeclarators"]
+n51->n50;
+n51->n49;
+n51->n48;
+n52 [label=","]
+n53 [label="a"]
+n54 [label="VariableDeclarators"]
 n54->n53;
 n54->n52;
 n54->n51;
-n54->n50;
-n55 [label=";"]
-n56 [label="ExStatement"]
-n56->n55;
-n56->n54;
-n57 [label="BlockStatements"]
+n55 [label="LocalVariableDeclaration"]
+n55->n54;
+n55->n47;
+n56 [label=";"]
+n57 [label="LocalVariableDeclarationStatement"]
 n57->n56;
-n57->n43;
-n58 [label="}"]
-n59 [label="Block"]
-n59->n58;
-n59->n57;
-n59->n30;
-n60 [label="MethodDeclaration"]
-n60->n59;
-n60->n29;
-n61 [label="String"]
-n62 [label="str"]
-n63 [label="="]
-n64 [label="\"chill\""]
-n65 [label="Expression"]
-n65->n64;
-n66 [label="VariableDeclarator"]
-n66->n65;
-n66->n63;
-n66->n62;
-n67 [label=";"]
-n68 [label="FieldDeclaration"]
-n68->n67;
-n68->n66;
-n68->n61;
-n69 [label="public"]
-n70 [label="static"]
-n71 [label="Modifiers"]
+n57->n55;
+n58 [label="BlockStatements"]
+n58->n57;
+n58->n46;
+n59 [label="while"]
+n60 [label="("]
+n61 [label="a"]
+n62 [label="=="]
+n63 [label="b"]
+n64 [label="EqualityExpression"]
+n64->n63;
+n64->n62;
+n64->n61;
+n65 [label=")"]
+n66 [label="{"]
+n67 [label="int"]
+n68 [label="s"]
+n69 [label="="]
+n70 [label="3"]
+n71 [label="VariableDeclarator"]
 n71->n70;
-n72 [label="Modifiers"]
+n71->n69;
+n71->n68;
+n72 [label="LocalVariableDeclaration"]
 n72->n71;
-n72->n69;
-n73 [label="int"]
-n74 [label="sum"]
-n75 [label="("]
-n76 [label="int"]
-n77 [label="k"]
-n78 [label="FormalParameter"]
-n78->n77;
-n78->n76;
-n79 [label=","]
-n80 [label="int"]
-n81 [label="j"]
-n82 [label="FormalParameter"]
+n72->n67;
+n73 [label=";"]
+n74 [label="LocalVariableDeclarationStatement"]
+n74->n73;
+n74->n72;
+n75 [label="for"]
+n76 [label="("]
+n77 [label="int"]
+n78 [label="i"]
+n79 [label="="]
+n80 [label="0"]
+n81 [label="VariableDeclarator"]
+n81->n80;
+n81->n79;
+n81->n78;
+n82 [label="LocalVariableDeclaration"]
 n82->n81;
-n82->n80;
-n83 [label="FormalParameterList"]
-n83->n82;
-n83->n79;
-n83->n78;
-n84 [label=")"]
-n85 [label="MethodDeclarator"]
-n85->n84;
-n85->n83;
-n85->n75;
-n85->n74;
-n86 [label="MethodHeader"]
-n86->n85;
-n86->n73;
-n86->n72;
-n87 [label="{"]
-n88 [label="if"]
-n89 [label="("]
-n90 [label="k"]
-n91 [label=">"]
-n92 [label="0"]
-n93 [label="RelationalExpression"]
-n93->n92;
-n93->n91;
-n93->n90;
-n94 [label=")"]
-n95 [label="{"]
-n96 [label="return"]
-n97 [label="k"]
-n98 [label="+"]
-n99 [label="sum"]
-n100 [label="("]
-n101 [label="k"]
-n102 [label="-"]
-n103 [label="1"]
-n104 [label="AdditiveExpression"]
+n82->n77;
+n83 [label=";"]
+n84 [label="i"]
+n85 [label="<"]
+n86 [label="8"]
+n87 [label="RelationalExpression"]
+n87->n86;
+n87->n85;
+n87->n84;
+n88 [label=";"]
+n89 [label="i"]
+n90 [label="="]
+n91 [label="i"]
+n92 [label="+"]
+n93 [label="1"]
+n94 [label="AdditiveExpression"]
+n94->n93;
+n94->n92;
+n94->n91;
+n95 [label="Assignment"]
+n95->n94;
+n95->n90;
+n95->n89;
+n96 [label=")"]
+n97 [label="{"]
+n98 [label="k"]
+n99 [label="="]
+n100 [label="k"]
+n101 [label="+"]
+n102 [label="1"]
+n103 [label="AdditiveExpression"]
+n103->n102;
+n103->n101;
+n103->n100;
+n104 [label="Assignment"]
 n104->n103;
-n104->n102;
-n104->n101;
-n105 [label=","]
-n106 [label="0"]
-n107 [label="ArgumentList"]
-n107->n106;
-n107->n105;
-n107->n104;
-n108 [label=")"]
-n109 [label="MethodInvocation"]
+n104->n99;
+n104->n98;
+n105 [label=";"]
+n106 [label="ExStatement"]
+n106->n105;
+n106->n104;
+n107 [label="break"]
+n108 [label=";"]
+n109 [label="BreakStatement"]
 n109->n108;
 n109->n107;
-n109->n100;
-n109->n99;
-n110 [label="AdditiveExpression"]
+n110 [label="BlockStatements"]
 n110->n109;
-n110->n98;
-n110->n97;
-n111 [label=";"]
-n112 [label="ReturnStatement"]
-n112->n111;
-n112->n110;
-n112->n96;
-n113 [label="}"]
-n114 [label="Block"]
-n114->n113;
-n114->n112;
-n114->n95;
-n115 [label="else"]
-n116 [label="{"]
-n117 [label="return"]
-n118 [label="0"]
-n119 [label=";"]
-n120 [label="ReturnStatement"]
+n110->n106;
+n111 [label="c"]
+n112 [label="="]
+n113 [label="c"]
+n114 [label="+"]
+n115 [label="1"]
+n116 [label="AdditiveExpression"]
+n116->n115;
+n116->n114;
+n116->n113;
+n117 [label="Assignment"]
+n117->n116;
+n117->n112;
+n117->n111;
+n118 [label=";"]
+n119 [label="ExStatement"]
+n119->n118;
+n119->n117;
+n120 [label="BlockStatements"]
 n120->n119;
-n120->n118;
-n120->n117;
+n120->n110;
 n121 [label="}"]
 n122 [label="Block"]
 n122->n121;
 n122->n120;
-n122->n116;
-n123 [label="ifThenElseStmt"]
+n122->n97;
+n123 [label="forStmt"]
 n123->n122;
-n123->n115;
-n123->n114;
-n123->n94;
-n123->n93;
-n123->n89;
+n123->n96;
+n123->n95;
 n123->n88;
-n124 [label="str"]
-n125 [label="="]
-n126 [label="\"compiler\""]
-n127 [label="Assignment"]
+n123->n87;
+n123->n83;
+n123->n82;
+n123->n76;
+n123->n75;
+n124 [label="BlockStatements"]
+n124->n123;
+n124->n74;
+n125 [label="continue"]
+n126 [label=";"]
+n127 [label="ContinueStatement"]
 n127->n126;
 n127->n125;
-n127->n124;
-n128 [label=";"]
-n129 [label="ExStatement"]
-n129->n128;
-n129->n127;
-n130 [label="BlockStatements"]
-n130->n129;
-n130->n123;
-n131 [label="}"]
-n132 [label="Block"]
-n132->n131;
-n132->n130;
-n132->n87;
-n133 [label="MethodDeclaration"]
-n133->n132;
-n133->n86;
-n134 [label="ClassBodyDeclarations"]
+n128 [label="BlockStatements"]
+n128->n127;
+n128->n124;
+n129 [label="d"]
+n130 [label="="]
+n131 [label="d"]
+n132 [label="+"]
+n133 [label="1"]
+n134 [label="AdditiveExpression"]
 n134->n133;
-n135 [label="ClassBodyDeclarations"]
+n134->n132;
+n134->n131;
+n135 [label="Assignment"]
 n135->n134;
-n135->n68;
-n136 [label="ClassBodyDeclarations"]
-n136->n135;
-n136->n60;
-n137 [label="ClassBodyDeclarations"]
+n135->n130;
+n135->n129;
+n136 [label=";"]
+n137 [label="ExStatement"]
 n137->n136;
-n137->n13;
-n138 [label="}"]
-n139 [label="ClassBody"]
-n139->n138;
-n139->n137;
-n139->n5;
-n140 [label="ClassDeclaration"]
+n137->n135;
+n138 [label="BlockStatements"]
+n138->n137;
+n138->n128;
+n139 [label="}"]
+n140 [label="Block"]
 n140->n139;
-n140->n4;
-n140->n3;
-n140->n2;
-n141 [label="CompilationUnit"]
+n140->n138;
+n140->n66;
+n141 [label="whileStmt"]
 n141->n140;
-n142 [label="Program"]
-n142->n143;
+n141->n65;
+n141->n64;
+n141->n60;
+n141->n59;
+n142 [label="BlockStatements"]
 n142->n141;
-n143 [label=""]
+n142->n58;
+n143 [label="}"]
+n144 [label="Block"]
+n144->n143;
+n144->n142;
+n144->n4;
+n145 [label="ClassBodyDeclarations"]
+n145->n144;
+n146 [label="}"]
+n147 [label="ClassBody"]
+n147->n146;
+n147->n145;
+n147->n3;
+n148 [label="ClassDeclaration"]
+n148->n147;
+n148->n2;
+n148->n1;
+n149 [label="CompilationUnit"]
+n149->n148;
+n150 [label="Program"]
+n150->n151;
+n150->n149;
+n151 [label=""]
 }
