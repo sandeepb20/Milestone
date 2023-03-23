@@ -93,6 +93,30 @@ string customtypeof(int id){
     return "null";
 }
 
+int getLineOf(int id){
+    
+    string temp = scope[id];
+	while(temp != "null"){
+        auto it = table[temp].find(tree[id].first);
+        if(it!=table[temp].end()) return table[temp][tree[id].first]->line;
+		else{
+		temp = parent_table[temp];}
+	}
+    return 0;
+}
+
+vector<string> getParamsOf(int id){
+    
+    string temp = scope[id];
+	while(temp != "null"){
+        auto it = table[temp].find(tree[id].first);
+        if(it!=table[temp].end()) return table[temp][tree[id].first]->parameters;
+		else{
+		temp = parent_table[temp];}
+	}
+    return vector<string>();
+}
+
 vector<int> getDim(int id){
     string temp = scope[id];
     while(temp != "null"){
@@ -324,20 +348,6 @@ void ThreeACHelperFunc(int id){
             tacMap[currTacVec].push_back(t1);
         }
     }
-    // if(tree[id].first == "FormalParameter"){
-    //     childcallistrue = 0;
-    //     tac* t = createTacCustom("=", createArg3(temp[2]), "", createArg3(id));
-    //     tacMap[currTacVec].push_back(t);
-    // }
-//    t1 = popparam // get object reference, implicit this pointer
-//    t2 = symtable(Example1, x) // get offset for x
-//    t3 = popparam // get value for x
-//    *(t1+t2) = t3
-//    t4 = symtable(Example1, y) // get offset for y
-//    t5 = popparam // get value for y
-//    *(t1+t4) = t5
-//    return
-//    endfunc
 
     if(tree[id].first == "ReturnStatement"){
         childcallistrue = 0;
@@ -1011,10 +1021,10 @@ void print(){
     checkScope(root);
     setOffset();
     // ***************************
-    cout << "******************** Three AC Print Statements**************" << endl;
+    cout << "******************** Three AC Printing**************" << endl;
     ThreeACHelperFunc(root);
     printThreeAC();
-    // ***************************
+    // ****************************
     ofstream fout;
     fout.open(OutputFileName);
     fout << "digraph G {" << endl;
@@ -2353,6 +2363,356 @@ int main(int argc, char *argv[]) {
         printSymbolTable(it.first);
         cout << "*******" << endl;
     } 
+
+    // my addition *********** TYPE CHECKING **********************
+    /* map<int, pair<string, vector<int> >> typeCheck; */
+    unordered_map <int,bool> visitedType;
+    unordered_map <int, bool>terminal;
+    unordered_map<string, pair<int, vector<string>>> methodParams;
+    cout<<"**********  TREE   ********************\n";
+    map<int, string> whtIsType;
+    for(auto itr = tree.begin();itr!=tree.end();itr++){
+        visitedType[itr->first]=  false;
+        terminal[itr->first] = false;
+        whtIsType[itr->first]=  "x";
+        /* cout<<itr->first<<" [ "<< (itr->second).first<<" ]    -> ";
+         cout<<"{ "<<additionalInfo[itr->first]<<" }";
+        for(int j=0; j<(itr->second).second.size();j++){
+            
+            cout<<(itr->second).second[j]<<" ";
+        }
+        cout<<"\n"; */
+    }
+    
+    /* cout<<visitedType.size(); */
+
+    /* typeCheck = tree; */
+    int typeErrorFlag = 0;
+
+        cout<<"**********  Typecheck  ********************\n";
+        // consider float and double as same
+
+    stack <int> nodeStack;
+    /* cout<<root<<endl; */
+    nodeStack.push(root);
+    int again = 0;
+    int node,child;
+    while(!nodeStack.empty() && !again){
+        node = nodeStack.top();
+        nodeStack.pop();
+        bool allChildrenVisited = true;
+        int childNum = tree[node].second.size();
+        if(childNum==0){
+            terminal[node] = true;
+            // leaf node
+            if (additionalInfo[node]=="identifier") {
+                whtIsType[node] = customtypeof(node);
+                if (whtIsType[node]=="double") whtIsType[node]="float";}
+            else if(additionalInfo[node]=="type") {
+                whtIsType[node] = tree[node].first;
+                if (whtIsType[node]=="double") whtIsType[node]="float";
+                }
+            else if(additionalInfo[node]=="IntegerLiteral")  whtIsType[node] = "int";
+            else if(additionalInfo[node]=="CharacterLiteral")  whtIsType[node] = "char";
+            else if(additionalInfo[node]=="FloatingPointLiteral")  whtIsType[node] = "float";
+            else if(additionalInfo[node]=="BooleanLiteral")  whtIsType[node] = "boolean";
+            else if(additionalInfo[node]=="StringLiteral")  whtIsType[node] = "String";
+            else if(additionalInfo[node]=="NullLiteral")  whtIsType[node] = "null";
+        }
+        for(int i=0; i<childNum;i++){
+            child = (tree[node].second)[i];
+            if(!visitedType[child]){
+                allChildrenVisited = false;
+                if(child!=-1 &&
+                /* additionalInfo[child]=="modifier" && */
+                    tree[child].first!="="   &&
+                    tree[child].first!="<"   &&
+                    tree[child].first!=">"   &&
+                    tree[child].first!="!"   &&
+                    tree[child].first!="~"   &&
+                    tree[child].first!="?"   &&
+                    tree[child].first!=":"   &&
+                    tree[child].first!="->"  &&
+                    tree[child].first!="=="  &&
+                    tree[child].first!=">="  &&
+                    tree[child].first!="<="  &&
+                    tree[child].first!="!="  &&
+                    tree[child].first!="&&"  &&
+                    tree[child].first!="||"  &&
+                    tree[child].first!="++"  &&
+                    tree[child].first!="--"  &&
+                    tree[child].first!="+"   &&
+                    tree[child].first!="-"   &&
+                    tree[child].first!="*"   &&
+                    tree[child].first!="/"   &&
+                    tree[child].first!="&"   &&
+                    tree[child].first!="^"   &&
+                    tree[child].first!="%"   &&
+                    tree[child].first!="<<"  &&
+                    tree[child].first!=">>"  &&
+                    tree[child].first!=">>>" &&
+                    tree[child].first!="+="  &&
+                    tree[child].first!="-="  &&
+                    tree[child].first!="*="  &&
+                    tree[child].first!="/="  &&
+                    tree[child].first!="&="  &&
+                    tree[child].first!="|="  &&
+                    tree[child].first!="^="  &&
+                    tree[child].first!="%="  &&
+                    tree[child].first!="<<=" &&
+                    tree[child].first!=">>=" &&
+                    tree[child].first!=">>>="&&
+                    tree[child].first!="|"   &&
+                    tree[child].first!="<>" &&
+                    tree[child].first!="("  &&
+                    tree[child].first!=")"  &&
+                    tree[child].first!="{"  &&
+                    tree[child].first!="}"  &&
+                    tree[child].first!="["  &&
+                    tree[child].first!="]"  &&
+                    tree[child].first!=";"  &&
+                    tree[child].first!=","  &&
+                    tree[child].first!="."  &&
+                    tree[child].first!="..."&&
+                    tree[child].first!="@"  &&
+                    tree[child].first!="::"  
+
+            ) {
+                /* cout<<"88888 "<<whtIsType[child]<<endl; */
+                nodeStack.push(child);
+                /* cout<<child<<" "<<whtIsType[child]<<" "; */
+
+                
+                
+                }
+            else{
+                visitedType[child] = true;
+            }
+                
+            }
+        }
+        if(allChildrenVisited){
+            
+            string is_type = "";
+            childNum = tree[node].second.size();
+
+            if(terminal[node]==false){
+                // finding type of nonTerminal
+                if( tree[node].first == "LocalVariableDeclarationStatement"||
+                    tree[node].first == "ExStatement"  ||
+                    tree[node].first == "MethodHeader"  ||
+                    tree[node].first == "forStmt" ||
+                    tree[node].first == "whileStmt" ||
+                    tree[node].first == "BlockStatements" ||
+                    tree[node].first == "ifThenStmt" ||
+                    tree[node].first == "ifThenElseStmt" ||
+                    tree[node].first == "ClassDeclaration" ||
+                    tree[node].first == "ClassBodyDeclarations" ||
+                    tree[node].first == "Block" ) {
+                    // no need to store type
+                    whtIsType[node] = "x";
+
+                    }
+
+                else if( tree[node].first =="ClassInstanceCreationExpression" ) {
+                    // no need to store type
+                    is_type = tree[(tree[node].second)[1]].first;
+
+
+                    }
+                else if(tree[node].first =="VariableDeclarator")
+                {
+                    if(whtIsType[(tree[node].second)[0]]=="float" && (whtIsType[(tree[node].second)[2]] == "float" || whtIsType[(tree[node].second)[2]] == "int")){
+                        is_type = "float";
+
+                    }
+                    else if(whtIsType[(tree[node].second)[0]]=="int" && (whtIsType[(tree[node].second)[2]] == "int" || whtIsType[(tree[node].second)[2]] == "char")){
+                        is_type = "int";
+
+                    }
+                    else if(whtIsType[(tree[node].second)[0]]== whtIsType[(tree[node].second)[2]] ){
+                        is_type = whtIsType[(tree[node].second)[0]];
+
+                    }
+                    else{
+                        for(int i=0; i<childNum;i++)
+                    {
+                        child = (tree[node].second)[i];
+                        /* cout<<"child : "<<child<<endl; */
+                        if(is_type=="" && whtIsType[child]!="x") is_type = whtIsType[child];
+                        else if(is_type != whtIsType[child] && whtIsType[child]!="x") 
+                        {
+                            cout<<" error seems here ";
+                            typeErrorFlag = 1;
+                            cout<<node <<": " <<tree[node].first<<" at line:"<<getLineOf((tree[node].second)[0])<<endl;
+                            is_type = "error";
+                            exit(1);
+                        }
+                    }
+                    }
+
+
+                    
+                }
+
+                
+                else if(tree[node].first =="AdditiveExpression" || tree[node].first =="RelationalExpression"
+
+                )
+                {
+                    if((whtIsType[(tree[node].second)[0]]=="float" && (whtIsType[(tree[node].second)[2]] == "float" || whtIsType[(tree[node].second)[2]] == "int")) 
+                    || 
+                    (whtIsType[(tree[node].second)[0]]=="float" || (whtIsType[(tree[node].second)[0]] == "int" && whtIsType[(tree[node].second)[2]] == "float")))
+                    {
+                        is_type = "float";
+
+                    }
+                    else if(
+                        (whtIsType[(tree[node].second)[0]]=="int" && (whtIsType[(tree[node].second)[2]] == "int" || whtIsType[(tree[node].second)[2]] == "char"))
+                         || 
+                         (whtIsType[(tree[node].second)[0]]=="char" || (whtIsType[(tree[node].second)[0]] == "int" && whtIsType[(tree[node].second)[2]] == "int")))
+                        {
+                        is_type = "int";
+
+                    }
+                    else{
+                        for(int i=0; i<childNum;i++)
+                    {
+                        child = (tree[node].second)[i];
+                        /* cout<<"child : "<<child<<endl; */
+                        if(is_type=="" && whtIsType[child]!="x") is_type = whtIsType[child];
+                        else if(is_type != whtIsType[child] && whtIsType[child]!="x") 
+                        {
+                            cout<<" error seems here ";
+                            typeErrorFlag = 1;
+                            cout<<node <<": " <<tree[node].first<<" at line:"<<getLineOf((tree[node].second)[0])<<endl;
+                            is_type = "error";
+                            exit(1);
+                        }
+                    }
+
+                    }
+
+                    
+                }
+                
+                else if(tree[node].first =="ConditionalExpression" )
+                {
+                    if(childNum==5){
+                        if(whtIsType[(tree[node].second)[2]] == whtIsType[(tree[node].second)[4]]){
+                            is_type = whtIsType[(tree[node].second)[2]];
+                        }
+                    }
+                }
+                else if(tree[node].first =="QualifiedName" )
+                {
+                    is_type = whtIsType[tree[parent[node]].second[2]];
+
+                }
+                else if(tree[node].first =="ArgumentList")
+                {
+                    for(int i=0; i<childNum;i++){
+                        child = (tree[node].second)[i];
+                        if(whtIsType[child]!="x") is_type = is_type + whtIsType[child];
+                    }
+                    
+                    /* cout<<compare<<"balle?\n";           */
+                    
+
+                }
+
+                else if(tree[node].first =="FormalParameterList" )
+                {
+
+                    for(int i=0; i<childNum;i++){
+                        child = (tree[node].second)[i];
+                        if(whtIsType[child]!="x") is_type = is_type + whtIsType[child];
+                    }
+                }
+                else if(tree[node].first =="ArgumentList")
+                {
+                    for(int i=0; i<childNum;i++){
+                        child = (tree[node].second)[i];
+                        if(whtIsType[child]!="x") is_type = is_type + whtIsType[child];
+                    }
+                    
+                    /* cout<<compare<<"balle?\n";           */
+                    
+
+                }
+                
+                else if(tree[node].first =="MethodInvocation")
+                {
+                    // type is the type of method name + type of params
+                    is_type = whtIsType[(tree[node].second)[0]]+ whtIsType[(tree[node].second)[2]];
+                    cout<<is_type<<endl;
+
+                    int to_go = (tree[node].second)[0];
+                    vector <string> params = getParamsOf(to_go);
+                    string compare = customtypeof((tree[node].second)[0]);
+                    for(int i=0; i<params.size();i++){
+                        compare = compare + params[i];
+                    }
+                    cout<<compare<<endl;
+                    if(compare!=is_type){
+                        cout<<" error seems here ";
+                        typeErrorFlag = 1;
+                        cout<<node <<": " <<tree[node].first<<" at line:"<<getLineOf((tree[node].second)[0])<<endl;
+                        is_type = "error";
+                        exit(1);
+                    }
+
+                    is_type = whtIsType[(tree[node].second)[0]];
+
+                    
+                    
+                }
+                else if(tree[node].first =="MethodDeclarator")
+                {
+                    // type is the type of method name
+                    is_type = whtIsType[(tree[node].second)[0]];
+ 
+                }
+                else if(tree[node].first =="MethodDeclarator")
+                {
+                    // type is the type of method name
+                    is_type = whtIsType[(tree[node].second)[0]];
+ 
+                }
+                else
+                {
+                    for(int i=0; i<childNum;i++)
+                    {
+                        child = (tree[node].second)[i];
+                        /* cout<<"child : "<<child<<endl; */
+                        if(is_type=="" && whtIsType[child]!="x") is_type = whtIsType[child];
+                        else if(is_type != whtIsType[child] && whtIsType[child]!="x") 
+                        {
+                            cout<<" error seems here ";
+                            typeErrorFlag = 1;
+                            cout<<node <<": " <<tree[node].first<<" at line:"<<getLineOf((tree[node].second)[0])<<endl;
+                            is_type = "error";
+                            exit(1);
+                        }
+                    }
+
+                }
+                
+            whtIsType[node] = is_type;
+            }
+
+            
+
+            if (node == root) again=1;
+            /* cout<<node <<": " <<tree[node].first<<" "<<whtIsType[node]<<endl; */
+            visitedType[node] = true;
+            if(parent.count(node)>0 && !visitedType[parent[node]]){
+                nodeStack.push(parent[node]);
+            }
+        }
+    }
+    if(typeErrorFlag == 0) cout<<"No Type Error Found\n";
+    exit(1);
 }
 
 void yyerror(const char* s) {
