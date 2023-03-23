@@ -6,12 +6,21 @@
 // }
 
 // Exapple of for Loop
-class For{
-  {
-  for(int i = 0; i < 10; i = i + 1){
-    int a = 1;
+// class For{
+//   {
+//   for(int i = 0; i < 10; i = i + 1){
+//     int a = 1;
+//   }
+// }
+// }
+class Myclass{
+  public void main(int arr[][][][]){
+    int i = 0;
+    int j = 0;
+    int k = 0;
+    int l = 0;
+    int a = arr[i][j][k][l];
   }
-}
 }
 
 
