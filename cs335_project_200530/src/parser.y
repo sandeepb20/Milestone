@@ -477,11 +477,10 @@ void tempfunc1(ofstream& fout, unordered_map<int,int> &visited, int id){
 void printSymbolTable(string curr_table){
   	for(auto it: (table[curr_table])){
         cout << it.first.c_str() << " ";
-        for(auto j : (it.second)->parameters){
+        for(auto j : (it.second)->modifiers){
             cout << j << " ";
         }
-        cout << endl;
-        // cout << it.second->type.c_str() << " " << (it.second)->line << " " << (it.second)->size << " " << (it.second)->offset << " " << (it.second)->what << " " << (it.second)->isArray << " " << (it.second)->scope << "." << endl;
+        cout << it.second->type.c_str() << " " << (it.second)->line << " " << (it.second)->size << " " << (it.second)->offset << " " << (it.second)->what << " " << (it.second)->isArray << " " << (it.second)->scope << "." << endl;
   }
 }
 
@@ -560,6 +559,7 @@ void setSize(string id, int len){
 
 void assignSize(int n, int flag){
     vector<int> temp = tree[n].second;
+    if(additionalInfo[temp[0]] == "identifier"){
     string type = customtypeof(temp[0]);
     if(flag == 0){
     if(type == "String"){
@@ -579,18 +579,20 @@ void assignSize(int n, int flag){
         setSize(tree[(tree[temp[2]].second)[0]].first,len);
     } 
     }
-    
+    }
 }
 
 void arraySize(int n){
+    // cout << var << endl;
     int count = 1;
-    while(tree[n].first == "VariableInitializers"){
-        n = (tree[n].second)[0];
+    int n1 = n;
+    while(tree[n1].first == "VariableInitializers"){
+        n1 = (tree[n1].second)[0];
         count++;
     }
     (table[curr_table][var])->ndim.push_back(count);
-    if(tree[n].first == "ArrayInitializer"){
-        arraySize((tree[n].second)[1]);
+    if(tree[n1].first == "ArrayInitializer"){
+        arraySize((tree[n1].second)[1]);
     }
     return;
 }
@@ -625,7 +627,17 @@ void symTable(int n){
         else if(additionalInfo[n] == "identifier" && (tree[parent[n]].first == "VariableDeclarator" || tree[parent[n]].first == "VariableDeclarators" || tree[parent[n]].first == "ConstructorDeclarator" || tree[parent[n]].first == "MethodDeclarator" || tree[parent[n]].first == "ClassDeclaration" || tree[parent[n]].first == "FormalParameter" || tree[parent[n]].first == "LocalVariableDeclaration" || tree[parent[n]].first == "FieldDeclaration" || tree[parent[n]].first == "VariableDeclaratorId")){
             stname = tree[n].first;
             if(!scope_lookup(stname, curr_table)){
-            createEntry(curr_table, stname, stmodifiers, sttype, LineNumber[n], stsize, stoffset, stwhat, curr_table, stisArray, stndim);}
+                if(tree[parent[n]].first == "VariableDeclaratorId"){
+                    stisArray = 1;
+                int n1 = n;
+                while(tree[parent[n1]].first == "VariableDeclaratorId"){
+                sttype += "[]";
+                n1 = parent[n1];
+                }
+                }
+            createEntry(curr_table, stname, stmodifiers, sttype, LineNumber[n], stsize, stoffset, stwhat, curr_table, stisArray, stndim);
+            stisArray = 0;
+            }
             else{
                 cout << "Variable " << stname << " already declared !!" << endl;
             }
@@ -732,10 +744,10 @@ void checkMethodCall(int n){
 
 
 void checkScope(int n){
-    
-    // cout << tree[n].first << endl;
     vector<int> temp = (tree[n].second);
+    // cout << tree[n].first << endl;
     if(temp.size() == 0)  {
+        
         if(tree[n].first == "{" && (tree[parent[n]].first == "ClassBody")){
             curr_table = scope[n];
         }
@@ -770,6 +782,7 @@ void checkScope(int n){
             }
         }
     }
+    else{
     if(tree[n].first == "MethodInvocation"){
         checkMethodCall(n);
         return;
@@ -779,10 +792,27 @@ void checkScope(int n){
     }
     if(tree[n].first == "VariableDeclarator"){
         assignSize(n, 1);
-        var = tree[(tree[n].second)[0]].first;
+        int n1 = n;
+        while((tree[n1].second).size() != 0){
+            n1 = (tree[n1].second)[0];
+        }
+        var = tree[n1].first;
     }
     if(tree[n].first == "ArrayInitializer"){
         arraySize((tree[n].second)[1]);
+        int count = 1;
+        // cout << (table[curr_table][var]->ndim).size() << endl;
+        for(auto i : table[curr_table][var]->ndim){
+            count *= i;
+        }
+        table[curr_table][var]->size *= count;
+    }
+    else if(tree[n].first == "DimExprs"){
+        for(auto i : (tree[n].second)){
+            int j = stoi(tree[(tree[i].second)[1]].first);
+            // cout << j << endl;
+        table[curr_table][var]->ndim.push_back(j);
+        }
         int count = 1;
         for(auto i : table[curr_table][var]->ndim){
             count *= i;
@@ -793,6 +823,7 @@ void checkScope(int n){
         for(int i = 0; i < temp.size(); i++){
             checkScope(temp[i]);  
         }
+    }
     }
 }
 
@@ -808,14 +839,9 @@ void setOffset(){
 
 void print(){
     symTable(root);
-
-    for(auto it : table){
-        printSymbolTable(it.first);
-        cout << "*******" << endl;
-    } 
     curr_table = "program";
-    // checkScope(root);
-    // setOffset();
+    checkScope(root);
+    setOffset();
     // ***************************
     // cout << "******************** Three AC Print Statements**************" << endl;
     // tacVecId.push(currTacVec);
@@ -2048,7 +2074,7 @@ FINAL                                                                   :   FINA
 TRANSIENT                                                               :   TRANSIENTT {$$ = makenode($1,"modifier"); } ;
 VOLATILE                                                                :   VOLATILET {$$ = makenode($1,"modifier"); } ;
 IMPLEMENTS                                                              :   IMPLEMENTST {$$ = makenode($1,$1); } ;
-VOID                                                                    :   VOIDT {$$ = makenode($1,$1); } ;
+VOID                                                                    :   VOIDT {$$ = makenode($1,"type"); } ;
 INTERFACE                                                               :   INTERFACET {$$ = makenode($1,$1); } ;
 NATIVE                                                                  :   NATIVET {$$ = makenode($1,"modifier"); } ;
 OPEN_BRACKETS                                                           :   OPEN_BRACKETST {$$ = makenode($1,$1); } ;
@@ -2156,10 +2182,10 @@ int main(int argc, char *argv[]) {
     }
     fclose(yyin);
 
-    // for(auto it : table){
-    //     printSymbolTable(it.first);
-    //     cout << "*******" << endl;
-    // } 
+    for(auto it : table){
+        printSymbolTable(it.first);
+        cout << "*******" << endl;
+    } 
 }
 
 void yyerror(const char* s) {
