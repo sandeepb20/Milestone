@@ -136,10 +136,26 @@ stack<string> tacVecId;
 
 string createArg(int id){
     if(additionalInfo.find(id) != additionalInfo.end()){
-        return tree[id].first;
+        return tree[id].first ;
     }
     else return "_v" + to_string(id);
 }
+
+string createArg3(int id){
+    if(additionalInfo.find(id) != additionalInfo.end()){
+        return "_"+ tree[id].first ;
+    }
+    else return "_v" + to_string(id);
+}
+
+string createArg4(int id){
+    if(additionalInfo.find(id) != additionalInfo.end()){
+        return "SymbolEntry( "+ currTacClass + ", "  + tree[id].first  + ")";
+    }
+    else return "_v" + to_string(id);
+}
+
+
 
 void printThreeAC(){
     int uid = 1;
@@ -250,7 +266,70 @@ void ThreeACHelperFunc(int id){
         tacVecId.push(currTacClass + ".");
         currTacVec = tacVecId.top();
     }
+    if(tree[id].first == "ConstructorDeclaration"){
+        childcallistrue = 0;
+        currTacVec = currTacClass + ".Constructor";
+        tacVecId.push(currTacVec);
+        ThreeACHelperFunc(temp[1]);
+        ThreeACHelperFunc(temp[2]);
+         tac* t = createTacCustom("EndConstructor", "", "",tree[temp[0]].first);
+        tacMap[currTacVec].push_back(t);     
+    }
+    if(tree[id].first == "ConstructorDeclarator"){
+        if(tree[temp[1]].first == "("){
+            childcallistrue = 0;
+            tac* t = createTacCustom("BeginFunc", "", "","");
+            tacMap[currTacVec].push_back(t);
+            tac* t1 = createTacCustom("=", "popparam", "",createArg(id));
+            tacMap[currTacVec].push_back(t1);
+            ThreeACHelperFunc(temp[2]);
+        }
+    }
+    if(tree[id].first == "FieldAccess"){
+        if(tree[temp[1]].first == "."){
+            childcallistrue = 0;
+            ThreeACHelperFunc(temp[2]);
+            tac* t = createTacCustom("=", createArg4(temp[2]), "", createArg(id));
+            tacMap[currTacVec].push_back(t);
+        }
+    }
+    if(tree[id].first == "FormalParameterList"){
+        childcallistrue = 0;
+        if(tree[temp[0]].first == "FormalParameterList"){
+            ThreeACHelperFunc(temp[2]);
+            vector<int> temp1 = tree[temp[2]].second;
+            tac* t = createTacCustom("popparam", "", "", createArg3(temp1[2]));
+            tacMap[currTacVec].push_back(t);
+            ThreeACHelperFunc(temp[0]);
+        }
+        else{
+            ThreeACHelperFunc(temp[2]);
+             vector<int> temp1 = tree[temp[2]].second;
+            tac* t = createTacCustom("=","popparam", "", createArg3(temp1[2]));
+            tacMap[currTacVec].push_back(t);
+            ThreeACHelperFunc(temp[0]);
+            temp1 = tree[temp[0]].second;
+            tac* t1 = createTacCustom("=","popparam",  "", createArg3(temp1[2]));
+            tacMap[currTacVec].push_back(t1);
+        }
+    }
+    // if(tree[id].first == "FormalParameter"){
+    //     childcallistrue = 0;
+    //     tac* t = createTacCustom("=", createArg3(temp[2]), "", createArg3(id));
+    //     tacMap[currTacVec].push_back(t);
+    // }
+//    t1 = popparam // get object reference, implicit this pointer
+//    t2 = symtable(Example1, x) // get offset for x
+//    t3 = popparam // get value for x
+//    *(t1+t2) = t3
+//    t4 = symtable(Example1, y) // get offset for y
+//    t5 = popparam // get value for y
+//    *(t1+t4) = t5
+//    return
+//    endfunc
+
     if(tree[id].first == "ReturnStatement"){
+        childcallistrue = 0;
         ThreeACHelperFunc(temp[1]);
         tac* t = new tac();
         t -> op = "Return";
@@ -259,6 +338,7 @@ void ThreeACHelperFunc(int id){
         return;        
     }
     if(tree[id].first == "assertStatement"){
+        childcallistrue = 0;
         ThreeACHelperFunc(temp[1]);
         tac* t = new tac();
         t -> op = "Assert";
@@ -439,13 +519,14 @@ void ThreeACHelperFunc(int id){
             currTacVec = currTacClass + "."+ tree[temp[0]].first;
             tacVecId.push(currTacVec);
             string paraOffSet = "n";
-            tac* t = createTacCustom("BeginFunc", "", "",paraOffSet);
+            tac* t = createTacCustom("BeginFunc", "", "","");
             tacMap[currTacVec].push_back(t);
             if(tree[temp[2]].first != ")"){
                 ThreeACHelperFunc(temp[2]);
             }
         }
     }
+    
     if(tree[id].first == "MethodInvocation"){
         childcallistrue = 0;
         for(int i = 0; i < temp.size(); i++){
@@ -456,11 +537,25 @@ void ThreeACHelperFunc(int id){
                 tac* t = createTacCustom("=", "LCall", tree[temp[i-1]].first, createArg(id));
                 tacMap[currTacVec].push_back(t);
 
-                 if(tree[temp[i+1]].first != ""){
-                    string offSetHere = "n";
-                    tac* t = createTacCustom("PopParams", "", "", offSetHere);
-                    tacMap[currTacVec].push_back(t);
+                 
+            }
+        }
+    }
+    if(tree[id].first == "ClassInstanceCreationExpression"){
+        childcallistrue = 0;
+        for(int i = 0; i < temp.size(); i++){
+            if(tree[temp[i]].first == "(") {
+                if(tree[temp[i+1]].first != ""){
+                    ThreeACHelperFunc(temp[i+1]);
                 }
+                tac* t = createTacCustom("=", "PopParam", "", "t1");
+                tacMap[currTacVec].push_back(t);
+                tac* t1 = createTacCustom("PushParam", "", "", "t1");
+                tacMap[currTacVec].push_back(t1);
+                tac* t2 = createTacCustom("=", "LCall", tree[temp[i-1]].first + ".Constructor", createArg(id));
+                tacMap[currTacVec].push_back(t2);
+
+                 
             }
         }
     }
@@ -477,7 +572,6 @@ void ThreeACHelperFunc(int id){
             tac* t1 = createTacCustom("PushParam", "", "", createArg(temp[0]));
             tacMap[currTacVec].push_back(t1);
         }
-
     }
     if(tree[id].first == "LabeledStatement" || tree[id].first == "LabeledStatementNoShortIf"){
         childcallistrue = 0;
@@ -905,11 +999,10 @@ void setOffset(){
 void print(){
     symTable(root);
     curr_table = "program";
-    checkScope(root);
+    // checkScope(root);
     setOffset();
     // ***************************
     cout << "******************** Three AC Print Statements**************" << endl;
-    // tacVecId.push(currTacVec);
     ThreeACHelperFunc(root);
     printThreeAC();
     // ***************************

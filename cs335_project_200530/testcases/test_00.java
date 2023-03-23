@@ -25,7 +25,8 @@ class Myclass{
     // int p = arr1[0+1];
   }
   public int myfunc(int a, int b){
-    myfunc(1,"j");
+    int a = 0;
+    myfunc(1+1,"j");
     int c = myfunc(a,"i");
   }
 }
