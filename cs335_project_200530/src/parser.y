@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string>
 #include <vector>
+#include <iostream>
+#include <fstream>
 #include "./argparse/argparse.hpp"
 using namespace std;
 #define ull unsigned long long
@@ -135,6 +137,9 @@ stack<string> tacVecId;
 
 
 string createArg(int id){
+    if(tree[id].first == "FieldAccess"){
+        return "_v" + to_string(id);
+    }
     if(additionalInfo.find(id) != additionalInfo.end()){
         return tree[id].first ;
     }
@@ -158,19 +163,25 @@ string createArg4(int id){
 
 
 void printThreeAC(){
+    std::ofstream myfile;
+      myfile.open ("3ac.csv");
+      
+     
+      
     int uid = 1;
     for(auto i = tacMap.begin(); i != tacMap.end(); i++){
         currTacVec =  i->first ;
-        cout <<endl<< currTacVec <<": " << endl;
+        myfile << ","+ currTacVec + ": \n";
         uid++;
         for(int i = 0; i < tacMap[currTacVec].size(); i++){
             if(tacMap[currTacVec][i] -> isGoto == true){
-                cout <<"      t"<< uid<< "_" <<  i  << ": " << tacMap[currTacVec][i] -> gotoLabel << "  " << tacMap[currTacVec][i] -> arg << "  " << tacMap[currTacVec][i] -> g << "  "<<  "t" <<uid << "_" << tacMap[currTacVec][i] -> label << endl;
+               myfile <<"      t" + to_string(uid) + "_" +  to_string(i)  + ": ," + tacMap[currTacVec][i] -> gotoLabel + ",  " + tacMap[currTacVec][i] -> arg+ ",  " << tacMap[currTacVec][i] -> g +",  " + "t"  + to_string(uid) + "_" + tacMap[currTacVec][i] -> label + "\n";
                 continue;
             }
-            cout <<"      t"<< uid << "_" <<  i  << ": " << tacMap[currTacVec][i] -> op << "  " << tacMap[currTacVec][i] -> arg1 << "  " << tacMap[currTacVec][i] -> arg2 << "  " << tacMap[currTacVec][i] -> res << endl;
+            myfile <<"      t" + to_string(uid) + "_" +  to_string(i)  + ": ," + tacMap[currTacVec][i] -> op + ",  " + tacMap[currTacVec][i] -> arg1 + "  " + tacMap[currTacVec][i] -> arg2 + " , " +tacMap[currTacVec][i] -> res + "\n";
         }
     }
+     myfile.close();
 }
 
 tac* createTac2(int id){
@@ -289,7 +300,7 @@ void ThreeACHelperFunc(int id){
         if(tree[temp[1]].first == "."){
             childcallistrue = 0;
             ThreeACHelperFunc(temp[2]);
-            tac* t = createTacCustom("=", createArg4(temp[2]), "", createArg(id));
+            tac* t = createTacCustom("=", createArg4(temp[2]), "", "_v" + to_string(id));
             tacMap[currTacVec].push_back(t);
         }
     }
@@ -783,7 +794,7 @@ void symTable(int n){
                 parameters.push_back(sttype);
             }
         }
-        else if(additionalInfo[n] == "identifier" && (tree[parent[n]].first == "VariableDeclarator" || tree[parent[n]].first == "VariableDeclarators" || tree[parent[n]].first == "ConstructorDeclarator" || tree[parent[n]].first == "MethodDeclarator" || tree[parent[n]].first == "ClassDeclaration" || tree[parent[n]].first == "FormalParameter" || tree[parent[n]].first == "LocalVariableDeclaration" || tree[parent[n]].first == "FieldDeclaration" || tree[parent[n]].first == "VariableDeclaratorId")){
+        else if(additionalInfo[n] == "identifier" && (tree[parent[n]].first == "VariableDeclarator" || tree[parent[n]].first == "VariableDeclarators"  || tree[parent[n]].first == "MethodDeclarator" || tree[parent[n]].first == "ClassDeclaration" || tree[parent[n]].first == "FormalParameter" || tree[parent[n]].first == "LocalVariableDeclaration" || tree[parent[n]].first == "FieldDeclaration" || tree[parent[n]].first == "VariableDeclaratorId")){
             stname = tree[n].first;
             if(!scope_lookup(stname, curr_table)){
                 if(tree[parent[n]].first == "VariableDeclaratorId"){
@@ -820,12 +831,12 @@ void symTable(int n){
             ifelse++;
             makeSymbolTable(stname);
         }
-        else if(tree[n].first == "(" && (tree[parent[n]].first == "ConstructorDeclarator" || tree[parent[n]].first == "MethodDeclarator")){
+        else if(tree[n].first == "(" && ( tree[parent[n]].first == "MethodDeclarator")){
             flag = 1;
             mname = stname;
             makeSymbolTable(stname);
         }
-        else if(tree[n].first == ")" && (tree[parent[n]].first == "ConstructorDeclarator" || tree[parent[n]].first == "MethodDeclarator")){
+        else if(tree[n].first == ")" && ( tree[parent[n]].first == "MethodDeclarator")){
             flag = 0;
             string oname = mname;
             sym_table new_table = table[mname];
@@ -861,7 +872,7 @@ void symTable(int n){
             parameters.clear();
 
         }
-        else if(tree[n].first == "}" && (tree[parent[n]].first == "ClassBody" || tree[parent[n]].first == "Block" || tree[parent[n]].first == "ConstructorBody")){
+        else if(tree[n].first == "}" && (tree[parent[n]].first == "ClassBody" || tree[parent[n]].first == "Block" )){
             curr_table = parent_table[curr_table];
         }
     
@@ -877,9 +888,7 @@ void symTable(int n){
         else if(tree[n].first == "FieldDeclaration" || tree[n].first == "LocalVariableDeclaration" || tree[n].first == "FormalParameter"){
             stwhat = "variable";
         }
-        else if(tree[n].first == "ConstructorDeclaration"){
-            stwhat = "constructor";
-        }
+        
 
         symTable(temp[i]);  
     }
@@ -910,10 +919,10 @@ void checkScope(int n){
         if(tree[n].first == "{" && (tree[parent[n]].first == "ClassBody")){
             curr_table = scope[n];
         }
-        else if(tree[n].first == "(" && (tree[parent[n]].first == "ConstructorDeclarator" || tree[parent[n]].first == "MethodDeclarator")){
+        else if(tree[n].first == "(" && tree[parent[n]].first == "MethodDeclarator"){
             curr_table = scope[n];
         }
-        else if(tree[n].first == "}" && (tree[parent[n]].first == "ClassBody" || tree[parent[n]].first == "Block" || tree[parent[n]].first == "ConstructorBody")){
+        else if(tree[n].first == "}" && (tree[parent[n]].first == "ClassBody" || tree[parent[n]].first == "Block" )){
             curr_table = scope[n];
         }
         else if(tree[n].first == "(" && (tree[parent[n]].first == "forStmt")){
@@ -999,7 +1008,7 @@ void setOffset(){
 void print(){
     symTable(root);
     curr_table = "program";
-    // checkScope(root);
+    checkScope(root);
     setOffset();
     // ***************************
     cout << "******************** Three AC Print Statements**************" << endl;

@@ -1,0 +1,23 @@
+,Example1.: 
+      t2_0: ,=,  1   , _v10
+      t2_1: ,=,  _v10   , x
+,Example1.Constructor: 
+      t3_0: ,BeginFunc,     , 
+      t3_1: ,=,  popparam   , _v29
+      t3_2: ,=,  popparam   , _b
+      t3_3: ,=,  popparam   , _a
+      t3_4: ,=,  SymbolEntry( Example1, x)   , _v34
+      t3_5: ,=,  a   , _v34
+      t3_6: ,=,  SymbolEntry( Example1, y)   , _v43
+      t3_7: ,=,  b   , _v43
+      t3_8: ,EndConstructor,     , 
+,Example1.main: 
+      t4_0: ,BeginFunc,     , 
+      t4_1: ,PushParam,     , 3.14
+      t4_2: ,PushParam,     , 2
+      t4_3: ,=,  PopParam   , t1
+      t4_4: ,PushParam,     , t1
+      t4_5: ,=,  LCall  Example1.Constructor , _v81
+      t4_6: ,=,  _v81   , _v82
+      t4_7: ,=,  _v82   , a
+      t4_8: ,EndFunc,     , 

@@ -41,6 +41,6 @@ public class Example1 {
 
     public static void main(String[] args /*so that we can compile with javac*/) {
     		Example1 a = new Example1(2,3.14);
-            int a = 3;
+          
     }
 }
