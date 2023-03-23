@@ -32,7 +32,8 @@ string mname;
 string sttype;
 int stline;
 ull stsize = 8;
-ull stoffset;
+ull stoffset = 0;
+ull prevoffset = 0;
 vector<string> stmodifiers;
 string stwhat;
 vector<string> parameters;
@@ -520,14 +521,14 @@ void change(int n){
     }
 }
 
-bool lookup(string id){
+string lookup(string id){
 	string temp = curr_table;
 
 	while(temp != "null"){
-		if((table[temp]).find(id)!=(table[temp]).end()) return 1;
+		if((table[temp]).find(id)!=(table[temp]).end()) return temp;
 		temp = parent_table[temp];
 	}
-	return 0;
+	return "null";
 }
 
 bool curr_lookup(string id){
@@ -563,6 +564,12 @@ void assignSize(int n, int flag){
         int len = (tree[temp[2]].first).length()-2;
         setSize(tree[temp[0]].first,len);
     }
+    string scope = lookup(tree[temp[0]].first);
+    vector<string> mod = table[scope][tree[temp[0]].first]->modifiers;
+    auto it = find(mod.begin(), mod.end(), "final");
+    if(it != mod.end()) {
+        cout << "cannot assign a value to a final variable " << tree[temp[0]].first << endl;
+    }
     }
     else if(flag == 1){
        if(type == "String"){
@@ -570,6 +577,7 @@ void assignSize(int n, int flag){
         setSize(tree[(tree[temp[2]].second)[0]].first,len);
     } 
     }
+    
 }
 
 void arraySize(int n){
@@ -615,9 +623,9 @@ void symTable(int n){
         else if(additionalInfo[n] == "identifier" && (tree[parent[n]].first == "VariableDeclarator" || tree[parent[n]].first == "VariableDeclarators" || tree[parent[n]].first == "ConstructorDeclarator" || tree[parent[n]].first == "MethodDeclarator" || tree[parent[n]].first == "ClassDeclaration" || tree[parent[n]].first == "FormalParameter" || tree[parent[n]].first == "LocalVariableDeclaration" || tree[parent[n]].first == "FieldDeclaration")){
             stname = tree[n].first;
             if(!scope_lookup(stname, curr_table)){
-            createEntry(curr_table, stname, stmodifiers, sttype, LineNumber[n], stsize, 0, stwhat, curr_table, stisArray, stndim);}
+            createEntry(curr_table, stname, stmodifiers, sttype, LineNumber[n], stsize, stoffset, stwhat, curr_table, stisArray, stndim);}
             else{
-                cout << "Variable " << stname << " already declared in " << LineNumber[n] << "!!" << endl;
+                cout << "Variable " << stname << " already declared !!" << endl;
             }
             stmodifiers.clear();
         }
@@ -661,7 +669,7 @@ void symTable(int n){
             parameters.clear();
             if(table.find(mname) != table.end()){
                 cout << "Method " << mname << " already declared !!" << endl;
-                exit(0);
+                // exit(0);
             }
             else{
             table.insert(make_pair(mname, new_table));}
@@ -710,10 +718,9 @@ void checkMethodCall(int n){
     //     }
     // }
     if(additionalInfo[temp[0]] == "identifier"){
-    if(!lookup(tree[temp[0]].first)) 
+    if(lookup(tree[temp[0]].first) == "null") 
     {
         cout << "Method " << tree[temp[0]].first << " not declared in line " << LineNumber[temp[0]] << "!!" << endl;
-        exit(0);
     }
     }
     return;
@@ -721,11 +728,10 @@ void checkMethodCall(int n){
 
 
 void checkScope(int n){
-    // cout << tree[n].first << endl;
+    
     
     vector<int> temp = (tree[n].second);
     if(temp.size() == 0)  {
-        
         if(tree[n].first == "{" && (tree[parent[n]].first == "ClassBody")){
             curr_table = scope[n];
         }
@@ -735,7 +741,7 @@ void checkScope(int n){
         else if(tree[n].first == "}" && (tree[parent[n]].first == "ClassBody" || tree[parent[n]].first == "Block" || tree[parent[n]].first == "ConstructorBody")){
             curr_table = scope[n];
         }
-        else if(tree[n].first == "{" && (tree[parent[parent[n]]].first == "forStmt")){
+        else if(tree[n].first == "(" && (tree[parent[n]].first == "forStmt")){
             curr_table = scope[n];
         }
         else if(tree[n].first == "{" && (tree[parent[parent[n]]].first == "whileStmt")){
@@ -747,9 +753,9 @@ void checkScope(int n){
         // printSymbolTable(curr_table);
         if(additionalInfo[n] == "identifier" && tree[n].first != "System" && tree[n].first != "out" && tree[n].first != "println"){
             
-            if(!(lookup(tree[n].first))){
+            if((lookup(tree[n].first)) == "null"){
                 cout << tree[n].first << " not declared!!" << endl;
-                exit(0);
+
             }
         }
         if(additionalInfo[n] == "referencetype"){
@@ -776,7 +782,7 @@ void checkScope(int n){
         for(auto i : table[curr_table][var]->ndim){
             count *= i;
         }
-        table[curr_table][var]->size = count * table[curr_table][var]->size ;
+        table[curr_table][var]->size *= count;
     }
     else{
         for(int i = 0; i < temp.size(); i++){
@@ -786,11 +792,21 @@ void checkScope(int n){
     }
 }
 
+void setOffset(){
+    for(auto i : table){
+        for(auto j : i.second){
+            j.second->offset = stoffset;
+            stoffset += j.second->size;
+        }
+        stoffset = 0;
+    }
+}
+
 void print(){
     symTable(root);
     curr_table = "program";
     checkScope(root);
-
+    setOffset();
     // ***************************
     cout << "******************** Three AC Print Statements**************" << endl;
     tacVecId.push(currTacVec);
@@ -2130,7 +2146,8 @@ int main(int argc, char *argv[]) {
 
     }
     fclose(yyin);
-     for(auto it : table){
+
+    for(auto it : table){
         printSymbolTable(it.first);
         cout << "*******" << endl;
     } 
