@@ -102,7 +102,7 @@ vector<int> getDim(int id){
 }
 
 int getSize(string id){
-    cout << "id " << id << endl;
+    // cout << "id " << id << endl;
   if(id == "char") return sizeof(char);
   if(id == "short") return sizeof(short);
   if(id == "int") return sizeof(int);
@@ -127,7 +127,8 @@ typedef struct ThreeAC {
 } tac;
 // vector<tac*> tacVector;
 map<string,  vector<tac*>> tacMap;
-string currTacVec = "start_";
+string currTacVec = "";
+string currTacClass = "";
 stack<int> loopStart;
 stack<int> loopId;
 stack<string> tacVecId;
@@ -141,14 +142,17 @@ string createArg(int id){
 }
 
 void printThreeAC(){
+    int uid = 1;
     for(auto i = tacMap.begin(); i != tacMap.end(); i++){
         currTacVec =  i->first ;
+        cout <<endl<< currTacVec <<": " << endl;
+        uid++;
         for(int i = 0; i < tacMap[currTacVec].size(); i++){
             if(tacMap[currTacVec][i] -> isGoto == true){
-                cout <<  i << currTacVec << ": " << tacMap[currTacVec][i] -> gotoLabel << "  " << tacMap[currTacVec][i] -> arg << "  " << tacMap[currTacVec][i] -> g << "  "<< tacMap[currTacVec][i] -> label << endl;
+                cout <<"      t"<< uid<< "_" <<  i  << ": " << tacMap[currTacVec][i] -> gotoLabel << "  " << tacMap[currTacVec][i] -> arg << "  " << tacMap[currTacVec][i] -> g << "  "<<  "t" <<uid << "_" << tacMap[currTacVec][i] -> label << endl;
                 continue;
             }
-            cout << i << currTacVec << ": " << tacMap[currTacVec][i] -> op << "  " << tacMap[currTacVec][i] -> arg1 << "  " << tacMap[currTacVec][i] -> arg2 << "  " << tacMap[currTacVec][i] -> res << endl;
+            cout <<"      t"<< uid << "_" <<  i  << ": " << tacMap[currTacVec][i] -> op << "  " << tacMap[currTacVec][i] -> arg1 << "  " << tacMap[currTacVec][i] -> arg2 << "  " << tacMap[currTacVec][i] -> res << endl;
         }
     }
 }
@@ -180,12 +184,18 @@ tac* createTacCustom(string op, string arg1, string arg2, string res){
     t -> res = res;
     return t;
 }
+
 tac* createTac1Dplus(int id){
     vector<int> temp = tree[id].second;
+    tac* t1 = new tac();
+    t1 -> op = tree[temp[0]].first;
+    t1 -> arg1 = createArg(temp[1]);
+    t1 -> res = createArg(temp[1]);
+    tacMap[currTacVec].push_back(t1);
     tac* t = new tac();
-    t -> op = tree[temp[0]].first;
+    t -> op = "=";
     t -> arg1 = createArg(temp[1]);
-    t -> res = "_v" + to_string(id);
+    t -> res = createArg(id);
     return  t;
 }
 
@@ -194,7 +204,7 @@ void createTac2Dplus(int id){
     tac* t = new tac();
     t -> op = "=";
     t -> arg1 = createArg(temp[0]);
-    t -> res = "_v" + to_string(id);
+    t -> res = createArg(id);
     tacMap[currTacVec].push_back(t);
     tac* t1 = new tac();
     t1 -> op = tree[temp[1]].first;
@@ -231,21 +241,32 @@ void backpatch(int n, int id){
     return;
 }
 
-void  ArrayInitHelper(int id){
-    vector<int> temp = tree[id].second;
-    // if(tree[id].first == "VariableInitializers"){
-    //     ArrayInitHelper(temp[0]);
-    //     ThreeACHelperFunc(temp[2]);
-    //     tac* t = new tac();
-    //     t -> op = "=";
-    // }
-}
-
 void ThreeACHelperFunc(int id){
     // cout << tree[id].first << " " << id << endl;
     int childcallistrue = 1;
     vector<int> temp = tree[id].second;
-    if(tree[id].first == "forStmt"){
+    if(tree[id].first == "ClassDeclaration"){
+        currTacClass = tree[temp[2]].first;
+        tacVecId.push(currTacClass + ".");
+        currTacVec = tacVecId.top();
+    }
+    if(tree[id].first == "ReturnStatement"){
+        ThreeACHelperFunc(temp[1]);
+        tac* t = new tac();
+        t -> op = "Return";
+        t -> arg1 = createArg(temp[1]);
+        tacMap[currTacVec].push_back(t);
+        return;        
+    }
+    if(tree[id].first == "assertStatement"){
+        ThreeACHelperFunc(temp[1]);
+        tac* t = new tac();
+        t -> op = "Assert";
+        t -> arg1 = createArg(temp[1]);
+        tacMap[currTacVec].push_back(t);
+        return;        
+    }
+    if(tree[id].first == "forStmt" || tree[id].first == "forStmtNoShortIf"){
         childcallistrue = 0;
         int blockId = -1, incId = -1, forStatelabel = -1;
         for(int i = 0; i < temp.size(); i++){
@@ -268,7 +289,7 @@ void ThreeACHelperFunc(int id){
         // backpatch End of for loop
         backpatch(tacMap[currTacVec].size(), id);
     }
-    if(tree[id].first == "whileStmt"){
+    if(tree[id].first == "whileStmt" || tree[id].first == "whileStmtNoShortIf"){
         childcallistrue = 0;
         int blockId = -1, incId = -1, whileStatelabel = -1;
         for(int i = 0; i < temp.size(); i++){
@@ -297,7 +318,7 @@ void ThreeACHelperFunc(int id){
         createTacGoto("");
         backlist[loopId.top()].push_back(tacMap[currTacVec].size() - 1);
     } 
-    if(tree[id].first == "ifThenElseStmt" || tree[id].first == "ifThenStmt"){
+    if(tree[id].first == "ifThenElseStmt" || tree[id].first == "ifThenStmt" || tree[id].first == "ifThenElseStmtNoShortIf"){
         childcallistrue = 0;
          int blockId1 = -1, ifStatelabel = -1, blockId2 = -1;
          for(int i = 0; i < temp.size(); i++){
@@ -311,52 +332,93 @@ void ThreeACHelperFunc(int id){
             if(tree[temp[i]].first == "else" && tree[temp[i]].first != "") blockId2 = temp[i+1];
         }
         if(blockId1 != -1) ThreeACHelperFunc(blockId1);
+        int elseid = tacMap[currTacVec].size()-1;
+        createTacGoto("");
+        backlist[elseid].push_back(tacMap[currTacVec].size()-1);
         backpatch(tacMap[currTacVec].size(), id);
         if(blockId2 != -1) ThreeACHelperFunc(blockId2);
+        backpatch(tacMap[currTacVec].size(), elseid);
+    }
+    if(tree[id].first == "ConditionalExpression"){
+        childcallistrue = 0;
+        int blockId1 = -1, ifStatelabel = -1, blockId2 = -1;
+         for(int i = 0; i < temp.size(); i++){
+            if(tree[temp[i]].first == "?"  && tree[temp[i-1]].first != ""){
+                ThreeACHelperFunc(temp[i-1]);
+                ifStatelabel = tacMap[currTacVec].size()-1;
+                createTacGotoL("ifFalse", tacMap[currTacVec][ifStatelabel] -> res, "");
+                backlist[id].push_back(tacMap[currTacVec].size()-1);
+            }
+            if(tree[temp[i]].first == "?" && tree[temp[i+1]].first != "") blockId1 = temp[i+1];
+            if(tree[temp[i]].first == ":" && tree[temp[i+1]].first != "") blockId2 = temp[i+1];
+        }
+        if(blockId1 != -1) ThreeACHelperFunc(blockId1);
+        tac* t = createTacCustom("=", createArg(temp[2]), "", createArg(id));
+        tacMap[currTacVec].push_back(t);
+
+        int elseid = tacMap[currTacVec].size()-1;
+        createTacGoto("");
+        backlist[elseid].push_back(tacMap[currTacVec].size()-1);
+        backpatch(tacMap[currTacVec].size(), id);
+        if(blockId2 != -1) ThreeACHelperFunc(blockId2);
+        tac* t1 = createTacCustom("=", createArg(temp[4]), "", createArg(id));
+        tacMap[currTacVec].push_back(t1);
+        backpatch(tacMap[currTacVec].size(), elseid);
+
     }
     if(tree[id].first == "ArrayAccess"){
         childcallistrue = 0;
-        ThreeACHelperFunc(temp[2]);
-        if(tree[temp[0]].first == "ArrayAccess") {
-            int nodeNum = temp[0];
+        vector<string> tempVec;
+        string ArrayName = "";
+        int nodeNum = id;
+        int tempId = -1;
+        while(tree[nodeNum].first == "ArrayAccess"){
             vector<int> ArrayAccessChild = tree[nodeNum].second;
-            ThreeACHelperFunc(ArrayAccessChild[2]);
-            string sizeofVar = to_string(getSize(customtypeof(ArrayAccessChild[0])));
-            cout << "sizeofVar " << customtypeof(ArrayAccessChild[0]) << endl;
-            vector<int> dims = getDim(ArrayAccessChild[0]);
-            string arrsize = to_string(dims[0]);
-            cout << "dims " << dims[0] << dims[1] << endl;
-            tac *t = createTacCustom("*", arrsize, createArg(ArrayAccessChild[2]), "_v" +to_string(ArrayAccessChild[2]));
-            tacMap[currTacVec].push_back(t);
-
-            tac *t1 = createTacCustom("+", t-> res, createArg(temp[2]), "_v"+ to_string(temp[2]));
-            tacMap[currTacVec].push_back(t1);
-            
-            tac *t2 = createTacCustom("*", t1 -> res, sizeofVar, t1->res );
-            tacMap[currTacVec].push_back(t2);
-
-            string ar3 = tree[ArrayAccessChild[0]].first + "[" + t1-> res + "]";
-            tac *t3 = createTacCustom("=", ar3, "", createArg(id));
-            tacMap[currTacVec].push_back(t3);
+            tempId = ArrayAccessChild[2];
+            if(tree[ArrayAccessChild[0]].first == "ArrayAccess"){
+                ThreeACHelperFunc(ArrayAccessChild[2]);
+                 tempVec.push_back(createArg(ArrayAccessChild[2]));
+            }
+            else{
+                ArrayName = tree[ArrayAccessChild[0]].first;
+                ThreeACHelperFunc(ArrayAccessChild[2]);
+                tempVec.push_back(createArg(ArrayAccessChild[2]));
+            }
+            nodeNum = ArrayAccessChild[0];
         }
-        else{
-            string arrindex  = createArg(temp[2]);
-            string sizeofVar = to_string(getSize(customtypeof(temp[0])));
-            cout << "sizeofVar " << sizeofVar << endl;
-            vector<int> temp = tree[id].second;
-            tac *t = createTacCustom("*", createArg(temp[2]), sizeofVar, createArg(temp[2]));
+        string tempIds = "_v" + to_string(tempId);
+        vector<int> dims = getDim(nodeNum);
+        tac* t = createTacCustom("=", tempVec[tempVec.size()-1], "",tempIds);
+        tacMap[currTacVec].push_back(t);
+        for(int l = dims.size()-1; l > 0; l--){
+            tac* t = createTacCustom("*", tempIds, to_string(dims[l]),tempIds);
             tacMap[currTacVec].push_back(t);
-
-            string tempvar = tree[temp[0]].first + "[" + t-> res + "]";
-            tac *t1 = createTacCustom("=", tempvar, "", createArg(id));
+            tac* t1 = createTacCustom("+", tempIds, tempVec[l-1],tempIds);
             tacMap[currTacVec].push_back(t1);
         }
+        tac* t2 = createTacCustom( "=" ,ArrayName + "[" + tempIds + "]","", createArg(id));
+        tacMap[currTacVec].push_back(t2);
+
     }
     if(tree[id].first == "ArrayInitializer"){
         childcallistrue = 0;
-        if(temp.size()>2){
-            int idtempvar = temp[1];
-            // ArrayInitHelper(temp[1]);
+
+
+    }
+    if(tree[id].first == "UnaryExpression"){
+        childcallistrue = 0;
+        if(temp.size() == 2){
+            ThreeACHelperFunc(temp[1]);
+            tac* t = createTacCustom(tree[temp[0]].first, createArg(temp[1]), "", createArg(id));
+            tacMap[currTacVec].push_back(t);
+        }
+    }
+    if(tree[id].first == "UnaryExpressionNot+-"){
+        childcallistrue = 0;
+        if(temp.size() == 2){
+            ThreeACHelperFunc(temp[1]);
+            tac* t = createTacCustom(tree[temp[0]].first, createArg(temp[1]), "", createArg(id));
+            tacMap[currTacVec].push_back(t);
         }
     }
     if(tree[id].first == "MethodDeclaration"){
@@ -374,7 +436,7 @@ void ThreeACHelperFunc(int id){
     if(tree[id].first == "MethodDeclarator"){
         if(tree[temp[1]].first == "("){
             childcallistrue = 0;
-            currTacVec = tree[temp[0]].first;
+            currTacVec = currTacClass + "."+ tree[temp[0]].first;
             tacVecId.push(currTacVec);
             string paraOffSet = "n";
             tac* t = createTacCustom("BeginFunc", "", "",paraOffSet);
@@ -384,14 +446,13 @@ void ThreeACHelperFunc(int id){
             }
         }
     }
-    if(tree[id].first == "MethodIncovation"){
+    if(tree[id].first == "MethodInvocation"){
         childcallistrue = 0;
         for(int i = 0; i < temp.size(); i++){
             if(tree[temp[i]].first == "(") {
                 if(tree[temp[i+1]].first != ""){
                     ThreeACHelperFunc(temp[i+1]);
                 }
-                
                 tac* t = createTacCustom("=", "LCall", tree[temp[i-1]].first, createArg(id));
                 tacMap[currTacVec].push_back(t);
 
@@ -417,6 +478,10 @@ void ThreeACHelperFunc(int id){
             tacMap[currTacVec].push_back(t1);
         }
 
+    }
+    if(tree[id].first == "LabeledStatement" || tree[id].first == "LabeledStatementNoShortIf"){
+        childcallistrue = 0;
+        ThreeACHelperFunc(temp[2]);
     }
 
     if(childcallistrue){         
@@ -809,7 +874,7 @@ void print(){
     setOffset();
     // ***************************
     cout << "******************** Three AC Print Statements**************" << endl;
-    tacVecId.push(currTacVec);
+    // tacVecId.push(currTacVec);
     ThreeACHelperFunc(root);
     printThreeAC();
     // ***************************

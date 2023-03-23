@@ -14,47 +14,52 @@
 // }
 // }
 class Myclass{
-  public void main(int arr[][][][]){
-    int i = 0;
-    int j = 0;
-    int k = 0;
-    int l = 0;
-    int a = arr[i][j][k][l];
+  public void main(){
+    // int[][][] arr = {{{1,2},{3,4},{5,6}}};
+    // int i = 0;
+    // int j = 0;
+    // int k = 0;
+    // int l = 0;
+    // int a = arr[i][j-1][k];
+    // int arr1 = {1,2,3};
+    // int p = arr1[0+1];
+  }
+  public int myfunc(int a, int b){
+    myfunc(1,"j");
+    int c = myfunc(a,"i");
   }
 }
 
 
-// class ReverseString {
-//   int a = 1+2+3;
-//   {
-//     int[] arr = {1,2,3,4,5,6,7,8,9,10};
-//     int z = arr[3];
-//   }
+class ReverseString {
+  int a = 1+2+3;
+  Myclass myclass = new Myclass();
+  int z = myclass.myfunc();
+  public static int foo(){
+    int a;
+    a = 0;
 
-//   public static int foo(){
-//     int a;
-//     a = 0;
-
-//     while( a < 10){
-//       a = a + 1;
-//     }
-//     return a;
-//   }
-//   int foo1(int a, int b){
+    while( a < 10){
+      a = a + 1;
+    }
+    return a;
+  }
+  int xyz = 0;
+  // int foo1(int a, int b){
     
-//     b = 0;
-//     int d = foo();
-//     while( b < 10){
-//       b = b + 1;
-//       int c;
-//     }
-//     while( b < 10){
-//       b = b + 1;
-//       int c;
-//     }
-//     return b+1;
-//   }
-// };
+  //   b = 0;
+  //   int d = foo();
+  //   while( b < 10){
+  //     b = b + 1;
+  //     int c;
+  //   }
+  //   while( b < 10){
+  //     b = b + 1;
+  //     int c;
+  //   }
+  //   return b+1;
+  // }
+};
 
 // class Car1  {
 //   private String modelName = "Mustang";    // Car attribute

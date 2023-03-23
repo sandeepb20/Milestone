@@ -1,37 +1,47 @@
 //Java Program to demonstrate the use of If else-if ladder.  
 //It is a program of grading system for fail, D grade, C grade, B grade, A grade and A+.  
 
-public class IfElseIfExample { 
-    char h; 
-public static void main(String[] args) {  
-    int marks=65;  
-      
-    if(marks<50){  
-        char a;
-        System.out.println("fail");  
-    }  
-    else if(marks>=50 && marks<60){  
-        char b;
-        System.out.println("D grade");  
-    }  
-    else if(marks>=60 && marks<70){  
-        char c;
-        System.out.println("C grade");  
-    }  
-    else if(marks>=70 && marks<80){  
-        char d;
-        System.out.println("B grade");  
-    }  
-    else if(marks>=80 && marks<90){  
-        char e;
-        System.out.println("A grade");  
-    }else if(marks>=90 && marks<100){
-        char f;  
-        System.out.println("A+ grade");  
-    }else{  
-        char g = h;
-        System.out.println("Invalid!");  
-    } 
-    h = g;
-}  
-}  
+// public class IfElseIfExample { 
+//     char h; 
+//     public static int main(String[] args) { 
+
+//         int a = 1, b =2;
+//         int c;
+//         if(a == 2){
+//             c= 1 + 3;
+//         }
+//         else{
+//             c = 2 / 2 % 1;
+//         }
+//         int c = a==b?a:a+1;
+//         // int a = 0; 
+//         // int b = a++ + (a+2)-1;
+//         // int c = ++a;
+//         // int d = 0;
+//         // d = ++ ++d +1;
+//         // // int b;
+//         // for(int i = 0; i < 10 -2; i++){
+//         //     a = a++ +1;
+            
+//         // }
+//         // assert a == 10;
+//         // return a + b + c + d;
+// }  
+// }  
+
+
+
+public class Example1 {
+    int x;
+    double y;
+    Example1(int x, double y) {
+        this.x = x;
+            this.y = y;
+    }
+
+    public static void main(String[] args /*so that we can compile with javac*/) {
+    		Example1 a = new Example1(2,3.14);
+         System.out.println(a.x);
+         System.out.println(a.y);
+    }
+}
