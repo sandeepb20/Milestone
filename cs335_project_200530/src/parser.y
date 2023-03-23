@@ -89,7 +89,19 @@ string customtypeof(int id){
     return "null";
 }
 
+vector<int> getDim(int id){
+    string temp = scope[id];
+    while(temp != "null"){
+        auto it = table[temp].find(tree[id].first);
+        if(it!=table[temp].end()) return table[temp][tree[id].first]->ndim;
+        else{
+        temp = parent_table[temp];}
+    }
+    return {};
+}
+
 int getSize(string id){
+    cout << "id " << id << endl;
   if(id == "char") return sizeof(char);
   if(id == "short") return sizeof(short);
   if(id == "int") return sizeof(int);
@@ -309,11 +321,14 @@ void ThreeACHelperFunc(int id){
             vector<int> ArrayAccessChild = tree[nodeNum].second;
             ThreeACHelperFunc(ArrayAccessChild[2]);
             string sizeofVar = to_string(getSize(customtypeof(ArrayAccessChild[0])));
-            string arrsize = "n";
-            tac *t = createTacCustom("*", arrsize, createArg(ArrayAccessChild[2]), createArg(ArrayAccessChild[2]));
+            cout << "sizeofVar " << customtypeof(ArrayAccessChild[0]) << endl;
+            vector<int> dims = getDim(ArrayAccessChild[0]);
+            string arrsize = to_string(dims[0]);
+            cout << "dims " << dims[0] << dims[1] << endl;
+            tac *t = createTacCustom("*", arrsize, createArg(ArrayAccessChild[2]), "_v" +to_string(ArrayAccessChild[2]));
             tacMap[currTacVec].push_back(t);
 
-            tac *t1 = createTacCustom("+", t-> res, createArg(temp[2]), createArg(temp[2]));
+            tac *t1 = createTacCustom("+", t-> res, createArg(temp[2]), "_v"+ to_string(temp[2]));
             tacMap[currTacVec].push_back(t1);
             
             tac *t2 = createTacCustom("*", t1 -> res, sizeofVar, t1->res );
@@ -326,6 +341,7 @@ void ThreeACHelperFunc(int id){
         else{
             string arrindex  = createArg(temp[2]);
             string sizeofVar = to_string(getSize(customtypeof(temp[0])));
+            cout << "sizeofVar " << sizeofVar << endl;
             vector<int> temp = tree[id].second;
             tac *t = createTacCustom("*", createArg(temp[2]), sizeofVar, createArg(temp[2]));
             tacMap[currTacVec].push_back(t);
@@ -401,20 +417,13 @@ void ThreeACHelperFunc(int id){
         }
 
     }
-    // if(tree[id].first == "MethodInvocation"){
-    //     childcallistrue = 0;
-    //     int argId = -1;
-    //     for(int i = 0; i < temp.size(); i++){
-    //         if(tree[temp[i]].first == "(" && tree[temp[i+2]].first == ")" && tree[temp[i+1]].first != "") argId = temp[i+1];
-    //     }
-    //     if(argId != -1) ThreeACHelperFunc(argId);
-    //     tacMap[currTacVec].push_back(createTac1(id));
-    // }
+
     if(childcallistrue){         
         for(int i = 0; i < temp.size(); i++){
             ThreeACHelperFunc(temp[i]);
         }
     }
+    if(tree[id].first == "Expression")  tacMap[currTacVec].push_back(createTacCustom("=", createArg(temp[0]), "", createArg(id)));
     if(tree[id].first == "Assignment") tacMap[currTacVec].push_back(createTac1(id));
     if(tree[id].first == "PreIncExpression") tacMap[currTacVec].push_back(createTac1Dplus(id));
     if(tree[id].first == "PreDecExpression") tacMap[currTacVec].push_back(createTac1Dplus(id));
@@ -763,11 +772,11 @@ void checkScope(int n){
     }
     if(tree[n].first == "ArrayInitializer"){
         arraySize((tree[n].second)[1]);
-        int count = 0;
+        int count = 1;
         for(auto i : table[curr_table][var]->ndim){
-            count += (table[curr_table][var]->size)*i;
+            count *= i;
         }
-        table[curr_table][var]->size = count;
+        table[curr_table][var]->size = count * table[curr_table][var]->size ;
     }
     else{
         for(int i = 0; i < temp.size(); i++){
