@@ -26,7 +26,11 @@ class ReverseString {
     }
     return b+1;
   }
-  // int c = BinarySearch(arr, x);
+}
+
+class Car extends Vehicle {
+  private String modelName = "Mustang";    // Car attribute
+  public static void main(String[] args) {
 
   {
     int s = foo1(1,2,3);
@@ -68,4 +72,7 @@ class ReverseString {
     // }
   }
 
+    // Display the value of the brand attribute (from the Vehicle class) and the value of the modelName from the Car class
+    System.out.println(myCar.brand + " " + myCar.modelName);
+  }
 }
