@@ -528,40 +528,29 @@ void symTable(int n){
             else{
                 cout << "Variable " << stname << " already declared !!" << endl;
             }
-            stoffset += stsize;
             stmodifiers.clear();
         }
         if(tree[n].first == "{" && (tree[parent[n]].first == "ClassBody")){
-            prevoffset = stoffset;
-            stoffset = 0;
             makeSymbolTable(stname);
         }
         else if(tree[n].first == "(" && (tree[parent[n]].first == "forStmt")){
             stname = "for" + to_string(fornum);
             fornum++;
-            prevoffset = stoffset;
-            stoffset = 0;
             makeSymbolTable(stname);
         }
         else if(tree[n].first == "{" && (tree[parent[parent[n]]].first == "whileStmt")){
             stname = "while" + to_string(whilenum);
             whilenum++;
-            prevoffset = stoffset;
-            stoffset = 0;
             makeSymbolTable(stname);
         }
         else if(tree[n].first == "{" && (tree[parent[parent[n]]].first == "ifThenElseStmt")){
             stname = "ifelse" + to_string(ifelse);
             ifelse++;
-            prevoffset = stoffset;
-            stoffset = 0;
             makeSymbolTable(stname);
         }
         else if(tree[n].first == "(" && (tree[parent[n]].first == "ConstructorDeclarator" || tree[parent[n]].first == "MethodDeclarator")){
             flag = 1;
             mname = stname;
-            prevoffset = stoffset;
-            stoffset = 0;
             makeSymbolTable(stname);
         }
         else if(tree[n].first == ")" && (tree[parent[n]].first == "ConstructorDeclarator" || tree[parent[n]].first == "MethodDeclarator")){
@@ -599,7 +588,6 @@ void symTable(int n){
 
         }
         else if(tree[n].first == "}" && (tree[parent[n]].first == "ClassBody" || tree[parent[n]].first == "Block" || tree[parent[n]].first == "ConstructorBody")){
-            stoffset = prevoffset + stoffset;
             curr_table = parent_table[curr_table];
         }
     
@@ -705,11 +693,21 @@ void checkScope(int n){
     }
 }
 
+void setOffset(){
+    for(auto i : table){
+        for(auto j : i.second){
+            j.second->offset = stoffset;
+            stoffset += j.second->size;
+        }
+        stoffset = 0;
+    }
+}
+
 void print(){
     symTable(root);
     curr_table = "program";
     checkScope(root);
-
+    setOffset();
     // ***************************
     // cout << "******************** Three AC Print Statements**************" << endl;
     // ThreeACHelperFunc(root);
