@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string>
 #include <vector>
+#include <fstream>
 #include "./argparse/argparse.hpp"
 using namespace std;
 #define ull unsigned long long
@@ -13,7 +14,7 @@ extern int yyparse();
 int line = 0;
 int root = -1;
 void yyerror(const char* s);
-int fornum = 1, whilenum = 1, ifelse = 1;
+int fornum = 1, whilenum = 1, ifelse = 1, classnum = 1;
 
 uint countnode = 0;
 string OutputFileName = "out.dot";
@@ -57,10 +58,13 @@ typedef struct sym_entry{
 
 typedef map<string, sym_entry* > sym_table;
 string curr_table = "null";
-map<string, sym_table> table;
-map<string, string> parent_table;
+typedef map<string, sym_table> table;
+map<string, table> class_table;
+typedef map<string, string> parent_table;
+map<string, parent_table> class_parent_table;
 vector<string> key_words = {"abstract","continue","for","new","switch","assert","default","if","package","synchronized","boolean","do","goto","private","this","break","double","implements","protected","throw","byte","else","import","public","throws","case","enum","instanceof","return","transient","catch","extends","int","short","try","String","char","final","interface","static","void","class","finally","long","strictfp","volatile","const","float","native","super","while","_","exports","opens","requires","uses","module","permit","sealed","var","non-sealed","provides","to","with","open","record","transitive","yield"}; 
 map<string, int> keywords;
+string curr_class = "class1";
 
 int makenode( string name){
     countnode++;
@@ -83,10 +87,10 @@ string customtypeof(int id){
     
     string temp = scope[id];
 	while(temp != "null"){
-        auto it = table[temp].find(tree[id].first);
-        if(it!=table[temp].end()) return table[temp][tree[id].first]->type;
+        auto it = class_table[curr_class][temp].find(tree[id].first);
+        if(it!=class_table[curr_class][temp].end()) return class_table[curr_class][temp][tree[id].first]->type;
 		else{
-		temp = parent_table[temp];}
+		temp = class_parent_table[curr_class][temp];}
 	}
     return "null";
 }
@@ -94,10 +98,10 @@ string customtypeof(int id){
 vector<int> getDim(int id){
     string temp = scope[id];
     while(temp != "null"){
-        auto it = table[temp].find(tree[id].first);
-        if(it!=table[temp].end()) return table[temp][tree[id].first]->ndim;
+        auto it = class_table[curr_class][temp].find(tree[id].first);
+        if(it!=class_table[curr_class][temp].end()) return class_table[curr_class][temp][tree[id].first]->ndim;
         else{
-        temp = parent_table[temp];}
+        temp = class_parent_table[curr_class][temp];}
     }
     return {};
 }
@@ -109,7 +113,7 @@ int getSize(string id){
   if(id == "float") return sizeof(float);
   if(id == "double") return sizeof(double);
 
-  return 8; // for any ptr
+  return 4; // for any ptr
 }
 
 // ******************************* THREE AC CODE **********************************************
@@ -472,17 +476,15 @@ void tempfunc1(ofstream& fout, unordered_map<int,int> &visited, int id){
 }
 
 
-
-
-// void printSymbolTable(string curr_table){
-//   	for(auto it: (table[curr_table])){
-//         cout << it.first.c_str() << " ";
-//         for(auto j : (it.second)->modifiers){
-//             cout << j << " ";
-//         }
-//         cout << it.second->type.c_str() << " " << (it.second)->line << " " << (it.second)->size << " " << (it.second)->offset << " " << (it.second)->what << " " << (it.second)->isArray << " " << (it.second)->scope << "." << endl;
-//   }
-// }
+void printSymbolTable(string curr_table){
+  	for(auto it: (class_table[curr_class][curr_table])){
+        cout << it.first.c_str() << " ";
+        for(auto j : (it.second)->modifiers){
+            cout << j << " ";
+        }
+        cout << it.second->type.c_str() << " " << (it.second)->line << " " << (it.second)->size << " " << (it.second)->offset << " " << (it.second)->what << " " << (it.second)->isArray << " " << (it.second)->scope << "." << endl;
+  }
+}
 
 void createEntry(string name, string temp, vector<string> modifiers, string type, int line, ull size, ull offset, string what, string scope, int isArray, vector<int> ndim){
     
@@ -496,17 +498,18 @@ void createEntry(string name, string temp, vector<string> modifiers, string type
         ent->scope = scope;
         ent->isArray = isArray;
         ent->ndim = ndim;
-        table[name].insert(make_pair(temp, ent));
+        class_table[curr_class][name].insert(make_pair(temp, ent));
     stisArray = 0;
 }
 
 void makeSymbolTable(string name){
 
     sym_table new_table;
-    table.insert(make_pair(name, new_table));
-    parent_table.insert(make_pair(name, curr_table));
+    class_table[curr_class].insert(make_pair(name, new_table));
+    class_parent_table[curr_class].insert(make_pair(name, curr_table));
 	curr_table = name;
 }
+
 int flag2 = 0;
 void change(int n){
     vector<int> temp = (tree[n].second);
@@ -525,33 +528,34 @@ string lookup(string id){
 	string temp = curr_table;
 
 	while(temp != "null"){
-		if((table[temp]).find(id)!=(table[temp]).end()) return temp;
-		temp = parent_table[temp];
+		if((class_table[curr_class][temp]).find(id)!=(class_table[curr_class][temp]).end()) return temp;
+		temp = class_parent_table[curr_class][temp];
 	}
 	return "null";
 }
 
 bool curr_lookup(string id){
     string temp = curr_table;
-    if((table[temp]).find(id)!=(table[temp]).end()) return 1;
+    if((class_table[curr_class][temp]).find(id)!=(class_table[curr_class][temp]).end()) return 1;
     return 0;
 }
 
 bool scope_lookup(string id, string scope){
     string temp = scope;
-    if((table[temp]).find(id)!=(table[temp]).end()) return 1;
+    if(scope == "null") return 0;
+    if((class_table[curr_class][temp]).find(id)!=(class_table[curr_class][temp]).end()) return 1;
     return 0;
 }
 
 void setSize(string id, int len){
     string temp = curr_table;
 	while(temp != "null"){
-		if((table[temp]).find(id)!=(table[temp]).end()){
-            table[temp][id]->size = len;
+		if((class_table[curr_class][temp]).find(id)!=(class_table[curr_class][temp]).end()){
+            class_table[curr_class][temp][id]->size = len;
             return;
         }
         else{
-		temp = parent_table[temp];}
+		temp = class_parent_table[curr_class][temp];}
 	}
 	return;
 }
@@ -566,11 +570,10 @@ void assignSize(int n, int flag){
         setSize(tree[temp[0]].first,len);
     }
     string scope = lookup(tree[temp[0]].first);
-    vector<string> mod = table[scope][tree[temp[0]].first]->modifiers;
+    vector<string> mod = class_table[curr_class][scope][tree[temp[0]].first]->modifiers;
     auto it = find(mod.begin(), mod.end(), "final");
     if(it != mod.end()) {
         cout << "cannot assign a value to a final variable " << tree[temp[0]].first << endl;
-        exit(1);
     }
     }
     else if(flag == 1){
@@ -590,7 +593,7 @@ void arraySize(int n){
         n1 = (tree[n1].second)[0];
         count++;
     }
-    (table[curr_table][var])->ndim.push_back(count);
+    (class_table[curr_class][curr_table][var])->ndim.push_back(count);
     if(tree[n1].first == "ArrayInitializer"){
         arraySize((tree[n1].second)[1]);
     }
@@ -598,7 +601,26 @@ void arraySize(int n){
 }
 
 void symTable(int n){
-
+    if(tree[n].first == "ClassDeclaration"){
+            curr_class = "class" + to_string(classnum);
+            curr_table = "null";
+            table new_table;
+            parent_table new_parent_table;
+            class_parent_table.insert(make_pair(curr_class, new_parent_table));
+            class_table.insert(make_pair(curr_class, new_table));
+            makeSymbolTable("program");
+            stwhat = "class";
+            classnum++;
+        }
+        else if(tree[n].first == "MethodDeclaration"){
+            stwhat = "method";
+        }
+        else if(tree[n].first == "FieldDeclaration" || tree[n].first == "LocalVariableDeclaration" || tree[n].first == "FormalParameter"){
+            stwhat = "variable";
+        }
+        else if(tree[n].first == "ConstructorDeclaration"){
+            stwhat = "constructor";
+        }
     vector<int> temp = (tree[n].second);
     if(temp.size() == 0)  {
 
@@ -626,6 +648,7 @@ void symTable(int n){
         }
         else if(additionalInfo[n] == "identifier" && (tree[parent[n]].first == "VariableDeclarator" || tree[parent[n]].first == "VariableDeclarators" || tree[parent[n]].first == "ConstructorDeclarator" || tree[parent[n]].first == "MethodDeclarator" || tree[parent[n]].first == "ClassDeclaration" || tree[parent[n]].first == "FormalParameter" || tree[parent[n]].first == "LocalVariableDeclaration" || tree[parent[n]].first == "FieldDeclaration" || tree[parent[n]].first == "VariableDeclaratorId")){
             stname = tree[n].first;
+            // cout << "scope_lookup " <<  class_table.size() << curr_table << endl;
             if(!scope_lookup(stname, curr_table)){
                 if(tree[parent[n]].first == "VariableDeclaratorId"){
                     stisArray = 1;
@@ -640,7 +663,6 @@ void symTable(int n){
             }
             else{
                 cout << "Variable " << stname << " already declared !!" << endl;
-                exit(1);
             }
             stmodifiers.clear();
         }
@@ -670,9 +692,9 @@ void symTable(int n){
         else if(tree[n].first == ")" && (tree[parent[n]].first == "ConstructorDeclarator" || tree[parent[n]].first == "MethodDeclarator")){
             flag = 0;
             string oname = mname;
-            sym_table new_table = table[mname];
+            sym_table new_table = class_table[curr_class][mname];
 
-            table.erase(mname);
+            class_table[curr_class].erase(mname);
 
             mname += "( ";
             for(auto i : parameters){
@@ -682,21 +704,20 @@ void symTable(int n){
             mname.pop_back();
             mname += ")";
            
-            if(table.find(mname) != table.end()){
+            if(class_table[curr_class].find(mname) != class_table[curr_class].end()){
                 cout << "Method " << mname << " already declared !!" << endl;
-                exit(1);
             }
             else{
-            table.insert(make_pair(mname, new_table));}
-            for(auto it : table[mname]){
+            class_table[curr_class].insert(make_pair(mname, new_table));}
+            for(auto it : class_table[curr_class][mname]){
                 (it.second)->scope = mname;
             }
 
-            string par = parent_table[oname];
-            parent_table.erase(oname);
-            parent_table.insert(make_pair(mname,par));
+            string par = class_parent_table[curr_class][oname];
+            class_parent_table[curr_class].erase(oname);
+            class_parent_table[curr_class].insert(make_pair(mname,par));
 
-            table[par][oname]->parameters = parameters;
+            class_table[curr_class][par][oname]->parameters = parameters;
 
             curr_table = mname;
             flag2 = 0;
@@ -705,25 +726,12 @@ void symTable(int n){
 
         }
         else if(tree[n].first == "}" && (tree[parent[n]].first == "ClassBody" || tree[parent[n]].first == "Block" || tree[parent[n]].first == "ConstructorBody")){
-            curr_table = parent_table[curr_table];
+            curr_table = class_parent_table[curr_class][curr_table];
         }
     
         scope[n] = curr_table;
     }
     for(int i = 0; i < temp.size(); i++){
-        if(tree[n].first == "ClassDeclaration"){
-            stwhat = "class";
-        }
-        else if(tree[n].first == "MethodDeclaration"){
-            stwhat = "method";
-        }
-        else if(tree[n].first == "FieldDeclaration" || tree[n].first == "LocalVariableDeclaration" || tree[n].first == "FormalParameter"){
-            stwhat = "variable";
-        }
-        else if(tree[n].first == "ConstructorDeclaration"){
-            stwhat = "constructor";
-        }
-
         symTable(temp[i]);  
     }
 }
@@ -739,7 +747,6 @@ void checkMethodCall(int n){
     if(lookup(tree[temp[0]].first) == "null") 
     {
         cout << "Method " << tree[temp[0]].first << " not declared in line " << LineNumber[temp[0]] << "!!" << endl;
-        exit(1);
     }
     }
     return;
@@ -748,6 +755,10 @@ void checkMethodCall(int n){
 
 void checkScope(int n){
     vector<int> temp = (tree[n].second);
+    if(tree[n].first == "ClassDeclaration"){
+        curr_class = "class" + to_string(classnum);
+        classnum++;
+    }
     // cout << tree[n].first << endl;
     if(temp.size() == 0)  {
         
@@ -773,15 +784,15 @@ void checkScope(int n){
         if(additionalInfo[n] == "identifier" && tree[n].first != "System" && tree[n].first != "out" && tree[n].first != "println"){
             
             if((lookup(tree[n].first)) == "null"){
-                cout << tree[n].first << " not declared!!" << endl;
-                exit(1);
+                cout << tree[n].first << " is not declared!!" << endl;
+
             }
             
         }
         if(additionalInfo[n] == "referencetype"){
             if(!scope_lookup(tree[n].first, "program")){
                 cout << "class " << tree[n].first << " not defined!!" << endl;
-                exit(1);
+                // exit(0);
             }
         }
     }
@@ -805,22 +816,22 @@ void checkScope(int n){
         arraySize((tree[n].second)[1]);
         int count = 1;
         // cout << (table[curr_table][var]->ndim).size() << endl;
-        for(auto i : table[curr_table][var]->ndim){
+        for(auto i : class_table[curr_class][curr_table][var]->ndim){
             count *= i;
         }
-        table[curr_table][var]->size *= count;
+        class_table[curr_class][curr_table][var]->size *= count;
     }
     else if(tree[n].first == "DimExprs"){
         for(auto i : (tree[n].second)){
             int j = stoi(tree[(tree[i].second)[1]].first);
             // cout << j << endl;
-        table[curr_table][var]->ndim.push_back(j);
+        class_table[curr_class][curr_table][var]->ndim.push_back(j);
         }
         int count = 1;
-        for(auto i : table[curr_table][var]->ndim){
+        for(auto i : class_table[curr_class][curr_table][var]->ndim){
             count *= i;
         }
-        table[curr_table][var]->size *= count;
+        class_table[curr_class][curr_table][var]->size *= count;
     }
     else{
         for(int i = 0; i < temp.size(); i++){
@@ -831,7 +842,7 @@ void checkScope(int n){
 }
 
 void setOffset(){
-    for(auto i : table){
+    for(auto i : class_table[curr_class]){
         for(auto j : i.second){
             j.second->offset = stoffset;
             stoffset += j.second->size;
@@ -842,9 +853,11 @@ void setOffset(){
 
 void print(){
     symTable(root);
-    curr_table = "program";
+    curr_class = "class1";
+    classnum = 1;
+    // curr_table = "program";
     checkScope(root);
-    setOffset();
+    // setOffset();
     // ***************************
     // cout << "******************** Three AC Print Statements**************" << endl;
     // tacVecId.push(currTacVec);
@@ -2131,7 +2144,8 @@ STRICTFP                                                               :   STRIC
 
 
 int main(int argc, char *argv[]) {
-    makeSymbolTable("program");
+    // makeSymbolTable("program");
+    
     argparse::ArgumentParser program("final");
     program.set_prefix_chars("-+/");
     program.set_assign_chars("=:");
@@ -2184,21 +2198,15 @@ int main(int argc, char *argv[]) {
 
     }
     fclose(yyin);
-
-    // for(auto it : table){
-    //     printSymbolTable(it.first);
-    //     cout << "*******" << endl;
-    // } 
-
-    ofstream fout;
-    fout.open("SymbolTable.csv");
-    fout << "Variable,Type,Line,Size,Offset" << '\n';
-        for(auto it : table){
-            for(auto itr : it.second){
-        fout << itr.first.c_str() << "," << itr.second->type.c_str() << "," << (itr.second)->line << "," << (itr.second)->size << "," << (itr.second)->offset << endl;
-        }
-        }
-    fout.close();
+    
+    for(auto i : class_table){
+        // cout << i.first << endl;
+    for(auto it : i.second){
+        printSymbolTable(it.first);
+        cout << "*******" << endl;
+    } 
+    cout << "class over ---------------" << endl;
+    }
 }
 
 void yyerror(const char* s) {
