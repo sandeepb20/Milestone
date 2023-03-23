@@ -113,9 +113,13 @@ typedef struct ThreeAC {
     string g = "goto";
     string label = "";
 } tac;
-vector<tac*> tacVector;
+// vector<tac*> tacVector;
+map<string,  vector<tac*>> tacMap;
+string currTacVec = "start_";
 stack<int> loopStart;
 stack<int> loopId;
+stack<string> tacVecId;
+
 
 string createArg(int id){
     if(additionalInfo.find(id) != additionalInfo.end()){
@@ -125,12 +129,15 @@ string createArg(int id){
 }
 
 void printThreeAC(){
-    for(int i = 0; i < tacVector.size(); i++){
-        if(tacVector[i] -> isGoto == true){
-            cout << i << ": " << tacVector[i] -> gotoLabel << "  " << tacVector[i] -> arg << "  " << tacVector[i] -> g << "  "<< tacVector[i] -> label << endl;
-            continue;
+    for(auto i = tacMap.begin(); i != tacMap.end(); i++){
+        currTacVec =  i->first ;
+        for(int i = 0; i < tacMap[currTacVec].size(); i++){
+            if(tacMap[currTacVec][i] -> isGoto == true){
+                cout <<  i << currTacVec << ": " << tacMap[currTacVec][i] -> gotoLabel << "  " << tacMap[currTacVec][i] -> arg << "  " << tacMap[currTacVec][i] -> g << "  "<< tacMap[currTacVec][i] -> label << endl;
+                continue;
+            }
+            cout << i << currTacVec << ": " << tacMap[currTacVec][i] -> op << "  " << tacMap[currTacVec][i] -> arg1 << "  " << tacMap[currTacVec][i] -> arg2 << "  " << tacMap[currTacVec][i] -> res << endl;
         }
-        cout << i << ": " << tacVector[i] -> op << "  " << tacVector[i] -> arg1 << "  " << tacVector[i] -> arg2 << "  " << tacVector[i] -> res << endl;
     }
 }
 
@@ -176,12 +183,12 @@ void createTac2Dplus(int id){
     t -> op = "=";
     t -> arg1 = createArg(temp[0]);
     t -> res = "_v" + to_string(id);
-    tacVector.push_back(t);
+    tacMap[currTacVec].push_back(t);
     tac* t1 = new tac();
     t1 -> op = tree[temp[1]].first;
     t1 -> arg1 = createArg(temp[0]);
     t1 -> res = createArg(temp[0]);
-    tacVector.push_back(t1);
+    tacMap[currTacVec].push_back(t1);
     return ;
 }
 
@@ -189,7 +196,7 @@ tac* createTacGoto(string label){
     tac* t = new tac();
     t -> isGoto = true;
     t -> label = label;
-    tacVector.push_back(t);
+    tacMap[currTacVec].push_back(t);
     return  t;
 }
 
@@ -199,7 +206,7 @@ tac* createTacGotoL(string gotoLabel, string arg, string label){
     t -> gotoLabel = "ifFalse";
     t -> arg = arg;
     t -> label = label;
-    tacVector.push_back(t);
+    tacMap[currTacVec].push_back(t);
     return  t;
 }
 
@@ -207,9 +214,19 @@ tac* createTacGotoL(string gotoLabel, string arg, string label){
 void backpatch(int n, int id){
     
     for(auto i : backlist[id]){
-        tacVector[i]->label = to_string(n);
+        tacMap[currTacVec][i]->label = to_string(n);
     }
     return;
+}
+
+void  ArrayInitHelper(int id){
+    vector<int> temp = tree[id].second;
+    // if(tree[id].first == "VariableInitializers"){
+    //     ArrayInitHelper(temp[0]);
+    //     ThreeACHelperFunc(temp[2]);
+    //     tac* t = new tac();
+    //     t -> op = "=";
+    // }
 }
 
 void ThreeACHelperFunc(int id){
@@ -223,21 +240,21 @@ void ThreeACHelperFunc(int id){
             if(tree[temp[i]].first == "(" && tree[temp[i+2]].first == ";"){ThreeACHelperFunc(temp[i+1]);}
             if(tree[temp[i]].first == ";" && tree[temp[i+2]].first == ";" && tree[temp[i+1]].first != ""){ 
                 ThreeACHelperFunc(temp[i+1]);
-                forStatelabel = tacVector.size()-1;
-                createTacGotoL("ifFalse", tacVector[forStatelabel] -> res, "");
-                backlist[id].push_back(tacVector.size()-1);
+                forStatelabel = tacMap[currTacVec].size()-1;
+                createTacGotoL("ifFalse", tacMap[currTacVec][forStatelabel] -> res, "");
+                backlist[id].push_back(tacMap[currTacVec].size()-1);
             }
             if(tree[temp[i]].first == ")") blockId = temp[i+1];
             if(tree[temp[i]].first == ";" && tree[temp[i+2]].first == ")") incId = temp[i+1];
         }
-        if(forStatelabel == -1) forStatelabel = tacVector.size(); // if there is no condition  in for loop goto block
+        if(forStatelabel == -1) forStatelabel = tacMap[currTacVec].size(); // if there is no condition  in for loop goto block
         loopStart.push(forStatelabel); loopId.push(id);
         if(blockId != -1) ThreeACHelperFunc(blockId);
         if(incId != -1) ThreeACHelperFunc(incId);
         createTacGoto(to_string(forStatelabel));
         loopStart.pop(); loopId.pop();
         // backpatch End of for loop
-        backpatch(tacVector.size(), id);
+        backpatch(tacMap[currTacVec].size(), id);
     }
     if(tree[id].first == "whileStmt"){
         childcallistrue = 0;
@@ -245,19 +262,19 @@ void ThreeACHelperFunc(int id){
         for(int i = 0; i < temp.size(); i++){
             if(tree[temp[i]].first == "(" && tree[temp[i+2]].first == ")" && tree[temp[i+1]].first != ""){ 
                 ThreeACHelperFunc(temp[i+1]);
-                whileStatelabel = tacVector.size()-1;
-                createTacGotoL("ifFalse", tacVector[whileStatelabel] -> res, "");
-                backlist[id].push_back(tacVector.size()-1);
+                whileStatelabel = tacMap[currTacVec].size()-1;
+                createTacGotoL("ifFalse", tacMap[currTacVec][whileStatelabel] -> res, "");
+                backlist[id].push_back(tacMap[currTacVec].size()-1);
             }
             if(tree[temp[i]].first == ")") blockId = temp[i+1];
         }
-        if(whileStatelabel == -1) whileStatelabel = tacVector.size(); // if there is no condition  in for loop goto block
+        if(whileStatelabel == -1) whileStatelabel = tacMap[currTacVec].size(); // if there is no condition  in for loop goto block
         loopStart.push(whileStatelabel); loopId.push(id);
         if(blockId != -1) ThreeACHelperFunc(blockId);
         createTacGoto(to_string(whileStatelabel));
         loopStart.pop(); loopId.pop();
         // backpatch End of for loop
-        backpatch(tacVector.size(), id);
+        backpatch(tacMap[currTacVec].size(), id);
     }
     if(tree[id].first == "continue"){
         childcallistrue = 0;
@@ -266,7 +283,7 @@ void ThreeACHelperFunc(int id){
     if(tree[id].first == "break"){
         childcallistrue = 0;
         createTacGoto("");
-        backlist[loopId.top()].push_back(tacVector.size() - 1);
+        backlist[loopId.top()].push_back(tacMap[currTacVec].size() - 1);
     } 
     if(tree[id].first == "ifThenElseStmt" || tree[id].first == "ifThenStmt"){
         childcallistrue = 0;
@@ -274,15 +291,15 @@ void ThreeACHelperFunc(int id){
          for(int i = 0; i < temp.size(); i++){
             if(tree[temp[i]].first == "(" && tree[temp[i+2]].first == ")" && tree[temp[i+1]].first != ""){
                 ThreeACHelperFunc(temp[i+1]);
-                ifStatelabel = tacVector.size()-1;
-                createTacGotoL("ifFalse", tacVector[ifStatelabel] -> res, "");
-                backlist[id].push_back(tacVector.size()-1);
+                ifStatelabel = tacMap[currTacVec].size()-1;
+                createTacGotoL("ifFalse", tacMap[currTacVec][ifStatelabel] -> res, "");
+                backlist[id].push_back(tacMap[currTacVec].size()-1);
             }
             if(tree[temp[i]].first == ")" && tree[temp[i]].first != "") blockId1 = temp[i+1];
             if(tree[temp[i]].first == "else" && tree[temp[i]].first != "") blockId2 = temp[i+1];
         }
         if(blockId1 != -1) ThreeACHelperFunc(blockId1);
-        backpatch(tacVector.size(), id);
+        backpatch(tacMap[currTacVec].size(), id);
         if(blockId2 != -1) ThreeACHelperFunc(blockId2);
     }
     if(tree[id].first == "ArrayAccess"){
@@ -295,29 +312,95 @@ void ThreeACHelperFunc(int id){
             string sizeofVar = to_string(getSize(customtypeof(ArrayAccessChild[0])));
             string arrsize = "n";
             tac *t = createTacCustom("*", arrsize, createArg(ArrayAccessChild[2]), createArg(ArrayAccessChild[2]));
-            tacVector.push_back(t);
+            tacMap[currTacVec].push_back(t);
 
             tac *t1 = createTacCustom("+", t-> res, createArg(temp[2]), createArg(temp[2]));
-            tacVector.push_back(t1);
+            tacMap[currTacVec].push_back(t1);
             
             tac *t2 = createTacCustom("*", t1 -> res, sizeofVar, t1->res );
-            tacVector.push_back(t2);
+            tacMap[currTacVec].push_back(t2);
 
             string ar3 = tree[ArrayAccessChild[0]].first + "[" + t1-> res + "]";
             tac *t3 = createTacCustom("=", ar3, "", createArg(id));
-            tacVector.push_back(t3);
+            tacMap[currTacVec].push_back(t3);
         }
         else{
             string arrindex  = createArg(temp[2]);
             string sizeofVar = to_string(getSize(customtypeof(temp[0])));
             vector<int> temp = tree[id].second;
             tac *t = createTacCustom("*", createArg(temp[2]), sizeofVar, createArg(temp[2]));
-            tacVector.push_back(t);
+            tacMap[currTacVec].push_back(t);
 
             string tempvar = tree[temp[0]].first + "[" + t-> res + "]";
             tac *t1 = createTacCustom("=", tempvar, "", createArg(id));
-            tacVector.push_back(t1);
+            tacMap[currTacVec].push_back(t1);
         }
+    }
+    if(tree[id].first == "ArrayInitializer"){
+        childcallistrue = 0;
+        if(temp.size()>2){
+            int idtempvar = temp[1];
+            // ArrayInitHelper(temp[1]);
+        }
+    }
+    if(tree[id].first == "MethodDeclaration"){
+        childcallistrue = 0;
+        if(temp.size() >= 2){
+            ThreeACHelperFunc(temp[0]);
+            ThreeACHelperFunc(temp[1]);
+            tac* t = createTacCustom("EndFunc", "", "","");
+            tacMap[currTacVec].push_back(t);
+            tacVecId.pop();
+            currTacVec = tacVecId.top();
+            
+        }
+    }
+    if(tree[id].first == "MethodDeclarator"){
+        if(tree[temp[1]].first == "("){
+            childcallistrue = 0;
+            currTacVec = tree[temp[0]].first;
+            tacVecId.push(currTacVec);
+            string paraOffSet = "n";
+            tac* t = createTacCustom("BeginFunc", "", "",paraOffSet);
+            tacMap[currTacVec].push_back(t);
+            if(tree[temp[2]].first != ")"){
+                ThreeACHelperFunc(temp[2]);
+            }
+        }
+    }
+    if(tree[id].first == "MethodIncovation"){
+        childcallistrue = 0;
+        for(int i = 0; i < temp.size(); i++){
+            if(tree[temp[i]].first == "(") {
+                if(tree[temp[i+1]].first != ""){
+                    ThreeACHelperFunc(temp[i+1]);
+                }
+                
+                tac* t = createTacCustom("=", "LCall", tree[temp[i-1]].first, createArg(id));
+                tacMap[currTacVec].push_back(t);
+
+                 if(tree[temp[i+1]].first != ""){
+                    string offSetHere = "n";
+                    tac* t = createTacCustom("PopParams", "", "", offSetHere);
+                    tacMap[currTacVec].push_back(t);
+                }
+            }
+        }
+    }
+    if(tree[id].first == "ArgumentList"){
+        childcallistrue = 0;
+        if(tree[temp[0]].first == "ArgumentList"){
+            tac* t = createTacCustom("PushParam", "", "", createArg(temp[2]));
+            tacMap[currTacVec].push_back(t);
+            ThreeACHelperFunc(temp[0]);
+        }
+        else{
+            tac* t = createTacCustom("PushParam", "", "", createArg(temp[2]));
+            tacMap[currTacVec].push_back(t);
+            tac* t1 = createTacCustom("PushParam", "", "", createArg(temp[0]));
+            tacMap[currTacVec].push_back(t1);
+        }
+
     }
     // if(tree[id].first == "MethodInvocation"){
     //     childcallistrue = 0;
@@ -326,31 +409,31 @@ void ThreeACHelperFunc(int id){
     //         if(tree[temp[i]].first == "(" && tree[temp[i+2]].first == ")" && tree[temp[i+1]].first != "") argId = temp[i+1];
     //     }
     //     if(argId != -1) ThreeACHelperFunc(argId);
-    //     tacVector.push_back(createTac1(id));
+    //     tacMap[currTacVec].push_back(createTac1(id));
     // }
     if(childcallistrue){         
         for(int i = 0; i < temp.size(); i++){
             ThreeACHelperFunc(temp[i]);
         }
     }
-    if(tree[id].first == "Assignment") tacVector.push_back(createTac1(id));
-    if(tree[id].first == "PreIncExpression") tacVector.push_back(createTac1Dplus(id));
-    if(tree[id].first == "PreDecExpression") tacVector.push_back(createTac1Dplus(id));
+    if(tree[id].first == "Assignment") tacMap[currTacVec].push_back(createTac1(id));
+    if(tree[id].first == "PreIncExpression") tacMap[currTacVec].push_back(createTac1Dplus(id));
+    if(tree[id].first == "PreDecExpression") tacMap[currTacVec].push_back(createTac1Dplus(id));
     if(tree[id].first == "PostIncExpression") {createTac2Dplus(id);}
     if(tree[id].first == "PostDecExpression") {createTac2Dplus(id);}
-    if(tree[id].first == "ConditionalOrExpression"){tacVector.push_back(createTac2(id));}
-    if(tree[id].first == "ConditionalAndExpression"){tacVector.push_back(createTac2(id));}
-    if(tree[id].first == "AdditiveExpression"){tacVector.push_back(createTac2(id)); }
-    if(tree[id].first == "MultiplicativeExpression"){tacVector.push_back(createTac2(id)); }
-    if(tree[id].first == "RelationalExpression"){tacVector.push_back(createTac2(id)); }
-    if(tree[id].first == "EqualityExpression"){tacVector.push_back(createTac2(id));}
-    if(tree[id].first == "AssignmentExpression"){tacVector.push_back(createTac1(id));}
-    if(tree[id].first == "PrimaryExpression"){tacVector.push_back(createTac1(id));}
-    if(tree[id].first == "VariableDeclarator"){tacVector.push_back(createTac1(id));}
-    if(tree[id].first == "InclusiveOrExpression"){tacVector.push_back(createTac2(id));}
-    if(tree[id].first == "ExclusiveOrExpression"){tacVector.push_back(createTac2(id));}
-    if(tree[id].first == "AndExpression"){tacVector.push_back(createTac2(id));}
-    if(tree[id].first == "ShiftExpression"){tacVector.push_back(createTac2(id));} 
+    if(tree[id].first == "ConditionalOrExpression"){tacMap[currTacVec].push_back(createTac2(id));}
+    if(tree[id].first == "ConditionalAndExpression"){tacMap[currTacVec].push_back(createTac2(id));}
+    if(tree[id].first == "AdditiveExpression"){tacMap[currTacVec].push_back(createTac2(id)); }
+    if(tree[id].first == "MultiplicativeExpression"){tacMap[currTacVec].push_back(createTac2(id)); }
+    if(tree[id].first == "RelationalExpression"){tacMap[currTacVec].push_back(createTac2(id)); }
+    if(tree[id].first == "EqualityExpression"){tacMap[currTacVec].push_back(createTac2(id));}
+    if(tree[id].first == "AssignmentExpression"){tacMap[currTacVec].push_back(createTac1(id));}
+    if(tree[id].first == "PrimaryExpression"){tacMap[currTacVec].push_back(createTac1(id));}
+    if(tree[id].first == "VariableDeclarator"){tacMap[currTacVec].push_back(createTac1(id));}
+    if(tree[id].first == "InclusiveOrExpression"){tacMap[currTacVec].push_back(createTac2(id));}
+    if(tree[id].first == "ExclusiveOrExpression"){tacMap[currTacVec].push_back(createTac2(id));}
+    if(tree[id].first == "AndExpression"){tacMap[currTacVec].push_back(createTac2(id));}
+    if(tree[id].first == "ShiftExpression"){tacMap[currTacVec].push_back(createTac2(id));} 
 }
 // ****************************************************************
 
@@ -429,14 +512,14 @@ void change(int n){
     }
 }
 
-bool lookup(string id){
+string lookup(string id){
 	string temp = curr_table;
 
 	while(temp != "null"){
-		if((table[temp]).find(id)!=(table[temp]).end()) return 1;
+		if((table[temp]).find(id)!=(table[temp]).end()) return temp;
 		temp = parent_table[temp];
 	}
-	return 0;
+	return "null";
 }
 
 bool curr_lookup(string id){
@@ -472,6 +555,12 @@ void assignSize(int n, int flag){
         int len = (tree[temp[2]].first).length()-2;
         setSize(tree[temp[0]].first,len);
     }
+    string scope = lookup(tree[temp[0]].first);
+    vector<string> mod = table[scope][tree[temp[0]].first]->modifiers;
+    auto it = find(mod.begin(), mod.end(), "final");
+    if(it != mod.end()) {
+        cout << "cannot assign a value to a final variable " << tree[temp[0]].first << endl;
+    }
     }
     else if(flag == 1){
        if(type == "String"){
@@ -479,6 +568,7 @@ void assignSize(int n, int flag){
         setSize(tree[(tree[temp[2]].second)[0]].first,len);
     } 
     }
+    
 }
 
 void arraySize(int n){
@@ -619,7 +709,7 @@ void checkMethodCall(int n){
     //     }
     // }
     if(additionalInfo[temp[0]] == "identifier"){
-    if(!lookup(tree[temp[0]].first)) 
+    if(lookup(tree[temp[0]].first) == "null") 
     {
         cout << "Method " << tree[temp[0]].first << " not declared in line " << LineNumber[temp[0]] << "!!" << endl;
     }
@@ -654,7 +744,7 @@ void checkScope(int n){
         // printSymbolTable(curr_table);
         if(additionalInfo[n] == "identifier" && tree[n].first != "System" && tree[n].first != "out" && tree[n].first != "println"){
             
-            if(!(lookup(tree[n].first))){
+            if((lookup(tree[n].first)) == "null"){
                 cout << tree[n].first << " not declared!!" << endl;
 
             }
@@ -709,9 +799,10 @@ void print(){
     checkScope(root);
     setOffset();
     // ***************************
-    // cout << "******************** Three AC Print Statements**************" << endl;
-    // ThreeACHelperFunc(root);
-    // printThreeAC();
+    cout << "******************** Three AC Print Statements**************" << endl;
+    tacVecId.push(currTacVec);
+    ThreeACHelperFunc(root);
+    printThreeAC();
     // ***************************
     ofstream fout;
     fout.open(OutputFileName);

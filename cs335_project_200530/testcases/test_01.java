@@ -1,21 +1,39 @@
-public class ArmstrongNumber {
-  public static void main(String[] args) {
-    int num = 153, originalNumber, remainder, result = 0, n = 0;
-
-    originalNumber = num;
-
-    for (; originalNumber != 0; originalNumber /= 10, ++n);
-
-    originalNumber = num;
-
-    for (; originalNumber != 0; originalNumber /= 10) {
-      remainder = originalNumber % 10;
-      result += Math.pow(remainder, n);
+public class Animal{
+  public static int foo() {
+    int a;
+    a = 0;
+    while (a < 10 && a > 0) {
+      a = a + 1;
+      a--;
+      ++a;
     }
+    return a;
+  }
+}
 
-    if (result == num)
-      System.out.println(num + " is an Armstrong number.");
-    else
-      System.out.println(num + " is not an Armstrong number.");
+public class Main {
+  public static int foo2() {
+    int a;
+    a = 0;
+    while (a < 10 && a > 0) {
+      a = a + 1;
+      a--;
+      ++a;
+    }
+    return a;
+  }
+  public int foo1(int a, int b) {
+    int b;
+    b = 0;
+    int d = foo();
+    while (b < 10) {
+      b = b + 1;
+    }
+    return b + 1;
+  }
+  public static void main(String[] args) {
+    int s;
+    Animal a = new Animal();
+    s = a.foo();
   }
 }
