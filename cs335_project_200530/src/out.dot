@@ -1,6 +1,6 @@
 digraph G {
 n1 [label="class"]
-n2 [label="fodfr"]
+n2 [label="first"]
 n3 [label="{"]
 n4 [label="public"]
 n5 [label="Modifiers"]

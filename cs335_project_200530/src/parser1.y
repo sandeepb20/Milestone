@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <string>
 #include <vector>
-#include <iostream>
 #include <fstream>
 #include "./argparse/argparse.hpp"
 using namespace std;
@@ -15,7 +14,7 @@ extern int yyparse();
 int line = 0;
 int root = -1;
 void yyerror(const char* s);
-int fornum = 1, whilenum = 1, ifelse = 1;
+int fornum = 1, whilenum = 1, ifelse = 1, classnum = 1;
 
 uint countnode = 0;
 string OutputFileName = "out.dot";
@@ -59,10 +58,13 @@ typedef struct sym_entry{
 
 typedef map<string, sym_entry* > sym_table;
 string curr_table = "null";
-map<string, sym_table> table;
-map<string, string> parent_table;
+typedef map<string, sym_table> table;
+map<string, table> class_table;
+typedef map<string, string> parent_table;
+map<string, parent_table> class_parent_table;
 vector<string> key_words = {"abstract","continue","for","new","switch","assert","default","if","package","synchronized","boolean","do","goto","private","this","break","double","implements","protected","throw","byte","else","import","public","throws","case","enum","instanceof","return","transient","catch","extends","int","short","try","String","char","final","interface","static","void","class","finally","long","strictfp","volatile","const","float","native","super","while","_","exports","opens","requires","uses","module","permit","sealed","var","non-sealed","provides","to","with","open","record","transitive","yield"}; 
 map<string, int> keywords;
+string curr_class = "class1";
 
 int makenode( string name){
     countnode++;
@@ -85,45 +87,21 @@ string customtypeof(int id){
     
     string temp = scope[id];
 	while(temp != "null"){
-        auto it = table[temp].find(tree[id].first);
-        if(it!=table[temp].end()) return table[temp][tree[id].first]->type;
+        auto it = class_table[curr_class][temp].find(tree[id].first);
+        if(it!=class_table[curr_class][temp].end()) return class_table[curr_class][temp][tree[id].first]->type;
 		else{
-		temp = parent_table[temp];}
+		temp = class_parent_table[curr_class][temp];}
 	}
     return "null";
-}
-
-int getLineOf(int id){
-    
-    string temp = scope[id];
-	while(temp != "null"){
-        auto it = table[temp].find(tree[id].first);
-        if(it!=table[temp].end()) return table[temp][tree[id].first]->line;
-		else{
-		temp = parent_table[temp];}
-	}
-    return 0;
-}
-
-vector<string> getParamsOf(int id){
-    
-    string temp = scope[id];
-	while(temp != "null"){
-        auto it = table[temp].find(tree[id].first);
-        if(it!=table[temp].end()) return table[temp][tree[id].first]->parameters;
-		else{
-		temp = parent_table[temp];}
-	}
-    return vector<string>();
 }
 
 vector<int> getDim(int id){
     string temp = scope[id];
     while(temp != "null"){
-        auto it = table[temp].find(tree[id].first);
-        if(it!=table[temp].end()) return table[temp][tree[id].first]->ndim;
+        auto it = class_table[curr_class][temp].find(tree[id].first);
+        if(it!=class_table[curr_class][temp].end()) return class_table[curr_class][temp][tree[id].first]->ndim;
         else{
-        temp = parent_table[temp];}
+        temp = class_parent_table[curr_class][temp];}
     }
     return {};
 }
@@ -135,7 +113,7 @@ int getSize(string id){
   if(id == "float") return sizeof(float);
   if(id == "double") return sizeof(double);
 
-  return 8; // for any ptr
+  return 4; // for any ptr
 }
 
 // ******************************* THREE AC CODE **********************************************
@@ -153,59 +131,30 @@ typedef struct ThreeAC {
 } tac;
 // vector<tac*> tacVector;
 map<string,  vector<tac*>> tacMap;
-string currTacVec = "";
-string currTacClass = "";
+string currTacVec = "start_";
 stack<int> loopStart;
 stack<int> loopId;
 stack<string> tacVecId;
 
 
 string createArg(int id){
-    if(tree[id].first == "FieldAccess"){
-        return "_v" + to_string(id);
-    }
     if(additionalInfo.find(id) != additionalInfo.end()){
-        return tree[id].first ;
+        return tree[id].first;
     }
     else return "_v" + to_string(id);
 }
-
-string createArg3(int id){
-    if(additionalInfo.find(id) != additionalInfo.end()){
-        return "_"+ tree[id].first ;
-    }
-    else return "_v" + to_string(id);
-}
-
-string createArg4(int id){
-    if(additionalInfo.find(id) != additionalInfo.end()){
-        return "SymbolEntry( "+ currTacClass + ", "  + tree[id].first  + ")";
-    }
-    else return "_v" + to_string(id);
-}
-
-
 
 void printThreeAC(){
-    std::ofstream myfile;
-      myfile.open ("3ac.csv");
-      
-     
-      
-    int uid = 1;
     for(auto i = tacMap.begin(); i != tacMap.end(); i++){
         currTacVec =  i->first ;
-        myfile << ","+ currTacVec + ": \n";
-        uid++;
         for(int i = 0; i < tacMap[currTacVec].size(); i++){
             if(tacMap[currTacVec][i] -> isGoto == true){
-               myfile <<"      t" + to_string(uid) + "_" +  to_string(i)  + ": ," + tacMap[currTacVec][i] -> gotoLabel + ",  " + tacMap[currTacVec][i] -> arg+ ",  " << tacMap[currTacVec][i] -> g +",  " + "t"  + to_string(uid) + "_" + tacMap[currTacVec][i] -> label + "\n";
+                cout <<  i << currTacVec << ": " << tacMap[currTacVec][i] -> gotoLabel << "  " << tacMap[currTacVec][i] -> arg << "  " << tacMap[currTacVec][i] -> g << "  "<< tacMap[currTacVec][i] -> label << endl;
                 continue;
             }
-            myfile <<"      t" + to_string(uid) + "_" +  to_string(i)  + ": ," + tacMap[currTacVec][i] -> op + ",  " + tacMap[currTacVec][i] -> arg1 + "  " + tacMap[currTacVec][i] -> arg2 + " , " +tacMap[currTacVec][i] -> res + "\n";
+            cout << i << currTacVec << ": " << tacMap[currTacVec][i] -> op << "  " << tacMap[currTacVec][i] -> arg1 << "  " << tacMap[currTacVec][i] -> arg2 << "  " << tacMap[currTacVec][i] -> res << endl;
         }
     }
-     myfile.close();
 }
 
 tac* createTac2(int id){
@@ -235,18 +184,12 @@ tac* createTacCustom(string op, string arg1, string arg2, string res){
     t -> res = res;
     return t;
 }
-
 tac* createTac1Dplus(int id){
     vector<int> temp = tree[id].second;
-    tac* t1 = new tac();
-    t1 -> op = tree[temp[0]].first;
-    t1 -> arg1 = createArg(temp[1]);
-    t1 -> res = createArg(temp[1]);
-    tacMap[currTacVec].push_back(t1);
     tac* t = new tac();
-    t -> op = "=";
+    t -> op = tree[temp[0]].first;
     t -> arg1 = createArg(temp[1]);
-    t -> res = createArg(id);
+    t -> res = "_v" + to_string(id);
     return  t;
 }
 
@@ -255,7 +198,7 @@ void createTac2Dplus(int id){
     tac* t = new tac();
     t -> op = "=";
     t -> arg1 = createArg(temp[0]);
-    t -> res = createArg(id);
+    t -> res = "_v" + to_string(id);
     tacMap[currTacVec].push_back(t);
     tac* t1 = new tac();
     t1 -> op = tree[temp[1]].first;
@@ -292,82 +235,21 @@ void backpatch(int n, int id){
     return;
 }
 
+void  ArrayInitHelper(int id){
+    vector<int> temp = tree[id].second;
+    // if(tree[id].first == "VariableInitializers"){
+    //     ArrayInitHelper(temp[0]);
+    //     ThreeACHelperFunc(temp[2]);
+    //     tac* t = new tac();
+    //     t -> op = "=";
+    // }
+}
+
 void ThreeACHelperFunc(int id){
     // cout << tree[id].first << " " << id << endl;
     int childcallistrue = 1;
     vector<int> temp = tree[id].second;
-    if(tree[id].first == "ClassDeclaration"){
-        currTacClass = tree[temp[2]].first;
-        tacVecId.push(currTacClass + ".");
-        currTacVec = tacVecId.top();
-    }
-    if(tree[id].first == "ConstructorDeclaration"){
-        childcallistrue = 0;
-        currTacVec = currTacClass + ".Constructor";
-        tacVecId.push(currTacVec);
-        ThreeACHelperFunc(temp[1]);
-        ThreeACHelperFunc(temp[2]);
-         tac* t = createTacCustom("EndConstructor", "", "",tree[temp[0]].first);
-        tacMap[currTacVec].push_back(t);     
-    }
-    if(tree[id].first == "ConstructorDeclarator"){
-        if(tree[temp[1]].first == "("){
-            childcallistrue = 0;
-            tac* t = createTacCustom("BeginFunc", "", "","");
-            tacMap[currTacVec].push_back(t);
-            tac* t1 = createTacCustom("=", "popparam", "",createArg(id));
-            tacMap[currTacVec].push_back(t1);
-            ThreeACHelperFunc(temp[2]);
-        }
-    }
-    if(tree[id].first == "FieldAccess"){
-        if(tree[temp[1]].first == "."){
-            childcallistrue = 0;
-            ThreeACHelperFunc(temp[2]);
-            tac* t = createTacCustom("=", createArg4(temp[2]), "", "_v" + to_string(id));
-            tacMap[currTacVec].push_back(t);
-        }
-    }
-    if(tree[id].first == "FormalParameterList"){
-        childcallistrue = 0;
-        if(tree[temp[0]].first == "FormalParameterList"){
-            ThreeACHelperFunc(temp[2]);
-            vector<int> temp1 = tree[temp[2]].second;
-            tac* t = createTacCustom("popparam", "", "", createArg3(temp1[2]));
-            tacMap[currTacVec].push_back(t);
-            ThreeACHelperFunc(temp[0]);
-        }
-        else{
-            ThreeACHelperFunc(temp[2]);
-             vector<int> temp1 = tree[temp[2]].second;
-            tac* t = createTacCustom("=","popparam", "", createArg3(temp1[2]));
-            tacMap[currTacVec].push_back(t);
-            ThreeACHelperFunc(temp[0]);
-            temp1 = tree[temp[0]].second;
-            tac* t1 = createTacCustom("=","popparam",  "", createArg3(temp1[2]));
-            tacMap[currTacVec].push_back(t1);
-        }
-    }
-
-    if(tree[id].first == "ReturnStatement"){
-        childcallistrue = 0;
-        ThreeACHelperFunc(temp[1]);
-        tac* t = new tac();
-        t -> op = "Return";
-        t -> arg1 = createArg(temp[1]);
-        tacMap[currTacVec].push_back(t);
-        return;        
-    }
-    if(tree[id].first == "assertStatement"){
-        childcallistrue = 0;
-        ThreeACHelperFunc(temp[1]);
-        tac* t = new tac();
-        t -> op = "Assert";
-        t -> arg1 = createArg(temp[1]);
-        tacMap[currTacVec].push_back(t);
-        return;        
-    }
-    if(tree[id].first == "forStmt" || tree[id].first == "forStmtNoShortIf"){
+    if(tree[id].first == "forStmt"){
         childcallistrue = 0;
         int blockId = -1, incId = -1, forStatelabel = -1;
         for(int i = 0; i < temp.size(); i++){
@@ -390,7 +272,7 @@ void ThreeACHelperFunc(int id){
         // backpatch End of for loop
         backpatch(tacMap[currTacVec].size(), id);
     }
-    if(tree[id].first == "whileStmt" || tree[id].first == "whileStmtNoShortIf"){
+    if(tree[id].first == "whileStmt"){
         childcallistrue = 0;
         int blockId = -1, incId = -1, whileStatelabel = -1;
         for(int i = 0; i < temp.size(); i++){
@@ -419,7 +301,7 @@ void ThreeACHelperFunc(int id){
         createTacGoto("");
         backlist[loopId.top()].push_back(tacMap[currTacVec].size() - 1);
     } 
-    if(tree[id].first == "ifThenElseStmt" || tree[id].first == "ifThenStmt" || tree[id].first == "ifThenElseStmtNoShortIf"){
+    if(tree[id].first == "ifThenElseStmt" || tree[id].first == "ifThenStmt"){
         childcallistrue = 0;
          int blockId1 = -1, ifStatelabel = -1, blockId2 = -1;
          for(int i = 0; i < temp.size(); i++){
@@ -433,93 +315,52 @@ void ThreeACHelperFunc(int id){
             if(tree[temp[i]].first == "else" && tree[temp[i]].first != "") blockId2 = temp[i+1];
         }
         if(blockId1 != -1) ThreeACHelperFunc(blockId1);
-        int elseid = tacMap[currTacVec].size()-1;
-        createTacGoto("");
-        backlist[elseid].push_back(tacMap[currTacVec].size()-1);
         backpatch(tacMap[currTacVec].size(), id);
         if(blockId2 != -1) ThreeACHelperFunc(blockId2);
-        backpatch(tacMap[currTacVec].size(), elseid);
-    }
-    if(tree[id].first == "ConditionalExpression"){
-        childcallistrue = 0;
-        int blockId1 = -1, ifStatelabel = -1, blockId2 = -1;
-         for(int i = 0; i < temp.size(); i++){
-            if(tree[temp[i]].first == "?"  && tree[temp[i-1]].first != ""){
-                ThreeACHelperFunc(temp[i-1]);
-                ifStatelabel = tacMap[currTacVec].size()-1;
-                createTacGotoL("ifFalse", tacMap[currTacVec][ifStatelabel] -> res, "");
-                backlist[id].push_back(tacMap[currTacVec].size()-1);
-            }
-            if(tree[temp[i]].first == "?" && tree[temp[i+1]].first != "") blockId1 = temp[i+1];
-            if(tree[temp[i]].first == ":" && tree[temp[i+1]].first != "") blockId2 = temp[i+1];
-        }
-        if(blockId1 != -1) ThreeACHelperFunc(blockId1);
-        tac* t = createTacCustom("=", createArg(temp[2]), "", createArg(id));
-        tacMap[currTacVec].push_back(t);
-
-        int elseid = tacMap[currTacVec].size()-1;
-        createTacGoto("");
-        backlist[elseid].push_back(tacMap[currTacVec].size()-1);
-        backpatch(tacMap[currTacVec].size(), id);
-        if(blockId2 != -1) ThreeACHelperFunc(blockId2);
-        tac* t1 = createTacCustom("=", createArg(temp[4]), "", createArg(id));
-        tacMap[currTacVec].push_back(t1);
-        backpatch(tacMap[currTacVec].size(), elseid);
-
     }
     if(tree[id].first == "ArrayAccess"){
         childcallistrue = 0;
-        vector<string> tempVec;
-        string ArrayName = "";
-        int nodeNum = id;
-        int tempId = -1;
-        while(tree[nodeNum].first == "ArrayAccess"){
+        ThreeACHelperFunc(temp[2]);
+        if(tree[temp[0]].first == "ArrayAccess") {
+            int nodeNum = temp[0];
             vector<int> ArrayAccessChild = tree[nodeNum].second;
-            tempId = ArrayAccessChild[2];
-            if(tree[ArrayAccessChild[0]].first == "ArrayAccess"){
-                ThreeACHelperFunc(ArrayAccessChild[2]);
-                 tempVec.push_back(createArg(ArrayAccessChild[2]));
-            }
-            else{
-                ArrayName = tree[ArrayAccessChild[0]].first;
-                ThreeACHelperFunc(ArrayAccessChild[2]);
-                tempVec.push_back(createArg(ArrayAccessChild[2]));
-            }
-            nodeNum = ArrayAccessChild[0];
-        }
-        string tempIds = "_v" + to_string(tempId);
-        vector<int> dims = getDim(nodeNum);
-        tac* t = createTacCustom("=", tempVec[tempVec.size()-1], "",tempIds);
-        tacMap[currTacVec].push_back(t);
-        for(int l = dims.size()-1; l > 0; l--){
-            tac* t = createTacCustom("*", tempIds, to_string(dims[l]),tempIds);
+            ThreeACHelperFunc(ArrayAccessChild[2]);
+            string sizeofVar = to_string(getSize(customtypeof(ArrayAccessChild[0])));
+            cout << "sizeofVar " << customtypeof(ArrayAccessChild[0]) << endl;
+            vector<int> dims = getDim(ArrayAccessChild[0]);
+            string arrsize = to_string(dims[0]);
+            cout << "dims " << dims[0] << dims[1] << endl;
+            tac *t = createTacCustom("*", arrsize, createArg(ArrayAccessChild[2]), "_v" +to_string(ArrayAccessChild[2]));
             tacMap[currTacVec].push_back(t);
-            tac* t1 = createTacCustom("+", tempIds, tempVec[l-1],tempIds);
+
+            tac *t1 = createTacCustom("+", t-> res, createArg(temp[2]), "_v"+ to_string(temp[2]));
+            tacMap[currTacVec].push_back(t1);
+            
+            tac *t2 = createTacCustom("*", t1 -> res, sizeofVar, t1->res );
+            tacMap[currTacVec].push_back(t2);
+
+            string ar3 = tree[ArrayAccessChild[0]].first + "[" + t1-> res + "]";
+            tac *t3 = createTacCustom("=", ar3, "", createArg(id));
+            tacMap[currTacVec].push_back(t3);
+        }
+        else{
+            string arrindex  = createArg(temp[2]);
+            string sizeofVar = to_string(getSize(customtypeof(temp[0])));
+            cout << "sizeofVar " << sizeofVar << endl;
+            vector<int> temp = tree[id].second;
+            tac *t = createTacCustom("*", createArg(temp[2]), sizeofVar, createArg(temp[2]));
+            tacMap[currTacVec].push_back(t);
+
+            string tempvar = tree[temp[0]].first + "[" + t-> res + "]";
+            tac *t1 = createTacCustom("=", tempvar, "", createArg(id));
             tacMap[currTacVec].push_back(t1);
         }
-        tac* t2 = createTacCustom( "=" ,ArrayName + "[" + tempIds + "]","", createArg(id));
-        tacMap[currTacVec].push_back(t2);
-
     }
     if(tree[id].first == "ArrayInitializer"){
         childcallistrue = 0;
-
-
-    }
-    if(tree[id].first == "UnaryExpression"){
-        childcallistrue = 0;
-        if(temp.size() == 2){
-            ThreeACHelperFunc(temp[1]);
-            tac* t = createTacCustom(tree[temp[0]].first, createArg(temp[1]), "", createArg(id));
-            tacMap[currTacVec].push_back(t);
-        }
-    }
-    if(tree[id].first == "UnaryExpressionNot+-"){
-        childcallistrue = 0;
-        if(temp.size() == 2){
-            ThreeACHelperFunc(temp[1]);
-            tac* t = createTacCustom(tree[temp[0]].first, createArg(temp[1]), "", createArg(id));
-            tacMap[currTacVec].push_back(t);
+        if(temp.size()>2){
+            int idtempvar = temp[1];
+            // ArrayInitHelper(temp[1]);
         }
     }
     if(tree[id].first == "MethodDeclaration"){
@@ -537,46 +378,32 @@ void ThreeACHelperFunc(int id){
     if(tree[id].first == "MethodDeclarator"){
         if(tree[temp[1]].first == "("){
             childcallistrue = 0;
-            currTacVec = currTacClass + "."+ tree[temp[0]].first;
+            currTacVec = tree[temp[0]].first;
             tacVecId.push(currTacVec);
             string paraOffSet = "n";
-            tac* t = createTacCustom("BeginFunc", "", "","");
+            tac* t = createTacCustom("BeginFunc", "", "",paraOffSet);
             tacMap[currTacVec].push_back(t);
             if(tree[temp[2]].first != ")"){
                 ThreeACHelperFunc(temp[2]);
             }
         }
     }
-    
-    if(tree[id].first == "MethodInvocation"){
+    if(tree[id].first == "MethodIncovation"){
         childcallistrue = 0;
         for(int i = 0; i < temp.size(); i++){
             if(tree[temp[i]].first == "(") {
                 if(tree[temp[i+1]].first != ""){
                     ThreeACHelperFunc(temp[i+1]);
                 }
+                
                 tac* t = createTacCustom("=", "LCall", tree[temp[i-1]].first, createArg(id));
                 tacMap[currTacVec].push_back(t);
 
-                 
-            }
-        }
-    }
-    if(tree[id].first == "ClassInstanceCreationExpression"){
-        childcallistrue = 0;
-        for(int i = 0; i < temp.size(); i++){
-            if(tree[temp[i]].first == "(") {
-                if(tree[temp[i+1]].first != ""){
-                    ThreeACHelperFunc(temp[i+1]);
+                 if(tree[temp[i+1]].first != ""){
+                    string offSetHere = "n";
+                    tac* t = createTacCustom("PopParams", "", "", offSetHere);
+                    tacMap[currTacVec].push_back(t);
                 }
-                tac* t = createTacCustom("=", "PopParam", "", "t1");
-                tacMap[currTacVec].push_back(t);
-                tac* t1 = createTacCustom("PushParam", "", "", "t1");
-                tacMap[currTacVec].push_back(t1);
-                tac* t2 = createTacCustom("=", "LCall", tree[temp[i-1]].first + ".Constructor", createArg(id));
-                tacMap[currTacVec].push_back(t2);
-
-                 
             }
         }
     }
@@ -593,10 +420,7 @@ void ThreeACHelperFunc(int id){
             tac* t1 = createTacCustom("PushParam", "", "", createArg(temp[0]));
             tacMap[currTacVec].push_back(t1);
         }
-    }
-    if(tree[id].first == "LabeledStatement" || tree[id].first == "LabeledStatementNoShortIf"){
-        childcallistrue = 0;
-        ThreeACHelperFunc(temp[2]);
+
     }
 
     if(childcallistrue){         
@@ -652,17 +476,15 @@ void tempfunc1(ofstream& fout, unordered_map<int,int> &visited, int id){
 }
 
 
-
-
-// void printSymbolTable(string curr_table){
-//   	for(auto it: (table[curr_table])){
-//         cout << it.first.c_str() << " ";
-//         for(auto j : (it.second)->modifiers){
-//             cout << j << " ";
-//         }
-//         cout << it.second->type.c_str() << " " << (it.second)->line << " " << (it.second)->size << " " << (it.second)->offset << " " << (it.second)->what << " " << (it.second)->isArray << " " << (it.second)->scope << "." << endl;
-//   }
-// }
+void printSymbolTable(string curr_table){
+  	for(auto it: (class_table[curr_class][curr_table])){
+        cout << it.first.c_str() << " ";
+        for(auto j : (it.second)->modifiers){
+            cout << j << " ";
+        }
+        cout << it.second->type.c_str() << " " << (it.second)->line << " " << (it.second)->size << " " << (it.second)->offset << " " << (it.second)->what << " " << (it.second)->isArray << " " << (it.second)->scope << "." << endl;
+  }
+}
 
 void createEntry(string name, string temp, vector<string> modifiers, string type, int line, ull size, ull offset, string what, string scope, int isArray, vector<int> ndim){
     
@@ -676,17 +498,18 @@ void createEntry(string name, string temp, vector<string> modifiers, string type
         ent->scope = scope;
         ent->isArray = isArray;
         ent->ndim = ndim;
-        table[name].insert(make_pair(temp, ent));
+        class_table[curr_class][name].insert(make_pair(temp, ent));
     stisArray = 0;
 }
 
 void makeSymbolTable(string name){
 
     sym_table new_table;
-    table.insert(make_pair(name, new_table));
-    parent_table.insert(make_pair(name, curr_table));
+    class_table[curr_class].insert(make_pair(name, new_table));
+    class_parent_table[curr_class].insert(make_pair(name, curr_table));
 	curr_table = name;
 }
+
 int flag2 = 0;
 void change(int n){
     vector<int> temp = (tree[n].second);
@@ -705,33 +528,34 @@ string lookup(string id){
 	string temp = curr_table;
 
 	while(temp != "null"){
-		if((table[temp]).find(id)!=(table[temp]).end()) return temp;
-		temp = parent_table[temp];
+		if((class_table[curr_class][temp]).find(id)!=(class_table[curr_class][temp]).end()) return temp;
+		temp = class_parent_table[curr_class][temp];
 	}
 	return "null";
 }
 
 bool curr_lookup(string id){
     string temp = curr_table;
-    if((table[temp]).find(id)!=(table[temp]).end()) return 1;
+    if((class_table[curr_class][temp]).find(id)!=(class_table[curr_class][temp]).end()) return 1;
     return 0;
 }
 
 bool scope_lookup(string id, string scope){
     string temp = scope;
-    if((table[temp]).find(id)!=(table[temp]).end()) return 1;
+    if(scope == "null") return 0;
+    if((class_table[curr_class][temp]).find(id)!=(class_table[curr_class][temp]).end()) return 1;
     return 0;
 }
 
 void setSize(string id, int len){
     string temp = curr_table;
 	while(temp != "null"){
-		if((table[temp]).find(id)!=(table[temp]).end()){
-            table[temp][id]->size = len;
+		if((class_table[curr_class][temp]).find(id)!=(class_table[curr_class][temp]).end()){
+            class_table[curr_class][temp][id]->size = len;
             return;
         }
         else{
-		temp = parent_table[temp];}
+		temp = class_parent_table[curr_class][temp];}
 	}
 	return;
 }
@@ -746,11 +570,10 @@ void assignSize(int n, int flag){
         setSize(tree[temp[0]].first,len);
     }
     string scope = lookup(tree[temp[0]].first);
-    vector<string> mod = table[scope][tree[temp[0]].first]->modifiers;
+    vector<string> mod = class_table[curr_class][scope][tree[temp[0]].first]->modifiers;
     auto it = find(mod.begin(), mod.end(), "final");
     if(it != mod.end()) {
         cout << "cannot assign a value to a final variable " << tree[temp[0]].first << endl;
-        exit(1);
     }
     }
     else if(flag == 1){
@@ -770,7 +593,7 @@ void arraySize(int n){
         n1 = (tree[n1].second)[0];
         count++;
     }
-    (table[curr_table][var])->ndim.push_back(count);
+    (class_table[curr_class][curr_table][var])->ndim.push_back(count);
     if(tree[n1].first == "ArrayInitializer"){
         arraySize((tree[n1].second)[1]);
     }
@@ -778,7 +601,26 @@ void arraySize(int n){
 }
 
 void symTable(int n){
-
+    if(tree[n].first == "ClassDeclaration"){
+            curr_class = "class" + to_string(classnum);
+            curr_table = "null";
+            table new_table;
+            parent_table new_parent_table;
+            class_parent_table.insert(make_pair(curr_class, new_parent_table));
+            class_table.insert(make_pair(curr_class, new_table));
+            makeSymbolTable("program");
+            stwhat = "class";
+            classnum++;
+        }
+        else if(tree[n].first == "MethodDeclaration"){
+            stwhat = "method";
+        }
+        else if(tree[n].first == "FieldDeclaration" || tree[n].first == "LocalVariableDeclaration" || tree[n].first == "FormalParameter"){
+            stwhat = "variable";
+        }
+        else if(tree[n].first == "ConstructorDeclaration"){
+            stwhat = "constructor";
+        }
     vector<int> temp = (tree[n].second);
     if(temp.size() == 0)  {
 
@@ -804,8 +646,9 @@ void symTable(int n){
                 parameters.push_back(sttype);
             }
         }
-        else if(additionalInfo[n] == "identifier" && (tree[parent[n]].first == "VariableDeclarator" || tree[parent[n]].first == "VariableDeclarators"  || tree[parent[n]].first == "MethodDeclarator" || tree[parent[n]].first == "ClassDeclaration" || tree[parent[n]].first == "FormalParameter" || tree[parent[n]].first == "LocalVariableDeclaration" || tree[parent[n]].first == "FieldDeclaration" || tree[parent[n]].first == "VariableDeclaratorId")){
+        else if(additionalInfo[n] == "identifier" && (tree[parent[n]].first == "VariableDeclarator" || tree[parent[n]].first == "VariableDeclarators" || tree[parent[n]].first == "ConstructorDeclarator" || tree[parent[n]].first == "MethodDeclarator" || tree[parent[n]].first == "ClassDeclaration" || tree[parent[n]].first == "FormalParameter" || tree[parent[n]].first == "LocalVariableDeclaration" || tree[parent[n]].first == "FieldDeclaration" || tree[parent[n]].first == "VariableDeclaratorId")){
             stname = tree[n].first;
+            // cout << "scope_lookup " <<  class_table.size() << curr_table << endl;
             if(!scope_lookup(stname, curr_table)){
                 if(tree[parent[n]].first == "VariableDeclaratorId"){
                     stisArray = 1;
@@ -820,7 +663,6 @@ void symTable(int n){
             }
             else{
                 cout << "Variable " << stname << " already declared !!" << endl;
-                exit(1);
             }
             stmodifiers.clear();
         }
@@ -842,17 +684,17 @@ void symTable(int n){
             ifelse++;
             makeSymbolTable(stname);
         }
-        else if(tree[n].first == "(" && ( tree[parent[n]].first == "MethodDeclarator")){
+        else if(tree[n].first == "(" && (tree[parent[n]].first == "ConstructorDeclarator" || tree[parent[n]].first == "MethodDeclarator")){
             flag = 1;
             mname = stname;
             makeSymbolTable(stname);
         }
-        else if(tree[n].first == ")" && ( tree[parent[n]].first == "MethodDeclarator")){
+        else if(tree[n].first == ")" && (tree[parent[n]].first == "ConstructorDeclarator" || tree[parent[n]].first == "MethodDeclarator")){
             flag = 0;
             string oname = mname;
-            sym_table new_table = table[mname];
+            sym_table new_table = class_table[curr_class][mname];
 
-            table.erase(mname);
+            class_table[curr_class].erase(mname);
 
             mname += "( ";
             for(auto i : parameters){
@@ -862,21 +704,20 @@ void symTable(int n){
             mname.pop_back();
             mname += ")";
            
-            if(table.find(mname) != table.end()){
+            if(class_table[curr_class].find(mname) != class_table[curr_class].end()){
                 cout << "Method " << mname << " already declared !!" << endl;
-                exit(1);
             }
             else{
-            table.insert(make_pair(mname, new_table));}
-            for(auto it : table[mname]){
+            class_table[curr_class].insert(make_pair(mname, new_table));}
+            for(auto it : class_table[curr_class][mname]){
                 (it.second)->scope = mname;
             }
 
-            string par = parent_table[oname];
-            parent_table.erase(oname);
-            parent_table.insert(make_pair(mname,par));
+            string par = class_parent_table[curr_class][oname];
+            class_parent_table[curr_class].erase(oname);
+            class_parent_table[curr_class].insert(make_pair(mname,par));
 
-            table[par][oname]->parameters = parameters;
+            class_table[curr_class][par][oname]->parameters = parameters;
 
             curr_table = mname;
             flag2 = 0;
@@ -884,24 +725,13 @@ void symTable(int n){
             parameters.clear();
 
         }
-        else if(tree[n].first == "}" && (tree[parent[n]].first == "ClassBody" || tree[parent[n]].first == "Block" )){
-            curr_table = parent_table[curr_table];
+        else if(tree[n].first == "}" && (tree[parent[n]].first == "ClassBody" || tree[parent[n]].first == "Block" || tree[parent[n]].first == "ConstructorBody")){
+            curr_table = class_parent_table[curr_class][curr_table];
         }
     
         scope[n] = curr_table;
     }
     for(int i = 0; i < temp.size(); i++){
-        if(tree[n].first == "ClassDeclaration"){
-            stwhat = "class";
-        }
-        else if(tree[n].first == "MethodDeclaration"){
-            stwhat = "method";
-        }
-        else if(tree[n].first == "FieldDeclaration" || tree[n].first == "LocalVariableDeclaration" || tree[n].first == "FormalParameter"){
-            stwhat = "variable";
-        }
-        
-
         symTable(temp[i]);  
     }
 }
@@ -917,7 +747,6 @@ void checkMethodCall(int n){
     if(lookup(tree[temp[0]].first) == "null") 
     {
         cout << "Method " << tree[temp[0]].first << " not declared in line " << LineNumber[temp[0]] << "!!" << endl;
-        exit(1);
     }
     }
     return;
@@ -926,16 +755,20 @@ void checkMethodCall(int n){
 
 void checkScope(int n){
     vector<int> temp = (tree[n].second);
+    if(tree[n].first == "ClassDeclaration"){
+        curr_class = "class" + to_string(classnum);
+        classnum++;
+    }
     // cout << tree[n].first << endl;
     if(temp.size() == 0)  {
         
         if(tree[n].first == "{" && (tree[parent[n]].first == "ClassBody")){
             curr_table = scope[n];
         }
-        else if(tree[n].first == "(" && tree[parent[n]].first == "MethodDeclarator"){
+        else if(tree[n].first == "(" && (tree[parent[n]].first == "ConstructorDeclarator" || tree[parent[n]].first == "MethodDeclarator")){
             curr_table = scope[n];
         }
-        else if(tree[n].first == "}" && (tree[parent[n]].first == "ClassBody" || tree[parent[n]].first == "Block" )){
+        else if(tree[n].first == "}" && (tree[parent[n]].first == "ClassBody" || tree[parent[n]].first == "Block" || tree[parent[n]].first == "ConstructorBody")){
             curr_table = scope[n];
         }
         else if(tree[n].first == "(" && (tree[parent[n]].first == "forStmt")){
@@ -951,15 +784,15 @@ void checkScope(int n){
         if(additionalInfo[n] == "identifier" && tree[n].first != "System" && tree[n].first != "out" && tree[n].first != "println"){
             
             if((lookup(tree[n].first)) == "null"){
-                cout << tree[n].first << " not declared!!" << endl;
-                exit(1);
+                cout << tree[n].first << " is not declared!!" << endl;
+
             }
             
         }
         if(additionalInfo[n] == "referencetype"){
             if(!scope_lookup(tree[n].first, "program")){
                 cout << "class " << tree[n].first << " not defined!!" << endl;
-                exit(1);
+                // exit(0);
             }
         }
     }
@@ -983,22 +816,22 @@ void checkScope(int n){
         arraySize((tree[n].second)[1]);
         int count = 1;
         // cout << (table[curr_table][var]->ndim).size() << endl;
-        for(auto i : table[curr_table][var]->ndim){
+        for(auto i : class_table[curr_class][curr_table][var]->ndim){
             count *= i;
         }
-        table[curr_table][var]->size *= count;
+        class_table[curr_class][curr_table][var]->size *= count;
     }
     else if(tree[n].first == "DimExprs"){
         for(auto i : (tree[n].second)){
             int j = stoi(tree[(tree[i].second)[1]].first);
             // cout << j << endl;
-        table[curr_table][var]->ndim.push_back(j);
+        class_table[curr_class][curr_table][var]->ndim.push_back(j);
         }
         int count = 1;
-        for(auto i : table[curr_table][var]->ndim){
+        for(auto i : class_table[curr_class][curr_table][var]->ndim){
             count *= i;
         }
-        table[curr_table][var]->size *= count;
+        class_table[curr_class][curr_table][var]->size *= count;
     }
     else{
         for(int i = 0; i < temp.size(); i++){
@@ -1009,7 +842,7 @@ void checkScope(int n){
 }
 
 void setOffset(){
-    for(auto i : table){
+    for(auto i : class_table[curr_class]){
         for(auto j : i.second){
             j.second->offset = stoffset;
             stoffset += j.second->size;
@@ -1020,14 +853,17 @@ void setOffset(){
 
 void print(){
     symTable(root);
-    curr_table = "program";
+    curr_class = "class1";
+    classnum = 1;
+    // curr_table = "program";
     checkScope(root);
-    setOffset();
+    // setOffset();
     // ***************************
-    cout << "******************** Three AC Printing**************" << endl;
-    ThreeACHelperFunc(root);
-    printThreeAC();
-    // ****************************
+    // cout << "******************** Three AC Print Statements**************" << endl;
+    // tacVecId.push(currTacVec);
+    // ThreeACHelperFunc(root);
+    // printThreeAC();
+    // ***************************
     ofstream fout;
     fout.open(OutputFileName);
     fout << "digraph G {" << endl;
@@ -2308,7 +2144,8 @@ STRICTFP                                                               :   STRIC
 
 
 int main(int argc, char *argv[]) {
-    makeSymbolTable("program");
+    // makeSymbolTable("program");
+    
     argparse::ArgumentParser program("final");
     program.set_prefix_chars("-+/");
     program.set_assign_chars("=:");
@@ -2361,370 +2198,15 @@ int main(int argc, char *argv[]) {
 
     }
     fclose(yyin);
-
-    /* for(auto it : table){
+    
+    for(auto i : class_table){
+        // cout << i.first << endl;
+    for(auto it : i.second){
         printSymbolTable(it.first);
         cout << "*******" << endl;
-    }  */
-    ofstream fout;
-    fout.open("SymbolTable.csv");
-    fout << "Variable,Type,Line,Size,Offset" << '\n';
-        for(auto it : table){
-            for(auto itr : it.second){
-        fout << itr.first.c_str() << "," << itr.second->type.c_str() << "," << (itr.second)->line << "," << (itr.second)->size << "," << (itr.second)->offset << endl;
-        }
-        }
-    fout.close();
-
-    // my addition *********** TYPE CHECKING **********************
-    /* map<int, pair<string, vector<int> >> typeCheck; */
-    unordered_map <int,bool> visitedType;
-    unordered_map <int, bool>terminal;
-    unordered_map<string, pair<int, vector<string>>> methodParams;
-    cout<<"**********  TREE   ********************\n";
-    map<int, string> whtIsType;
-    for(auto itr = tree.begin();itr!=tree.end();itr++){
-        visitedType[itr->first]=  false;
-        terminal[itr->first] = false;
-        whtIsType[itr->first]=  "x";
-        /* cout<<itr->first<<" [ "<< (itr->second).first<<" ]    -> ";
-         cout<<"{ "<<additionalInfo[itr->first]<<" }";
-        for(int j=0; j<(itr->second).second.size();j++){
-            
-            cout<<(itr->second).second[j]<<" ";
-        }
-        cout<<"\n"; */
+    } 
+    cout << "class over ---------------" << endl;
     }
-    
-    /* cout<<visitedType.size(); */
-
-    /* typeCheck = tree; */
-    int typeErrorFlag = 0;
-
-        cout<<"**********  Typecheck  ********************\n";
-        // consider float and double as same
-
-    stack <int> nodeStack;
-    /* cout<<root<<endl; */
-    nodeStack.push(root);
-    int again = 0;
-    int node,child;
-    while(!nodeStack.empty() && !again){
-        node = nodeStack.top();
-        nodeStack.pop();
-        bool allChildrenVisited = true;
-        int childNum = tree[node].second.size();
-        if(childNum==0){
-            terminal[node] = true;
-            // leaf node
-            if (additionalInfo[node]=="identifier") {
-                whtIsType[node] = customtypeof(node);
-                if (whtIsType[node]=="double") whtIsType[node]="float";}
-            else if(additionalInfo[node]=="type") {
-                whtIsType[node] = tree[node].first;
-                if (whtIsType[node]=="double") whtIsType[node]="float";
-                }
-            else if(additionalInfo[node]=="IntegerLiteral")  whtIsType[node] = "int";
-            else if(additionalInfo[node]=="CharacterLiteral")  whtIsType[node] = "char";
-            else if(additionalInfo[node]=="FloatingPointLiteral")  whtIsType[node] = "float";
-            else if(additionalInfo[node]=="BooleanLiteral")  whtIsType[node] = "boolean";
-            else if(additionalInfo[node]=="StringLiteral")  whtIsType[node] = "String";
-            else if(additionalInfo[node]=="NullLiteral")  whtIsType[node] = "null";
-        }
-        for(int i=0; i<childNum;i++){
-            child = (tree[node].second)[i];
-            if(!visitedType[child]){
-                allChildrenVisited = false;
-                if(child!=-1 &&
-                /* additionalInfo[child]=="modifier" && */
-                    tree[child].first!="="   &&
-                    tree[child].first!="<"   &&
-                    tree[child].first!=">"   &&
-                    tree[child].first!="!"   &&
-                    tree[child].first!="~"   &&
-                    tree[child].first!="?"   &&
-                    tree[child].first!=":"   &&
-                    tree[child].first!="->"  &&
-                    tree[child].first!="=="  &&
-                    tree[child].first!=">="  &&
-                    tree[child].first!="<="  &&
-                    tree[child].first!="!="  &&
-                    tree[child].first!="&&"  &&
-                    tree[child].first!="||"  &&
-                    tree[child].first!="++"  &&
-                    tree[child].first!="--"  &&
-                    tree[child].first!="+"   &&
-                    tree[child].first!="-"   &&
-                    tree[child].first!="*"   &&
-                    tree[child].first!="/"   &&
-                    tree[child].first!="&"   &&
-                    tree[child].first!="^"   &&
-                    tree[child].first!="%"   &&
-                    tree[child].first!="<<"  &&
-                    tree[child].first!=">>"  &&
-                    tree[child].first!=">>>" &&
-                    tree[child].first!="+="  &&
-                    tree[child].first!="-="  &&
-                    tree[child].first!="*="  &&
-                    tree[child].first!="/="  &&
-                    tree[child].first!="&="  &&
-                    tree[child].first!="|="  &&
-                    tree[child].first!="^="  &&
-                    tree[child].first!="%="  &&
-                    tree[child].first!="<<=" &&
-                    tree[child].first!=">>=" &&
-                    tree[child].first!=">>>="&&
-                    tree[child].first!="|"   &&
-                    tree[child].first!="<>" &&
-                    tree[child].first!="("  &&
-                    tree[child].first!=")"  &&
-                    tree[child].first!="{"  &&
-                    tree[child].first!="}"  &&
-                    tree[child].first!="["  &&
-                    tree[child].first!="]"  &&
-                    tree[child].first!=";"  &&
-                    tree[child].first!=","  &&
-                    tree[child].first!="."  &&
-                    tree[child].first!="..."&&
-                    tree[child].first!="@"  &&
-                    tree[child].first!="::"  
-
-            ) {
-                /* cout<<"88888 "<<whtIsType[child]<<endl; */
-                nodeStack.push(child);
-                /* cout<<child<<" "<<whtIsType[child]<<" "; */
-
-                
-                
-                }
-            else{
-                visitedType[child] = true;
-            }
-                
-            }
-        }
-        if(allChildrenVisited){
-            
-            string is_type = "";
-            childNum = tree[node].second.size();
-
-            if(terminal[node]==false){
-                // finding type of nonTerminal
-                if( tree[node].first == "LocalVariableDeclarationStatement"||
-                    tree[node].first == "ExStatement"  ||
-                    tree[node].first == "MethodHeader"  ||
-                    tree[node].first == "forStmt" ||
-                    tree[node].first == "whileStmt" ||
-                    tree[node].first == "BlockStatements" ||
-                    tree[node].first == "ifThenStmt" ||
-                    tree[node].first == "ifThenElseStmt" ||
-                    tree[node].first == "ClassDeclaration" ||
-                    tree[node].first == "ClassBodyDeclarations" ||
-                    tree[node].first == "Block" ) {
-                    // no need to store type
-                    whtIsType[node] = "x";
-
-                    }
-
-                else if( tree[node].first =="ClassInstanceCreationExpression" ) {
-                    // no need to store type
-                    is_type = tree[(tree[node].second)[1]].first;
-
-
-                    }
-                else if(tree[node].first =="VariableDeclarator")
-                {
-                    if(whtIsType[(tree[node].second)[0]]=="float" && (whtIsType[(tree[node].second)[2]] == "float" || whtIsType[(tree[node].second)[2]] == "int")){
-                        is_type = "float";
-
-                    }
-                    else if(whtIsType[(tree[node].second)[0]]=="int" && (whtIsType[(tree[node].second)[2]] == "int" || whtIsType[(tree[node].second)[2]] == "char")){
-                        is_type = "int";
-
-                    }
-                    else if(whtIsType[(tree[node].second)[0]]== whtIsType[(tree[node].second)[2]] ){
-                        is_type = whtIsType[(tree[node].second)[0]];
-
-                    }
-                    else{
-                        for(int i=0; i<childNum;i++)
-                    {
-                        child = (tree[node].second)[i];
-                        /* cout<<"child : "<<child<<endl; */
-                        if(is_type=="" && whtIsType[child]!="x") is_type = whtIsType[child];
-                        else if(is_type != whtIsType[child] && whtIsType[child]!="x") 
-                        {
-                            cout<<" error seems here ";
-                            typeErrorFlag = 1;
-                            cout<<node <<": " <<tree[node].first<<" at line:"<<getLineOf((tree[node].second)[0])<<endl;
-                            is_type = "error";
-                            exit(1);
-                        }
-                    }
-                    }
-
-
-                    
-                }
-
-                
-                else if(tree[node].first =="AdditiveExpression" || tree[node].first =="RelationalExpression"
-
-                )
-                {
-                    if((whtIsType[(tree[node].second)[0]]=="float" && (whtIsType[(tree[node].second)[2]] == "float" || whtIsType[(tree[node].second)[2]] == "int")) 
-                    || 
-                    (whtIsType[(tree[node].second)[0]]=="float" || (whtIsType[(tree[node].second)[0]] == "int" && whtIsType[(tree[node].second)[2]] == "float")))
-                    {
-                        is_type = "float";
-
-                    }
-                    else if(
-                        (whtIsType[(tree[node].second)[0]]=="int" && (whtIsType[(tree[node].second)[2]] == "int" || whtIsType[(tree[node].second)[2]] == "char"))
-                         || 
-                         (whtIsType[(tree[node].second)[0]]=="char" || (whtIsType[(tree[node].second)[0]] == "int" && whtIsType[(tree[node].second)[2]] == "int")))
-                        {
-                        is_type = "int";
-
-                    }
-                    else{
-                        for(int i=0; i<childNum;i++)
-                    {
-                        child = (tree[node].second)[i];
-                        /* cout<<"child : "<<child<<endl; */
-                        if(is_type=="" && whtIsType[child]!="x") is_type = whtIsType[child];
-                        else if(is_type != whtIsType[child] && whtIsType[child]!="x") 
-                        {
-                            cout<<" error seems here ";
-                            typeErrorFlag = 1;
-                            cout<<node <<": " <<tree[node].first<<" at line:"<<getLineOf((tree[node].second)[0])<<endl;
-                            is_type = "error";
-                            exit(1);
-                        }
-                    }
-
-                    }
-
-                    
-                }
-                
-                else if(tree[node].first =="ConditionalExpression" )
-                {
-                    if(childNum==5){
-                        if(whtIsType[(tree[node].second)[2]] == whtIsType[(tree[node].second)[4]]){
-                            is_type = whtIsType[(tree[node].second)[2]];
-                        }
-                    }
-                }
-                else if(tree[node].first =="QualifiedName" )
-                {
-                    is_type = whtIsType[tree[parent[node]].second[2]];
-
-                }
-                else if(tree[node].first =="ArgumentList")
-                {
-                    for(int i=0; i<childNum;i++){
-                        child = (tree[node].second)[i];
-                        if(whtIsType[child]!="x") is_type = is_type + whtIsType[child];
-                    }
-                    
-                    /* cout<<compare<<"balle?\n";           */
-                    
-
-                }
-
-                else if(tree[node].first =="FormalParameterList" )
-                {
-
-                    for(int i=0; i<childNum;i++){
-                        child = (tree[node].second)[i];
-                        if(whtIsType[child]!="x") is_type = is_type + whtIsType[child];
-                    }
-                }
-                else if(tree[node].first =="ArgumentList")
-                {
-                    for(int i=0; i<childNum;i++){
-                        child = (tree[node].second)[i];
-                        if(whtIsType[child]!="x") is_type = is_type + whtIsType[child];
-                    }
-                    
-                    /* cout<<compare<<"balle?\n";           */
-                    
-
-                }
-                
-                else if(tree[node].first =="MethodInvocation")
-                {
-                    // type is the type of method name + type of params
-                    is_type = whtIsType[(tree[node].second)[0]]+ whtIsType[(tree[node].second)[2]];
-                    cout<<is_type<<endl;
-
-                    int to_go = (tree[node].second)[0];
-                    vector <string> params = getParamsOf(to_go);
-                    string compare = customtypeof((tree[node].second)[0]);
-                    for(int i=0; i<params.size();i++){
-                        compare = compare + params[i];
-                    }
-                    cout<<compare<<endl;
-                    if(compare!=is_type){
-                        cout<<" error seems here ";
-                        typeErrorFlag = 1;
-                        cout<<node <<": " <<tree[node].first<<" at line:"<<getLineOf((tree[node].second)[0])<<endl;
-                        is_type = "error";
-                        exit(1);
-                    }
-
-                    is_type = whtIsType[(tree[node].second)[0]];
-
-                    
-                    
-                }
-                else if(tree[node].first =="MethodDeclarator")
-                {
-                    // type is the type of method name
-                    is_type = whtIsType[(tree[node].second)[0]];
- 
-                }
-                else if(tree[node].first =="MethodDeclarator")
-                {
-                    // type is the type of method name
-                    is_type = whtIsType[(tree[node].second)[0]];
- 
-                }
-                else
-                {
-                    for(int i=0; i<childNum;i++)
-                    {
-                        child = (tree[node].second)[i];
-                        /* cout<<"child : "<<child<<endl; */
-                        if(is_type=="" && whtIsType[child]!="x") is_type = whtIsType[child];
-                        else if(is_type != whtIsType[child] && whtIsType[child]!="x") 
-                        {
-                            cout<<" error seems here ";
-                            typeErrorFlag = 1;
-                            cout<<node <<": " <<tree[node].first<<" at line:"<<getLineOf((tree[node].second)[0])<<endl;
-                            is_type = "error";
-                            exit(1);
-                        }
-                    }
-
-                }
-                
-            whtIsType[node] = is_type;
-            }
-
-            
-
-            if (node == root) again=1;
-            /* cout<<node <<": " <<tree[node].first<<" "<<whtIsType[node]<<endl; */
-            visitedType[node] = true;
-            if(parent.count(node)>0 && !visitedType[parent[node]]){
-                nodeStack.push(parent[node]);
-            }
-        }
-    }
-    if(typeErrorFlag == 0) cout<<"No Type Error Found\n";
-    exit(1);
 }
 
 void yyerror(const char* s) {
