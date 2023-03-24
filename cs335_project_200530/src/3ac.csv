@@ -1,0 +1,38 @@
+,test.: 
+      t2_0: ,+,  a  1 , _v18
+      t2_1: ,=,  _v18   , a
+      t2_2: ,=,  _v54   , _v41
+      t2_3: ,=,  _v70   , xy
+,test.Constructor: 
+      t3_0: ,BeginFunc,     , 
+      t3_1: ,=,  popparam   , _v92
+      t3_2: ,popparam,     , _z
+      t3_3: ,=,  popparam   , _y
+      t3_4: ,=,  popparam   , _x
+      t3_5: ,=,  x   , a
+      t3_6: ,EndConstructor,     , Modifiers
+,test.add: 
+      t4_0: ,BeginFunc,     , 
+      t4_1: ,*,  b  d , _v162
+      t4_2: ,/,  _v162  c , _v165
+      t4_3: ,+,  a  _v165 , _v166
+      t4_4: ,=,  _v166   , e
+      t4_5: ,EndFunc,     , 
+,test.getdata: 
+      t5_0: ,BeginFunc,     , 
+      t5_1: ,=,  popparam   , _y
+      t5_2: ,=,  popparam   , _x
+      t5_3: ,=,  x   , a
+      t5_4: ,=,  y   , b
+      t5_5: ,=,  1   , z
+      t5_6: ,EndFunc,     , 
+,took.main: 
+      t6_0: ,BeginFunc,     , 
+      t6_1: ,=,  1   , i
+      t6_2: ,=,  PopParam   , t1
+      t6_3: ,PushParam,     , t1
+      t6_4: ,=,  LCall  test.Constructor , _v223
+      t6_5: ,=,  _v223   , obj
+      t6_6: ,PushParam,     , 100
+      t6_7: ,PushParam,     , 200
+      t6_8: ,EndFunc,     , 

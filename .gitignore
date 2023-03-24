@@ -4,3 +4,4 @@ cs335_project_200530/src/parser.output
 cs335_project_200530/src/parser.tab.c
 cs335_project_200530/src/parser.tab.h
 cs335_project_200530/src/graph.ps
+cs335_project_200530/src/out.dot

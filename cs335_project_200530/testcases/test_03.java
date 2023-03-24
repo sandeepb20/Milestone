@@ -1,5 +1,6 @@
 public static public class test {
     
+    
     final int a = a+1;
     int c;
     int s; int p;
