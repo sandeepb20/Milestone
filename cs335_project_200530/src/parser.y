@@ -150,14 +150,19 @@ void makeSymbolTable(string name){
 
 string lookup(string id){
 	string temp = curr_table;
-
-	while(temp != "null"){
+	while(temp != "null" && temp != ""){
 		if((class_table[curr_class][temp]).find(id)!=(class_table[curr_class][temp]).end()) return temp;
 		temp = class_parent_table[curr_class][temp];
 	}
     vector<string> mod = classMap[curr_class];
     if(find(mod.begin(), mod.end(), id) != mod.end()) return curr_class;
 	return "null";
+}
+string lookup2(string id, string tbl){
+     vector<string> mod = classMap[tbl];
+    if(find(mod.begin(), mod.end(), id) != mod.end()) return tbl;
+	return "null";
+	
 }
 
 void ParamList(int id){
@@ -187,6 +192,7 @@ void ForClass(int id){
      
     if(nodeName == "ClassDeclaration"){
         curr_class = tree[child[2]].first;
+        classMap[curr_class].push_back(curr_class);
         ForClass(child[5]);
         return;
     }
@@ -269,14 +275,14 @@ void symTable(int id){
         parameters.clear();
         symTable(child[0]);
         makeSymbolTable(tree[child[0]].first+".constr");
-        symTable(child[2]);-
+        symTable(child[2]);
         return;
     }
     if(nodeName == "MethodDeclarator"){
-        symTable(child[0]);
         ParamList(child[2]);
         createEntry(curr_table,tree[child[0]].first,sttype,LineNumber[child[0]],getSize(sttype),stoffset,0,stndim,parameters);
         parameters.clear();
+        symTable(child[0]);
         makeSymbolTable(tree[child[0]].first);
         symTable(child[2]);
         return;
@@ -296,13 +302,14 @@ void symTable(int id){
     }
     if(nodeName == "FormalParameter"){
         int tempid = child[0];
-        symTable(child[2]);
+        
         while(tree[tempid].first == "Modifiers"){
             vector<int> child1 = tree[tempid].second;
             modifiers[child[2]].push_back(tree[child1[0]].first);
             tempid = child1[1];
         }
         createEntry(curr_table, tree[child[2]].first, tree[child[1]].first, LineNumber[child[2]], getSize(tree[child[1]].first), stoffset, 0, stndim, parameters);
+        symTable(child[2]);
         return;
     }
     if(nodeName == "FieldDeclaration"){
@@ -333,23 +340,26 @@ void symTable(int id){
             symTable(child[0]);
         }
         else{
-            symTable(child[0]);
+            
             createEntry(curr_table, tree[child[0]].first, sttype, LineNumber[child[0]], getSize(sttype), stoffset, 0, stndim, parameters);
+            symTable(child[0]);
         }
         if(tree[child[2]].first == "VariableDeclarator" || tree[child[2]].first == "VariableDeclarators" ){
             symTable(child[2]);
         }
         else{
-            symTable(child[2]);
+            
             createEntry(curr_table, tree[child[2]].first, sttype, LineNumber[child[2]], getSize(sttype), stoffset, 0, stndim, parameters);
+            symTable(child[2]);
         }
         return;
     }
     if(nodeName == "VariableDeclarator"){
         if(tree[child[0]].first != "VariableDeclaratorId"){
-            symTable(child[0]);
+            
             
             createEntry(curr_table, tree[child[0]].first, sttype, LineNumber[child[0]], getSize(sttype), stoffset, 0, stndim, parameters);
+            symTable(child[0]);
             symTable(child[2]);
         }
         return;
@@ -419,6 +429,34 @@ void symTable(int id){
         }
         return;
     }
+
+
+    if(additionalInfo.find(id)!= additionalInfo.end() && additionalInfo[id] == "identifier" && tree[parent[id]].first != "ClassDeclaration"){
+        if(tree[parent[id]].first == "ClassInstanceCreationExpression"){
+            ;
+        }
+        else if(tree[parent[id]].first == "QualifiedName" ){
+            int pid = parent[id];
+            vector<int> ch = tree[pid].second;
+            if(lookup(tree[ch[0]].first) == "null"){
+                cout << "Variable " << tree[ch[0]].first << " Not declared at line number: " << LineNumber[ch[0]] << endl; 
+                exit(1);
+            }
+            string ttt = class_table[curr_class][curr_table][tree[ch[0]].first]->type ;
+            if(lookup2(tree[ch[2]].first, ttt) == "null"){
+                cout << "Variable " << nodeName << " Not declared at line number*: " << LineNumber[id] << endl; 
+                exit(1);
+            }
+          
+           
+        }
+        else if(lookup(nodeName) == "null"){
+            cout << "Variable " << nodeName << " Not declared at line number: " << LineNumber[id] << endl; 
+            exit(1);
+        }
+
+    }
+
     for(int i = 0; i < child.size(); i++){
         symTable(child[i]);
     }

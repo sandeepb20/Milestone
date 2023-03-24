@@ -13,7 +13,7 @@ public static public class test {
     int kk;
     private void getdata(int x, int y) {
         a = x;
-        b = y;
+        // b = y;
         int z = 1;
         for (int i = 0; i < 8; i++) {
             a = x;
@@ -24,7 +24,7 @@ public static public class test {
             int z;
         }
         for(a = 0;; a++)
-            cgs++;
+            a++;
         if(a > 0){
             int a1 = 1;
         }
@@ -34,7 +34,7 @@ public static public class test {
     }
 
     void add() {
-        char e = a + b * d / c;
+        char e = "a";
     }
 
    
