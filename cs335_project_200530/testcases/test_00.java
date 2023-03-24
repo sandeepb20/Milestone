@@ -25,7 +25,7 @@ class Myclass{
     // int p = arr1[0+1];
   }
   public int myfunc(int a, int b){
-    int a = 0;
+
     myfunc(1+1,"j");
     int c = myfunc(a,"i");
   }
@@ -37,9 +37,8 @@ class ReverseString {
   Myclass myclass = new Myclass();
   int z = myclass.myfunc();
   public static int foo(){
-    int a;
-    a = 0;
-
+    
+int a;
     while( a < 10){
       a = a + 1;
     }

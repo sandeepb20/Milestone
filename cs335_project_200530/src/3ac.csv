@@ -1,7 +1,40 @@
-,first.main: 
+,Myclass.main: 
       t2_0: ,BeginFunc,     , 
-      t2_1: ,=,  0   , _v17
-      t2_2: ,=,  _v17   , i
-      t2_3: ,+,  i  1 , _v27
-      t2_4: ,=,  _v27   , i
-      t2_5: ,EndFunc,     , 
+      t2_1: ,EndFunc,     , 
+,Myclass.myfunc: 
+      t3_0: ,BeginFunc,     , 
+      t3_1: ,=,  popparam   , _b
+      t3_2: ,=,  popparam   , _a
+      t3_3: ,PushParam,     , "j"
+      t3_4: ,PushParam,     , _v38
+      t3_5: ,=,  LCall  myfunc , _v43
+      t3_6: ,PushParam,     , "i"
+      t3_7: ,PushParam,     , a
+      t3_8: ,=,  LCall  myfunc , _v56
+      t3_9: ,=,  _v56   , _v57
+      t3_10: ,=,  _v57   , c
+      t3_11: ,EndFunc,     , 
+,ReverseString.: 
+      t4_0: ,+,  1  2 , _v80
+      t4_1: ,+,  _v80  3 , _v83
+      t4_2: ,=,  _v83   , _v84
+      t4_3: ,=,  _v84   , a
+      t4_4: ,=,  PopParam   , t1
+      t4_5: ,PushParam,     , t1
+      t4_6: ,=,  LCall  Myclass.Constructor , _v95
+      t4_7: ,=,  _v95   , _v96
+      t4_8: ,=,  _v96   , myclass
+      t4_9: ,=,  LCall  QualifiedName , _v109
+      t4_10: ,=,  _v109   , _v110
+      t4_11: ,=,  _v110   , z
+      t4_12: ,=,  0   , _v157
+      t4_13: ,=,  _v157   , xyz
+,ReverseString.foo: 
+      t5_0: ,BeginFunc,     , 
+      t5_1: ,<,  a  10 , _v130
+      t5_2: ,ifFalse,  _v130,  goto,  t5_6
+      t5_3: ,+,  a  1 , _v138
+      t5_4: ,=,  _v138   , a
+      t5_5: ,,  ,  goto,  t5_1
+      t5_6: ,Return,  a   , 
+      t5_7: ,EndFunc,     , 
