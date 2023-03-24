@@ -1040,12 +1040,16 @@ void typeChecker(){
 map<int, string> whtIsType;
 
 void tpc(int id){
+    // cout << "id = " << tree[id].first << " "<< tree[parent[id]].first << endl;
     vector<int> child = tree[id].second;
     if(child.size() == 0 && id !=-1  && tree[parent[id]].first != "ClassDeclaration"){
+        // if(tree[parent[id]].first == "LocalVariableDeclaration"){
+        //     // ;TBD
+        // }
         if(additionalInfo[id] == "identifier"){
             whtIsType[id] = customtypeof(id);
         }
-        if(additionalInfo[id] == "IntegerLiteral"){
+        else if(additionalInfo[id] == "IntegerLiteral"){
             whtIsType[id] = "int";
         }
     }

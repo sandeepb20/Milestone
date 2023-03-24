@@ -1,7 +1,22 @@
-,Palindrome.: 
-      t2_0: ,=,  1   , a
-      t2_1: ,=,  2   , b
-      t2_2: ,*_int,  b  3 , _v28
-      t2_3: ,/_int,  _v28  4 , _v31
-      t2_4: ,+_int,  a  _v31 , _v32
-      t2_5: ,=,  _v32   , c
+,Example1.Constructor: 
+      t2_0: ,BeginFunc,     , 
+      t2_1: ,=,  popparam   , _v25
+      t2_2: ,=,  popparam   , _y
+      t2_3: ,=,  popparam   , _x
+      t2_4: ,=,  SymbolEntry( Example1, x)   , _v30
+      t2_5: ,=,  x   , _v30
+      t2_6: ,=,  SymbolEntry( Example1, y)   , _v39
+      t2_7: ,=,  y   , _v39
+      t2_8: ,EndConstructor,     , 
+,Example1.main: 
+      t3_0: ,BeginFunc,     , 
+      t3_1: ,PushParam,     , 3.14
+      t3_2: ,PushParam,     , 2
+      t3_3: ,=,  PopParam   , t1
+      t3_4: ,PushParam,     , t1
+      t3_5: ,=,  LCall  Example1.Constructor , _v71
+      t3_6: ,=,  _v71   , a
+      t3_7: ,+_int,  1  2 , _v82
+      t3_8: ,+_int,  _v82  7 , _v85
+      t3_9: ,=,  _v85   , p
+      t3_10: ,EndFunc,     , 
