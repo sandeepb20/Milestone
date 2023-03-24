@@ -351,9 +351,44 @@ void PrintSymTable(){
 }
 /*------------------------------------------------------------*/
 
+/* ------------------------------------------------------------------*/
+void typeChecker(){
+    // my addition **** TYPE CHECKING *********
+    /* map<int, pair<string, vector<int> >> typeCheck; */
+    unordered_map <int,bool> visitedType;
+    unordered_map <int, bool>terminal;
+    unordered_map<string, pair<int, vector<string>>> methodParams;
+    cout << "****TREE********" << endl;
+    map<int, string> whtIsType;
+    for(auto itr = tree.begin();itr!=tree.end();itr++){
+        visitedType[itr->first]=  false;
+        terminal[itr->first] = false;
+        whtIsType[itr->first]=  "x";
+         cout<<itr->first<<" [ "<< (itr->second).first<<" ]    -> ";
+         cout<<"{ "<<additionalInfo[itr->first]<<" }";
+        for(int j=0; j<(itr->second).second.size();j++){
+            
+            cout<<(itr->second).second[j]<<" ";
+        }
+        cout<<"\n"; 
+    }
+    
+    /* cout<<visitedType.size(); */
+
+    /* typeCheck = tree; */
+    int typeErrorFlag = 0;
+
+        cout << "****  Typecheck  ********" << endl;
+        // consider float and double as same
+
+
+}
+/* ------------------------------------------------------------*/
+
 void print(){
     symTable(root);      //fills all the class name in the class_table
     PrintSymTable();
+    typeChecker();
     ofstream fout;
     fout.open(OutputFileName);
     fout << "digraph G {" << endl;
