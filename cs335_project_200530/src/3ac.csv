@@ -1,4 +1,10 @@
+<<<<<<< HEAD
 ,PrimeNumber.mymethod: 
       t2_0: ,BeginFunc,     , 
       t2_1: ,=,  LCall  mymethod , _v27
+=======
+,A.main: 
+      t2_0: ,BeginFunc,     , 
+      t2_1: ,=,  _v35   , a
+>>>>>>> 6d90cd0dd6d6db2404b88e9fd66bbf7955b76e40
       t2_2: ,EndFunc,     , 

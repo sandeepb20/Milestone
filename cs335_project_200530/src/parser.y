@@ -454,9 +454,23 @@ void symTable(int id){
         return;
     }
     if(nodeName == "LocalVariableDeclaration"){
+        if(tree[child[0]].first == "ArrayType"){
+            stisArray = 1;
+            vector<int> child1 = tree[child[0]].second;
+            int n1 = child1[0];
+            sttype = "[]";
+            if(tree[n1].first == "ArrayType"){
+                vector<int> child1 = tree[n1].second;
+                sttype += "[]";
+                n1 = child1[0];
+            }
+            sttype = tree[n1].first + sttype;
+        }
+        else{
         sttype = tree[child[0]].first;
         if(additionalInfo.find(child[1]) != additionalInfo.end()){
             createEntry(curr_table, tree[child[1]].first, sttype, LineNumber[child[1]], getSize(sttype), stoffset, 0, stndim, parameters);
+        }
         }
         symTable(child[1]);
         return;
