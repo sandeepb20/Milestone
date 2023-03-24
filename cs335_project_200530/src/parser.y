@@ -118,6 +118,7 @@ string curr_class, curr_table;
 map<int, vector<string>> modifiers;
 map<int, string> scope;
 map<string, vector<string>> classMap;
+map<string, int> classOffset;
 
 void createEntry(string currTableName, string temp, string type, int line, int size, int offset, int isArray, vector<int> ndim, vector<string> parameters){
     if(find(key_words.begin(), key_words.end(), temp) != key_words.end()){
@@ -255,6 +256,7 @@ void ForClass(int id){
 void symTable(int id){
     vector<int> child = tree[id].second;
     string nodeName = tree[id].first;
+    classOffset[curr_class] = max(stoffset, classOffset[curr_class]);
     if(child.size() == 0){
         nodeClass[id] = curr_class;
         scope[id] = curr_table;
@@ -358,6 +360,7 @@ void symTable(int id){
         sttype = tree[child[1]].first;}
         if(additionalInfo.find(child[2]) != additionalInfo.end() && additionalInfo[child[2]] == "identifier"){
             createEntry(curr_table, tree[child[2]].first, sttype, LineNumber[child[2]], getSize(sttype), stoffset, stisArray, stndim, parameters);
+            stisArray = 0;
         }
         symTable(child[2]);
         return;
@@ -367,7 +370,6 @@ void symTable(int id){
             symTable(child[0]);
         }
         else{
-            
             createEntry(curr_table, tree[child[0]].first, sttype, LineNumber[child[0]], getSize(sttype), stoffset, 0, stndim, parameters);
             symTable(child[0]);
         }
@@ -396,8 +398,15 @@ void symTable(int id){
         }
         if(tree[child[0]].first != "VariableDeclaratorId"){
             
+            if(stisArray){
+                createEntry(curr_table, tree[child[0]].first, sttype, LineNumber[child[0]], stsize, stoffset, 1, stndim, parameters);
+                
+            }
+            else{
+                createEntry(curr_table, tree[child[0]].first, sttype, LineNumber[child[0]], getSize(sttype), stoffset, 0, stndim, parameters);
+            }
+            stisArray = 0;
             
-            createEntry(curr_table, tree[child[0]].first, sttype, LineNumber[child[0]], getSize(sttype), stoffset, 0, stndim, parameters);
             symTable(child[0]);
             symTable(child[2]);
         }
@@ -1114,6 +1123,9 @@ void print(){
     symTable(root);      //fills all the class name in the class_table
     // for(auto it : scope){
     //     cout << tree[it.first].first << " " << it.second << endl;
+    // }
+    // for(auto i : classOffset){
+    //     cout << i.first << " " << i.second << endl;
     // }
     PrintSymTable();
     tpc(root);
