@@ -1,6 +1,7 @@
 public class PrimeNumber {
- public void mymethod(int l){
-  int k;
-  mymethod(1);
- }
+  public static void main(String[] args) {
+    int[][] a = new int[3][4];
+    // int a;
+    int x = a[11][17];
+}
 }

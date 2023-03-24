@@ -760,6 +760,18 @@ vector<int> getDim(string cclass, string ArrayName){
     }
     return {};
 }
+int getSizeOfArray(int id){
+    string ArrayName = tree[id].first;
+    cout << ArrayName << endl;
+    for(auto it : class_table[nodeClass[id]]){
+        for(auto itr : it.second){
+            if(itr.first == ArrayName){
+                return itr.second -> size;
+            }
+        }
+    }
+    return 0;
+}
 
 void ThreeACHelperFunc(int id){
     int childcallistrue = 1;
@@ -974,7 +986,7 @@ void ThreeACHelperFunc(int id){
         }
         string tempIds = "_v" + to_string(tempId);
         vector<int> dims = getDim(nodeClass[arrId], ArrayName);
-        cout << "here1" << endl;
+        // cout << "here1" << endl;
         tac* t = createTacCustom("=", tempVec[tempVec.size()-1], "",tempIds);
         tacMap[currTacVec].push_back(t);
         for(int l = dims.size()-1; l > 0; l--){
@@ -987,9 +999,18 @@ void ThreeACHelperFunc(int id){
         tacMap[currTacVec].push_back(t2);
 
     }
-    if(tree[id].first == "ArrayInitializer"){
+    if(tree[id].first == "ArrayCreationExpr"){
         childcallistrue = 0;
+        vector<int> temp2 = tree[parent[id]].second;
 
+        int sizeOfArr = getSizeOfArray(temp2[0]);
+        cout << "size of array " << sizeOfArr << endl;
+        tac* t = createTacCustom("=", to_string(sizeOfArr), "", "t1");
+        tacMap[currTacVec].push_back(t);
+        tac* t1 = createTacCustom("param", "t1", "", "");
+        tacMap[currTacVec].push_back(t1);
+        tac *t2 = createTacCustom("call", "allocmem", "1", "");
+        tacMap[currTacVec].push_back(t2);
 
     }
     if(tree[id].first == "UnaryExpression"){
@@ -1162,10 +1183,10 @@ map<int, string> whtIsType;
 
 void tpc(int id){
     bool allVisited = true;
-    if(tree[id].first == "MethodInvocation"){
-        // cout << "im in methoid"<< endl;
-        string is_type = whtIsType[tree[id]]
-    }
+    // if(tree[id].first == "MethodInvocation"){
+    //     // cout << "im in methoid"<< endl;
+    //     string is_type = whtIsType[tree[id]]
+    // }
     vector<int> child = tree[id].second;
     if(child.size() == 0 && id !=-1  && tree[parent[id]].first != "ClassDeclaration"){
         if(additionalInfo[id] == "identifier"){
@@ -1320,7 +1341,7 @@ void print(){
     //     cout << i.first << " " << i.second << endl;
     // }
     PrintSymTable();
-    tpc(root);
+    // tpc(root);
     for(auto itr = whtIsType.begin();itr!=whtIsType.end();itr++){
         cout<<itr->first<<": [ "<<tree[itr->first].first<<" ]   "<<itr->second<<endl;
     }

@@ -1,10 +1,12 @@
-<<<<<<< HEAD
-,PrimeNumber.mymethod: 
+,PrimeNumber.main: 
       t2_0: ,BeginFunc,     , 
-      t2_1: ,=,  LCall  mymethod , _v27
-=======
-,A.main: 
-      t2_0: ,BeginFunc,     , 
-      t2_1: ,=,  _v35   , a
->>>>>>> 6d90cd0dd6d6db2404b88e9fd66bbf7955b76e40
-      t2_2: ,EndFunc,     , 
+      t2_1: ,=,  48   , t1
+      t2_2: ,param,  t1   , 
+      t2_3: ,call,  allocmem  1 , 
+      t2_4: ,=,  _v43   , a
+      t2_5: ,=,  11   , _v53
+      t2_6: ,*,  _v53  4 , _v53
+      t2_7: ,+,  _v53  17 , _v53
+      t2_8: ,=,  a[_v53]   , _v59
+      t2_9: ,=,  _v59   , x
+      t2_10: ,EndFunc,     , 

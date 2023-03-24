@@ -3,173 +3,147 @@ n1 [label="public"]
 n2 [label="Modifiers"]
 n2->n1;
 n3 [label="class"]
-<<<<<<< HEAD
 n4 [label="PrimeNumber"]
-=======
-n4 [label="A"]
->>>>>>> 6d90cd0dd6d6db2404b88e9fd66bbf7955b76e40
 n5 [label="{"]
 n6 [label="public"]
-n7 [label="Modifiers"]
-n7->n6;
-n8 [label="void"]
-<<<<<<< HEAD
-n9 [label="mymethod"]
-n10 [label="("]
-n11 [label="int"]
-n12 [label="l"]
-n13 [label="FormalParameter"]
-n13->n12;
-n13->n11;
-n14 [label=")"]
-n15 [label="MethodDeclarator"]
-n15->n14;
-n15->n13;
-n15->n10;
-n15->n9;
-n16 [label="MethodHeader"]
+n7 [label="static"]
+n8 [label="Modifiers"]
+n8->n7;
+n9 [label="Modifiers"]
+n9->n8;
+n9->n6;
+n10 [label="void"]
+n11 [label="main"]
+n12 [label="("]
+n13 [label="String"]
+n14 [label="["]
+n15 [label="]"]
+n16 [label="ArrayType"]
 n16->n15;
-n16->n8;
-n16->n7;
-n17 [label="{"]
-n18 [label="int"]
-n19 [label="k"]
-n20 [label="LocalVariableDeclaration"]
-n20->n19;
-n20->n18;
-n21 [label=";"]
-n22 [label="LocalVariableDeclarationStatement"]
-n22->n21;
-n22->n20;
-n23 [label="mymethod"]
-n24 [label="("]
-n25 [label="1"]
-n26 [label=")"]
-n27 [label="MethodInvocation"]
-n27->n26;
-n27->n25;
-n27->n24;
-n27->n23;
-n28 [label=";"]
-n29 [label="ExStatement"]
-n29->n28;
-n29->n27;
-n30 [label="BlockStatements"]
-n30->n29;
-n30->n22;
-n31 [label="}"]
-n32 [label="Block"]
-n32->n31;
-n32->n30;
-n32->n17;
-n33 [label="MethodDeclaration"]
-n33->n32;
-n33->n16;
-n34 [label="ClassBodyDeclarations"]
-n34->n33;
-n35 [label="}"]
-n36 [label="ClassBody"]
-n36->n35;
-n36->n34;
-n36->n5;
-n37 [label="ClassDeclaration"]
-n37->n36;
-n37->n4;
-n37->n3;
-n37->n2;
-n38 [label="CompilationUnit"]
-n38->n37;
-n39 [label="Program"]
-n39->n40;
-n39->n38;
-n40 [label=""]
-=======
-n9 [label="main"]
-n10 [label="("]
-n11 [label=")"]
-n12 [label="MethodDeclarator"]
-n12->n11;
-n12->n10;
-n12->n9;
-n13 [label="MethodHeader"]
-n13->n12;
-n13->n8;
-n13->n7;
-n14 [label="{"]
-n15 [label="int"]
-n16 [label="["]
-n17 [label="]"]
-n18 [label="ArrayType"]
+n16->n14;
+n16->n13;
+n17 [label="args"]
+n18 [label="FormalParameter"]
 n18->n17;
 n18->n16;
-n18->n15;
-n19 [label="["]
-n20 [label="]"]
-n21 [label="ArrayType"]
+n19 [label=")"]
+n20 [label="MethodDeclarator"]
+n20->n19;
+n20->n18;
+n20->n12;
+n20->n11;
+n21 [label="MethodHeader"]
 n21->n20;
-n21->n19;
-n21->n18;
-n22 [label="a"]
-n23 [label="="]
-n24 [label="new"]
-n25 [label="int"]
-n26 [label="["]
-n27 [label="3"]
+n21->n10;
+n21->n9;
+n22 [label="{"]
+n23 [label="int"]
+n24 [label="["]
+n25 [label="]"]
+n26 [label="ArrayType"]
+n26->n25;
+n26->n24;
+n26->n23;
+n27 [label="["]
 n28 [label="]"]
-n29 [label="DimExpr"]
+n29 [label="ArrayType"]
 n29->n28;
 n29->n27;
 n29->n26;
-n30 [label="["]
-n31 [label="4"]
-n32 [label="]"]
-n33 [label="DimExpr"]
-n33->n32;
-n33->n31;
-n33->n30;
-n34 [label="DimExprs"]
-n34->n33;
-n34->n29;
-n35 [label="ArrayCreationExpr"]
-n35->n34;
-n35->n25;
-n35->n24;
-n36 [label="VariableDeclarator"]
-n36->n35;
-n36->n23;
-n36->n22;
-n37 [label="LocalVariableDeclaration"]
+n30 [label="a"]
+n31 [label="="]
+n32 [label="new"]
+n33 [label="int"]
+n34 [label="["]
+n35 [label="3"]
+n36 [label="]"]
+n37 [label="DimExpr"]
 n37->n36;
-n37->n21;
-n38 [label=";"]
-n39 [label="LocalVariableDeclarationStatement"]
-n39->n38;
-n39->n37;
-n40 [label="}"]
-n41 [label="Block"]
+n37->n35;
+n37->n34;
+n38 [label="["]
+n39 [label="4"]
+n40 [label="]"]
+n41 [label="DimExpr"]
 n41->n40;
 n41->n39;
-n41->n14;
-n42 [label="MethodDeclaration"]
+n41->n38;
+n42 [label="DimExprs"]
 n42->n41;
-n42->n13;
-n43 [label="ClassBodyDeclarations"]
+n42->n37;
+n43 [label="ArrayCreationExpr"]
 n43->n42;
-n44 [label="}"]
-n45 [label="ClassBody"]
+n43->n33;
+n43->n32;
+n44 [label="VariableDeclarator"]
+n44->n43;
+n44->n31;
+n44->n30;
+n45 [label="LocalVariableDeclaration"]
 n45->n44;
-n45->n43;
-n45->n5;
-n46 [label="ClassDeclaration"]
-n46->n45;
-n46->n4;
-n46->n3;
-n46->n2;
-n47 [label="CompilationUnit"]
+n45->n29;
+n46 [label=";"]
+n47 [label="LocalVariableDeclarationStatement"]
 n47->n46;
-n48 [label="Program"]
-n48->n49;
-n48->n47;
-n49 [label=""]
->>>>>>> 6d90cd0dd6d6db2404b88e9fd66bbf7955b76e40
+n47->n45;
+n48 [label="int"]
+n49 [label="x"]
+n50 [label="="]
+n51 [label="a"]
+n52 [label="["]
+n53 [label="11"]
+n54 [label="]"]
+n55 [label="ArrayAccess"]
+n55->n54;
+n55->n53;
+n55->n52;
+n55->n51;
+n56 [label="["]
+n57 [label="17"]
+n58 [label="]"]
+n59 [label="ArrayAccess"]
+n59->n58;
+n59->n57;
+n59->n56;
+n59->n55;
+n60 [label="VariableDeclarator"]
+n60->n59;
+n60->n50;
+n60->n49;
+n61 [label="LocalVariableDeclaration"]
+n61->n60;
+n61->n48;
+n62 [label=";"]
+n63 [label="LocalVariableDeclarationStatement"]
+n63->n62;
+n63->n61;
+n64 [label="BlockStatements"]
+n64->n63;
+n64->n47;
+n65 [label="}"]
+n66 [label="Block"]
+n66->n65;
+n66->n64;
+n66->n22;
+n67 [label="MethodDeclaration"]
+n67->n66;
+n67->n21;
+n68 [label="ClassBodyDeclarations"]
+n68->n67;
+n69 [label="}"]
+n70 [label="ClassBody"]
+n70->n69;
+n70->n68;
+n70->n5;
+n71 [label="ClassDeclaration"]
+n71->n70;
+n71->n4;
+n71->n3;
+n71->n2;
+n72 [label="CompilationUnit"]
+n72->n71;
+n73 [label="Program"]
+n73->n74;
+n73->n72;
+n74 [label=""]
 }
