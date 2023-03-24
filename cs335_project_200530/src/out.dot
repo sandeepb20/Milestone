@@ -23,29 +23,6 @@ n15 [label="a"]
 n16 [label="+"]
 n17 [label="1"]
 n18 [label="AdditiveExpression"]
-n2 [label="static"]
-n3 [label="public"]
-n4 [label="Modifiers"]
-n4->n3;
-n5 [label="Modifiers"]
-n5->n4;
-n5->n2;
-n6 [label="Modifiers"]
-n6->n5;
-n6->n1;
-n7 [label="class"]
-n8 [label="test"]
-n9 [label="{"]
-n10 [label="final"]
-n11 [label="Modifiers"]
-n11->n10;
-n12 [label="int"]
-n13 [label="a"]
-n14 [label="="]
-n15 [label="a"]
-n16 [label="+"]
-n17 [label="1"]
-n18 [label="AdditiveExpression"]
 n18->n17;
 n18->n16;
 n18->n15;
@@ -55,28 +32,7 @@ n19->n14;
 n19->n13;
 n20 [label=";"]
 n21 [label="FieldDeclaration"]
-n18->n15;
-n19 [label="VariableDeclarator"]
-n19->n18;
-n19->n14;
-n19->n13;
-n20 [label=";"]
-n21 [label="FieldDeclaration"]
 n21->n20;
-n21->n19;
-n21->n12;
-n21->n11;
-n22 [label="int"]
-n23 [label="c"]
-n24 [label=";"]
-n25 [label="FieldDeclaration"]
-n25->n24;
-n25->n23;
-n25->n22;
-n26 [label="int"]
-n27 [label="s"]
-n28 [label=";"]
-n29 [label="FieldDeclaration"]
 n21->n19;
 n21->n12;
 n21->n11;
@@ -122,41 +78,9 @@ n45 [label="["]
 n46 [label="3"]
 n47 [label="]"]
 n48 [label="DimExpr"]
-n30 [label="int"]
-n31 [label="p"]
-n32 [label=";"]
-n33 [label="FieldDeclaration"]
-n33->n32;
-n33->n31;
-n33->n30;
-n34 [label="int"]
-n35 [label="abc"]
-n36 [label="["]
-n37 [label="]"]
-n38 [label="VariableDeclaratorId"]
-n38->n37;
-n38->n36;
-n38->n35;
-n39 [label="["]
-n40 [label="]"]
-n41 [label="VariableDeclaratorId"]
-n41->n40;
-n41->n39;
-n41->n38;
-n42 [label="="]
-n43 [label="new"]
-n44 [label="int"]
-n45 [label="["]
-n46 [label="3"]
-n47 [label="]"]
-n48 [label="DimExpr"]
 n48->n47;
 n48->n46;
 n48->n45;
-n49 [label="["]
-n50 [label="4"]
-n51 [label="]"]
-n52 [label="DimExpr"]
 n49 [label="["]
 n50 [label="4"]
 n51 [label="]"]
@@ -168,44 +92,7 @@ n53 [label="DimExprs"]
 n53->n52;
 n53->n48;
 n54 [label="ArrayCreationExpr"]
-n53 [label="DimExprs"]
-n53->n52;
-n53->n48;
-n54 [label="ArrayCreationExpr"]
 n54->n53;
-n54->n44;
-n54->n43;
-n55 [label="VariableDeclarator"]
-n55->n54;
-n55->n42;
-n55->n41;
-n56 [label=";"]
-n57 [label="FieldDeclaration"]
-n57->n56;
-n57->n55;
-n57->n34;
-n58 [label="int"]
-n59 [label="["]
-n60 [label="]"]
-n61 [label="ArrayType"]
-n61->n60;
-n61->n59;
-n61->n58;
-n62 [label="xy"]
-n63 [label="="]
-n64 [label="new"]
-n65 [label="int"]
-n66 [label="["]
-n67 [label="3"]
-n68 [label="]"]
-n69 [label="DimExpr"]
-n69->n68;
-n69->n67;
-n69->n66;
-n70 [label="ArrayCreationExpr"]
-n70->n69;
-n70->n65;
-n70->n64;
 n54->n44;
 n54->n43;
 n55 [label="VariableDeclarator"]
@@ -250,27 +137,7 @@ n73->n71;
 n73->n61;
 n74 [label="private"]
 n75 [label="Modifiers"]
-n71->n63;
-n71->n62;
-n72 [label=";"]
-n73 [label="FieldDeclaration"]
-n73->n72;
-n73->n71;
-n73->n61;
-n74 [label="private"]
-n75 [label="Modifiers"]
 n75->n74;
-n76 [label="test"]
-n77 [label="("]
-n78 [label="int"]
-n79 [label="x"]
-n80 [label="FormalParameter"]
-n80->n79;
-n80->n78;
-n81 [label=","]
-n82 [label="int"]
-n83 [label="y"]
-n84 [label="FormalParameter"]
 n76 [label="test"]
 n77 [label="("]
 n78 [label="int"]

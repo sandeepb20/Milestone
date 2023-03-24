@@ -879,6 +879,7 @@ void typeChecker(){
 void print(){
     symTable(root);      //fills all the class name in the class_table
     PrintSymTable();
+    typeChecker();
     // ***************************
     cout << "******************** Three AC Printing**************" << endl;
     ThreeACHelperFunc(root);
