@@ -713,6 +713,17 @@ void backpatch(int n, int id){
 }
 map<string, string> objRef;
 
+vector<int> getDim(string cclass, string ArrayName){
+    for(auto it : class_table[cclass]){
+        for(auto itr : it.second){
+            if(itr.first == ArrayName){
+                return itr.second -> ndim;
+            }
+        }
+    }
+    return {};
+}
+
 void ThreeACHelperFunc(int id){
     int childcallistrue = 1;
     vector<int> temp = tree[id].second;
@@ -908,6 +919,7 @@ void ThreeACHelperFunc(int id){
         string ArrayName = "";
         int nodeNum = id;
         int tempId = -1;
+        int arrId = -1;
         while(tree[nodeNum].first == "ArrayAccess"){
             vector<int> ArrayAccessChild = tree[nodeNum].second;
             tempId = ArrayAccessChild[2];
@@ -917,14 +929,15 @@ void ThreeACHelperFunc(int id){
             }
             else{
                 ArrayName = tree[ArrayAccessChild[0]].first;
+                arrId = ArrayAccessChild[0];
                 ThreeACHelperFunc(ArrayAccessChild[2]);
                 tempVec.push_back(createArg(ArrayAccessChild[2]));
             }
             nodeNum = ArrayAccessChild[0];
         }
         string tempIds = "_v" + to_string(tempId);
-        // tobechecked 
-        vector<int> dims;
+        vector<int> dims = getDim(nodeClass[arrId], ArrayName);
+        cout << "here1" << endl;
         tac* t = createTacCustom("=", tempVec[tempVec.size()-1], "",tempIds);
         tacMap[currTacVec].push_back(t);
         for(int l = dims.size()-1; l > 0; l--){

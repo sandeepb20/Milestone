@@ -1,43 +1,9 @@
-,Example1.Constructor: 
+,PrimeNumber.main: 
       t2_0: ,BeginFunc,     , 
-      t2_1: ,=,  popparam   , _v35
-      t2_2: ,=,  popparam   , d
-      t2_3: ,=,  popparam   , c
-      t2_4: ,=,  popparam   , b
-      t2_5: ,=,  popparam   , a
-      t2_6: ,=,  SymbolEntry( Example1, x)   , x
-      t2_7: ,=,  *(_v35 + x)   , _v40
-      t2_8: ,=,  a   , _v40
-      t2_9: ,=,  SymbolEntry( Example1, y)   , y
-      t2_10: ,=,  *(_v35 + y)   , _v49
-      t2_11: ,=,  b   , _v49
-      t2_12: ,EndConstructor,     , 
-,Example1.main: 
-      t3_0: ,BeginFunc,     , 
-      t3_1: ,PushParam,     , 4
-      t3_2: ,PushParam,     , 3.14
-      t3_3: ,PushParam,     , 2
-      t3_4: ,=,  20   , _v75
-      t3_5: ,=,  param  _v75 , 
-      t3_6: ,=,  PopParam  // Store Object ref , _v83
-      t3_7: ,PushParam,     , _v83
-      t3_8: ,=,  LCall  Example1.Constructor , _v84
-      t3_9: ,=,  _v84   , a
-      t3_10: ,PushParam,     , 0
-      t3_11: ,PushParam,     , 0
-      t3_12: ,=,  20   , _v94
-      t3_13: ,=,  param  _v94 , 
-      t3_14: ,=,  PopParam  // Store Object ref , _v99
-      t3_15: ,PushParam,     , _v99
-      t3_16: ,=,  LCall  Example1.Constructor , _v100
-      t3_17: ,=,  _v100   , b
-      t3_18: ,=,  SymbolEntry( Example1, x)   , x
-      t3_19: ,=,  *(_v83 + x)   , _v112
-      t3_20: ,=,  _v112   , c
-      t3_21: ,=,  SymbolEntry( Example1, y)   , y
-      t3_22: ,=,  *(_v83 + y)   , _v124
-      t3_23: ,=,  _v124   , d
-      t3_24: ,+_int,  1  2 , _v136
-      t3_25: ,+_int,  _v136  7 , _v139
-      t3_26: ,=,  _v139   , p
-      t3_27: ,EndFunc,     , 
+      t2_1: ,=,  _v43   , a
+      t2_2: ,=,  11   , _v53
+      t2_3: ,*,  _v53  40 , _v53
+      t2_4: ,+,  _v53  17 , _v53
+      t2_5: ,=,  a[_v53]   , _v59
+      t2_6: ,=,  _v59   , x
+      t2_7: ,EndFunc,     , 
