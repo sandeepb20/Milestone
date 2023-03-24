@@ -79,6 +79,8 @@ void tempfunc1(ofstream& fout, unordered_map<int,int> &visited, int id){
 
 /*--------------------- MileStone 2 --------------------------*/
 
+
+
 string stname;
 string sttype;
 int stline;
@@ -175,6 +177,23 @@ void ParamList(int id){
     }
 }
 
+map<int, string> nodeClass;
+string customtypeof(int id){
+
+    // string find_it  = tree[id].first;
+    string myCurrClass = nodeClass[id];
+    // cout << myCurrClass << endl;
+    string temp = scope[id];
+	while(temp != "null"){
+        auto it = class_table[myCurrClass][temp].find(tree[id].first);
+        if(it!=class_table[myCurrClass][temp].end()) return class_table[myCurrClass][temp][tree[id].first]->type;
+		else{
+		temp = class_parent_table[myCurrClass][temp];}
+	}
+    return "null";
+}
+
+
 void ForClass(int id){
     vector<int> child = tree[id].second;
     string nodeName = tree[id].first;
@@ -233,10 +252,14 @@ void ForClass(int id){
    
 }
 
+
 void symTable(int id){
     vector<int> child = tree[id].second;
     string nodeName = tree[id].first;
-    if(child.size() == 0) scope[id] = curr_table;
+    if(child.size() == 0){
+        nodeClass[id] = curr_class;
+        scope[id] = curr_table;
+    } 
     if(nodeName == "ClassDeclaration"){
         symTable(child[2]);
         curr_class = tree[child[2]].first;
@@ -1045,22 +1068,46 @@ void typeChecker(){
 }
 /* ------------------------------------------------------------*/
 
+map<int, string> whtIsType;
+
+void tpc(int id){
+    vector<int> child = tree[id].second;
+    if(child.size() == 0 && id !=-1  && tree[parent[id]].first != "ClassDeclaration"){
+        if(additionalInfo[id] == "identifier"){
+            whtIsType[id] = customtypeof(id);
+        }
+        if(additionalInfo[id] == "IntegerLiteral"){
+            whtIsType[id] = "int";
+        }
+    }
+    int ischildcallistrue = 1;
+    for(int i = 0; i < child.size(); i++){
+        tpc(child[i]);
+    }
+    if(tree[id].first == "MultiplicativeExpression" || tree[id].first == "AdditiveExpression"){
+        if(whtIsType[child[0]]  == whtIsType[child[2]]){
+            whtIsType[id] =  whtIsType[child[0]];
+            tree[child[1]].first += "_" + whtIsType[child[0]];
+        }
+        else{
+            whtIsType[id] = "error";
+            cout << "Type Error at line " << LineNumber[child[0]] << endl;
+            exit(1);
+        }
+    }
+    
+    
+}
+
+
 void print(){
     ForClass(root);
-    cout << "printiing ClassMap"<< endl;
-    for(auto it : classMap){
-        cout << it.first << endl;
-        for(auto id : it.second){
-            cout << id << " ";
-        }
-        cout << endl;
-    }
     symTable(root);      //fills all the class name in the class_table
     // for(auto it : scope){
     //     cout << tree[it.first].first << " " << it.second << endl;
     // }
     PrintSymTable();
-    // typeChecker();
+    tpc(root);
     // ***************************
     cout << "******************** Three AC Printing**************" << endl;
     ThreeACHelperFunc(root);

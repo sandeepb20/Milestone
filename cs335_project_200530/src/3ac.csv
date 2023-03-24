@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ,Example1.Constructor: 
       t2_0: ,BeginFunc,     , 
       t2_1: ,=,  popparam   , _v25
@@ -14,3 +15,12 @@
       t3_2: ,+,  _v71  7 , _v74
       t3_3: ,=,  _v74   , p
       t3_4: ,EndFunc,     , 
+=======
+,Palindrome.: 
+      t2_0: ,=,  1   , a
+      t2_1: ,=,  2   , b
+      t2_2: ,*_int,  b  3 , _v28
+      t2_3: ,/_int,  _v28  4 , _v31
+      t2_4: ,+_int,  a  _v31 , _v32
+      t2_5: ,=,  _v32   , c
+>>>>>>> ef6b650e657bb184bd8204538e18f13e43ef42f6
