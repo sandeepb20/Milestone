@@ -182,9 +182,8 @@ string customtypeof(int id){
 
     // string find_it  = tree[id].first;
     string myCurrClass = nodeClass[id];
-    // cout << myCurrClass << endl;
     string temp = scope[id];
-	while(temp != "null"){
+	while(temp != "null" && temp != ""){
         auto it = class_table[myCurrClass][temp].find(tree[id].first);
         if(it!=class_table[myCurrClass][temp].end()) return class_table[myCurrClass][temp][tree[id].first]->type;
 		else{
@@ -577,13 +576,23 @@ string createArg(int id){
 
 string createArg3(int id){
     if(additionalInfo.find(id) != additionalInfo.end()){
-        return "_"+ tree[id].first ;
+        return ""+ tree[id].first ;
     }
     else return "_v" + to_string(id);
 }
 
+stack<string> memoryLoc;
+
 string createArg4(int id){
     if(additionalInfo.find(id) != additionalInfo.end()){
+        return "*(" + memoryLoc.top() + " + " + tree[id].first + ")";
+        // return "SymbolEntry( "+ currTacClass + ", "  + tree[id].first  + ")";
+    }
+    else return "_v" + to_string(id);
+}
+string createArg5(int id){
+    if(additionalInfo.find(id) != additionalInfo.end()){
+        // return "*(" + memoryLoc.top() + " + " + tree[id].first + ")";
         return "SymbolEntry( "+ currTacClass + ", "  + tree[id].first  + ")";
     }
     else return "_v" + to_string(id);
@@ -594,9 +603,6 @@ string createArg4(int id){
 void printThreeAC(){
     std::ofstream myfile;
       myfile.open ("3ac.csv");
-      
-     
-      
     int uid = 1;
     for(auto i = tacMap.begin(); i != tacMap.end(); i++){
         currTacVec =  i->first ;
@@ -698,7 +704,6 @@ void backpatch(int n, int id){
 }
 
 void ThreeACHelperFunc(int id){
-    // cout << tree[id].first << " " << id << endl;
     int childcallistrue = 1;
     vector<int> temp = tree[id].second;
     if(tree[id].first == "ClassDeclaration"){
@@ -721,6 +726,7 @@ void ThreeACHelperFunc(int id){
             tac* t = createTacCustom("BeginFunc", "", "","");
             tacMap[currTacVec].push_back(t);
             tac* t1 = createTacCustom("=", "popparam", "",createArg(id));
+            memoryLoc.push(createArg(id));
             tacMap[currTacVec].push_back(t1);
             ThreeACHelperFunc(temp[2]);
         }
@@ -729,6 +735,8 @@ void ThreeACHelperFunc(int id){
         if(tree[temp[1]].first == "."){
             childcallistrue = 0;
             ThreeACHelperFunc(temp[2]);
+            tac* t1 = createTacCustom("=", createArg5(temp[2]), "",  tree[temp[2]].first);
+            tacMap[currTacVec].push_back(t1);
             tac* t = createTacCustom("=", createArg4(temp[2]), "", "_v" + to_string(id));
             tacMap[currTacVec].push_back(t);
         }
@@ -1071,16 +1079,13 @@ void typeChecker(){
 map<int, string> whtIsType;
 
 void tpc(int id){
-    // cout << "id = " << tree[id].first << " "<< tree[parent[id]].first << endl;
+   
     vector<int> child = tree[id].second;
     if(child.size() == 0 && id !=-1  && tree[parent[id]].first != "ClassDeclaration"){
-        // if(tree[parent[id]].first == "LocalVariableDeclaration"){
-        //     // ;TBD
-        // }
-        if(additionalInfo[id] == "identifier"){
+        if( additionalInfo.find(id) != additionalInfo.end() && additionalInfo[id] == "identifier"){
             whtIsType[id] = customtypeof(id);
         }
-        else if(additionalInfo[id] == "IntegerLiteral"){
+        else if( additionalInfo.find(id) != additionalInfo.end() && additionalInfo[id] == "IntegerLiteral"){
             whtIsType[id] = "int";
         }
     }
