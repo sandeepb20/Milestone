@@ -6,8 +6,9 @@ public class Example1 {
       this.y = b;
     }
 
- public static void main( /*so that we can compile with javac*/) {
- 		Example1 a = new Example1(2,3.14);
+  public static void main( /*so that we can compile with javac*/) {
+ 		Example1 a = new Example1(2,3.14, 4);
+    Example2 b = new Example1(0,0);
     int c = a.x;
     int d = a.y;
     int p = 1 + 2 + 7;

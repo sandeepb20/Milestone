@@ -711,6 +711,7 @@ void backpatch(int n, int id){
     }
     return;
 }
+map<string, string> objRef;
 
 void ThreeACHelperFunc(int id){
     int childcallistrue = 1;
@@ -750,12 +751,24 @@ void ThreeACHelperFunc(int id){
             tacMap[currTacVec].push_back(t);
         }
     }
+    if(tree[id].first == "QualifiedName"){
+        if(tree[temp[1]].first == "."){
+            memoryLoc.push(objRef[createArg(temp[0])]);
+            childcallistrue = 0;
+            ThreeACHelperFunc(temp[2]);
+            tac* t1 = createTacCustom("=", createArg5(temp[2]), "",  tree[temp[2]].first);
+            tacMap[currTacVec].push_back(t1);
+            tac* t = createTacCustom("=", createArg4(temp[2]), "", "_v" + to_string(id));
+            tacMap[currTacVec].push_back(t);
+            memoryLoc.pop();
+        }
+    }
     if(tree[id].first == "FormalParameterList"){
         childcallistrue = 0;
         if(tree[temp[0]].first == "FormalParameterList"){
             ThreeACHelperFunc(temp[2]);
             vector<int> temp1 = tree[temp[2]].second;
-            tac* t = createTacCustom("popparam", "", "", createArg3(temp1[2]));
+            tac* t = createTacCustom("=","popparam", "", createArg3(temp1[2]));
             tacMap[currTacVec].push_back(t);
             ThreeACHelperFunc(temp[0]);
         }
@@ -986,19 +999,29 @@ void ThreeACHelperFunc(int id){
         }
     }
     if(tree[id].first == "ClassInstanceCreationExpression"){
+        int classmem = classOffset[curr_class];
+        // cout << classmem << endl;
         childcallistrue = 0;
         for(int i = 0; i < temp.size(); i++){
             if(tree[temp[i]].first == "(") {
                 if(tree[temp[i+1]].first != ""){
                     ThreeACHelperFunc(temp[i+1]);
                 }
-                tac* t = createTacCustom("=", "PopParam", "", "t1");
+                tac *t5 = createTacCustom("=",  to_string(classmem), "", "_v" + to_string(temp[i]));
+                tacMap[currTacVec].push_back(t5);
+                tac* t4 = createTacCustom("=", "param", "_v" + to_string(temp[i]), "");
+                tacMap[currTacVec].push_back(t4);
+                tac* t3 = createTacCustom("call", "allocmem", "", "1");
+                tac* t = createTacCustom("=", "PopParam", "// Store Object ref", "_v" + to_string(temp[i+2]));
                 tacMap[currTacVec].push_back(t);
-                tac* t1 = createTacCustom("PushParam", "", "", "t1");
+                tac* t1 = createTacCustom("PushParam", "", "", "_v" + to_string(temp[i+2]));
                 tacMap[currTacVec].push_back(t1);
                 tac* t2 = createTacCustom("=", "LCall", tree[temp[i-1]].first + ".Constructor", createArg(id));
                 tacMap[currTacVec].push_back(t2);
-
+                int t9 = parent[id];
+                vector<int> t10 = tree[t9].second;
+                string t11 = createArg(t10[0]);
+                objRef[t11] = "_v" + to_string(temp[i+2]);
                  
             }
         }
