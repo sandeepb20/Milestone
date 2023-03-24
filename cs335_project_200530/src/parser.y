@@ -110,7 +110,7 @@ typedef struct sym_entry{
 typedef map<string, sym_entry* > sym_table;
 typedef map<string, sym_table> table;
 typedef map<string, string> parent_table;
-map<string, table> class_table;
+map<string, table> class_table, class_table1;
 map<string, parent_table> class_parent_table;
 vector<string> key_words = {"abstract","continue","for","new","switch","assert","default","if","package","synchronized","boolean","do","goto","private","this","break","double","implements","protected","throw","byte","else","import","public","throws","case","enum","instanceof","return","transient","catch","extends","int","short","try","String","char","final","interface","static","void","class","finally","long","strictfp","volatile","const","float","native","super","while","_","exports","opens","requires","uses","module","permit","sealed","var","non-sealed","provides","to","with","open","record","transitive","yield"}; 
 string curr_class, curr_table;
@@ -135,6 +135,7 @@ void createEntry(string currTableName, string temp, string type, int line, int s
         ent->parameters = parameters;
         class_table[curr_class][currTableName].insert(make_pair(temp, ent));
         stisArray = 0;
+        stoffset += size;
 }
 
 void makeSymbolTable(string name){
@@ -201,7 +202,6 @@ void symTable(int id){
     if(nodeName == "ConstructorDeclarator"){
         ParamList(child[2]);
         createEntry(curr_table,tree[child[0]].first+".constr","",LineNumber[child[0]],4,stoffset,0,stndim,parameters);
-        stoffset += 4;
         parameters.clear();
         makeSymbolTable(tree[child[0]].first+".constr");
         symTable(child[2]);
@@ -210,7 +210,6 @@ void symTable(int id){
     if(nodeName == "MethodDeclarator"){
         ParamList(child[2]);
         createEntry(curr_table,tree[child[0]].first,sttype,LineNumber[child[0]],getSize(sttype),stoffset,0,stndim,parameters);
-        stoffset += getSize(sttype);
         parameters.clear();
         makeSymbolTable(tree[child[0]].first);
         symTable(child[2]);
@@ -275,6 +274,26 @@ void symTable(int id){
         }
         return;
     }
+    if(nodeName == "forStmt"){
+        stname = "for" + to_string(fornum);
+        fornum++;
+        makeSymbolTable(stname);
+        symTable(child[2]);
+        symTable(child[8]);
+        return;
+    }
+    if(nodeName == "whileStmt"){
+        stname = "while" + to_string(whilenum);
+        whilenum++;
+        makeSymbolTable(stname);
+        symTable(child[4]);
+        return;
+    }
+    if(nodeName == "LocalVariableDeclaration"){
+        sttype = tree[child[0]].first;
+        symTable(child[1]);
+        return;
+    }
     if(nodeName == "Block"){
         symTable(child[1]);
         curr_table = class_parent_table[curr_class][curr_table];
@@ -282,7 +301,24 @@ void symTable(int id){
         return;
         
     }
-    // if(nodeName == "Constructor")
+    if(nodeName == "ifThenStmt"){
+        stname = "ifelse" + to_string(ifelsenum);
+        ifelsenum++;
+        makeSymbolTable(stname);
+        symTable(child[4]);
+        return;
+    }
+    if(nodeName == "ifThenElseStmt"){
+        stname = "ifelse" + to_string(ifelsenum);
+        ifelsenum++;
+        makeSymbolTable(stname);
+        symTable(child[4]);
+        stname = "ifelse" + to_string(ifelsenum);
+        ifelsenum++;
+        makeSymbolTable(stname);
+        symTable(child[6]);
+        return;
+    }
     for(int i = 0; i < child.size(); i++){
         symTable(child[i]);
     }
@@ -310,6 +346,7 @@ void PrintSymTable(){
         for(auto it : id.second){
             cout << it << " ";
         }
+        cout << endl;
     }
 }
 /*------------------------------------------------------------*/
