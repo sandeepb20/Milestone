@@ -101,10 +101,8 @@ typedef struct sym_entry{
     int line = 0;
 	int size = 0;
 	int offset = 0;
-    string what;
     int isArray;
     vector<int> ndim;
-    vector<string> modifiers;
     vector<string> parameters;
 }sym_entry;
 
@@ -115,7 +113,7 @@ map<string, table> class_table, class_table1;
 map<string, parent_table> class_parent_table;
 vector<string> key_words = {"abstract","continue","for","new","switch","assert","default","if","package","synchronized","boolean","do","goto","private","this","break","double","implements","protected","throw","byte","else","import","public","throws","case","enum","instanceof","return","transient","catch","extends","int","short","try","String","char","final","interface","static","void","class","finally","long","strictfp","volatile","const","float","native","super","while","_","exports","opens","requires","uses","module","permit","sealed","var","non-sealed","provides","to","with","open","record","transitive","yield"}; 
 string curr_class, curr_table;
-map<int, vector<string>> modifiers;
+map<string, vector<string>> modifiers;
 map<int, string> scope;
 map<string, vector<string>> classMap;
 map<string, int> classOffset;
@@ -272,7 +270,7 @@ void symTable(int id){
         int tempid = child[0];
         while(tree[tempid].first == "Modifiers"){
             vector<int> child1 = tree[tempid].second;
-            modifiers[child[2]].push_back(tree[child1[0]].first);
+            modifiers[tree[child[2]].first].push_back(tree[child1[0]].first);
             tempid = child1[1];
         }
         
@@ -285,7 +283,7 @@ void symTable(int id){
         vector<int> child2 = tree[child[1]].second;
         while(tree[tempid].first == "Modifiers"){
             vector<int> child1 = tree[tempid].second;
-            modifiers[child2[0]].push_back(tree[child1[0]].first);
+            modifiers[tree[child2[0]].first + ".constr"].push_back(tree[child1[0]].first);
             tempid = child1[1];
         }
         symTable(child[1]);
@@ -317,7 +315,7 @@ void symTable(int id){
         vector<int> child2 = tree[child[2]].second;
         while(tree[tempid].first == "Modifiers"){
             vector<int> child1 = tree[tempid].second;
-            modifiers[child2[0]].push_back(tree[child1[0]].first);
+            modifiers[curr_class + "." + tree[child2[0]].first].push_back(tree[child1[0]].first);
             tempid = child1[1];
         }
         sttype = tree[child[1]].first;
@@ -330,7 +328,7 @@ void symTable(int id){
         
         while(tree[tempid].first == "Modifiers"){
             vector<int> child1 = tree[tempid].second;
-            modifiers[child[2]].push_back(tree[child1[0]].first);
+            modifiers[tree[child[2]].first].push_back(tree[child1[0]].first);
             tempid = child1[1];
         }
         createEntry(curr_table, tree[child[2]].first, tree[child[1]].first, LineNumber[child[2]], getSize(tree[child[1]].first), stoffset, 0, stndim, parameters);
@@ -372,6 +370,8 @@ void symTable(int id){
         }
         else{
             createEntry(curr_table, tree[child[0]].first, sttype, LineNumber[child[0]], getSize(sttype), stoffset, 0, stndim, parameters);
+            modifiers[tree[child[0]].first] = stmodifiers;
+            stmodifiers.clear();
             symTable(child[0]);
         }
         if(tree[child[2]].first == "VariableDeclarator" || tree[child[2]].first == "VariableDeclarators" ){
@@ -380,6 +380,8 @@ void symTable(int id){
         else{
             
             createEntry(curr_table, tree[child[2]].first, sttype, LineNumber[child[2]], getSize(sttype), stoffset, 0, stndim, parameters);
+            modifiers[tree[child[2]].first] = stmodifiers;
+            stmodifiers.clear();
             symTable(child[2]);
         }
         return;
@@ -401,10 +403,13 @@ void symTable(int id){
             
             if(stisArray){
                 createEntry(curr_table, tree[child[0]].first, sttype, LineNumber[child[0]], stsize, stoffset, 1, stndim, parameters);
-                
+                modifiers[tree[child[0]].first] = stmodifiers;
+                stmodifiers.clear();
             }
             else{
                 createEntry(curr_table, tree[child[0]].first, sttype, LineNumber[child[0]], getSize(sttype), stoffset, 0, stndim, parameters);
+                modifiers[tree[child[0]].first] = stmodifiers;
+                stmodifiers.clear();
             }
             stisArray = 0;
             
@@ -421,6 +426,8 @@ void symTable(int id){
                 n1 = child1[0];
             }
             createEntry(curr_table, tree[n1].first, sttype, LineNumber[n1], stsize, stoffset, 1, stndim, parameters);
+            modifiers[tree[n1].first] = stmodifiers;
+            stmodifiers.clear();
         }
         return;
     }
@@ -492,7 +499,13 @@ void symTable(int id){
         }
         return;
     }
-
+    if(nodeName == "Assignment"){
+        vector<string> mod = modifiers[tree[child[0]].first];
+        if(find(mod.begin(), mod.end(), "final") != mod.end()){
+            cout << "cannot assign a value to a final variable " << endl;
+            exit(1); 
+        }
+    }
 
     if(additionalInfo.find(id)!= additionalInfo.end() && additionalInfo[id] == "identifier" && tree[parent[id]].first != "ClassDeclaration"){
         if(tree[parent[id]].first == "ClassInstanceCreationExpression"){
@@ -532,23 +545,33 @@ void printSymbolTable(string curr_table){
   }
 }
 void PrintSymTable(){
-    cout << "**********Printing symbol table ********"<< endl;
-    for(auto id : class_table){
+    ofstream fout;
+    fout.open("SymbolTable.csv");
+    fout << "Variable,Type,Line,Size,Offset" << '\n';
+        for(auto id : class_table){
         curr_class = id.first;
-        cout << "    Printing " << id.first << " Table" << endl;
+        fout << "Class : " << id.first << endl << endl;
         for(auto id2 : id.second){
-            cout << "        Printing " << id2.first << " Symbol Table" <<endl;
-            printSymbolTable(id2.first);
+            fout <<"\n";
+            fout << "Printing " << id2.first << " Symbol Table" <<endl ;
+            for(auto itr : id2.second){
+            // for(auto itr : it.second){
+        fout << itr.first.c_str() << "," << itr.second->type.c_str() << "," << (itr.second)->line << "," << (itr.second)->size << "," << (itr.second)->offset << endl;
+        // }
+        }
         }
     }
-    cout << "Printing Modifers"<< endl;
-    for(auto id : modifiers){
-        cout << "name: "<< tree[id.first].first << endl;
-        for(auto it : id.second){
-            cout << it << " ";
-        }
-        cout << endl;
-    }
+    fout.close();
+    // cout << "**********Printing symbol table ********"<< endl;
+    
+    // cout << "Printing Modifers"<< endl;
+    // for(auto id : modifiers){
+    //     cout << "name: "<< id.first << endl;
+    //     for(auto it : id.second){
+    //         cout << it << " ";
+    //     }
+    //     cout << endl;
+    // }
 }
 /*------------------------------------------------------------*/
 

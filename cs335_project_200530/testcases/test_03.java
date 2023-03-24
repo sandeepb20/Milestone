@@ -1,7 +1,7 @@
 public static public class test {
     int x = 1+2;
     // int a = 3 + 5 + x / 9 * 3 %4;
-    final int a = a+1;
+    int a = a+1;
     int c;
     int s; int p;
     int abc[][] = new int[3][4];

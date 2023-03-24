@@ -1,13 +1,13 @@
 ,test.: 
       t2_0: ,+_int,  1  2 , _v16
       t2_1: ,=,  _v16   , x
-      t2_2: ,+_int,  a  1 , _v28
-      t2_3: ,=,  _v28   , a
-      t2_4: ,=,  _v64   , _v51
-      t2_5: ,=,  _v88   , xy
+      t2_2: ,+_int,  a  1 , _v26
+      t2_3: ,=,  _v26   , a
+      t2_4: ,=,  _v62   , _v49
+      t2_5: ,=,  _v86   , xy
 ,test.Constructor: 
       t3_0: ,BeginFunc,     , 
-      t3_1: ,=,  popparam   , _v110
+      t3_1: ,=,  popparam   , _v108
       t3_2: ,popparam,     , _z
       t3_3: ,=,  popparam   , _y
       t3_4: ,=,  popparam   , _x
@@ -24,25 +24,25 @@
       t5_3: ,=,  x   , a
       t5_4: ,=,  1   , z
       t5_5: ,=,  0   , i
-      t5_6: ,<,  i  8 , _v171
-      t5_7: ,ifFalse,  _v171,  goto,  t5_17
+      t5_6: ,<,  i  8 , _v169
+      t5_7: ,ifFalse,  _v169,  goto,  t5_17
       t5_8: ,=,  x   , a
       t5_9: ,=,  z   , f
-      t5_10: ,>,  b  9 , _v198
-      t5_11: ,ifFalse,  _v198,  goto,  t5_14
+      t5_10: ,>,  b  9 , _v196
+      t5_11: ,ifFalse,  _v196,  goto,  t5_14
       t5_12: ,=,  z   , for2
       t5_13: ,,  ,  goto,  t5_10
-      t5_14: ,=,  i   , _v175
+      t5_14: ,=,  i   , _v173
       t5_15: ,++,  i   , i
       t5_16: ,,  ,  goto,  t5_6
       t5_17: ,=,  0   , a
-      t5_18: ,=,  a   , _v237
+      t5_18: ,=,  a   , _v235
       t5_19: ,++,  a   , a
-      t5_20: ,=,  a   , _v233
+      t5_20: ,=,  a   , _v231
       t5_21: ,++,  a   , a
       t5_22: ,,  ,  goto,  t5_18
-      t5_23: ,>,  a  0 , _v247
-      t5_24: ,ifFalse,  _v247,  goto,  t5_27
+      t5_23: ,>,  a  0 , _v245
+      t5_24: ,ifFalse,  _v245,  goto,  t5_27
       t5_25: ,=,  1   , a1
       t5_26: ,,  ,  goto,  t5_28
       t5_27: ,=,  1   , a2
@@ -52,8 +52,8 @@
       t6_1: ,=,  1   , i
       t6_2: ,=,  PopParam   , t1
       t6_3: ,PushParam,     , t1
-      t6_4: ,=,  LCall  test.Constructor , _v346
-      t6_5: ,=,  _v346   , obj
+      t6_4: ,=,  LCall  test.Constructor , _v344
+      t6_5: ,=,  _v344   , obj
       t6_6: ,PushParam,     , 100
       t6_7: ,PushParam,     , 200
       t6_8: ,EndFunc,     , 
