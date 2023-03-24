@@ -9,7 +9,7 @@
       t3_2: ,popparam,     , _z
       t3_3: ,=,  popparam   , _y
       t3_4: ,=,  popparam   , _x
-      t3_5: ,=,  kk   , a
+      t3_5: ,=,  kk   , al
       t3_6: ,EndConstructor,     , Modifiers
 ,test.add: 
       t4_0: ,BeginFunc,     , 

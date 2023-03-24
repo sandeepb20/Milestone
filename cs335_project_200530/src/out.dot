@@ -189,7 +189,7 @@ n100->n85;
 n100->n84;
 n101 [label="{"]
 n102 [label="int"]
-n103 [label="a"]
+n103 [label="al"]
 n104 [label="="]
 n105 [label="kk"]
 n106 [label="VariableDeclarator"]
@@ -759,25 +759,35 @@ n382->n335;
 n383 [label="MethodDeclaration"]
 n383->n382;
 n383->n334;
-n384 [label="ClassBodyDeclarations"]
-n384->n383;
-n385 [label="}"]
-n386 [label="ClassBody"]
-n386->n385;
-n386->n384;
-n386->n318;
-n387 [label="ClassDeclaration"]
+n384 [label="int"]
+n385 [label="c"]
+n386 [label=";"]
+n387 [label="FieldDeclaration"]
 n387->n386;
-n387->n317;
-n387->n316;
-n387->n315;
-n388 [label="TypeDeclarations"]
+n387->n385;
+n387->n384;
+n388 [label="ClassBodyDeclarations"]
 n388->n387;
-n388->n313;
-n389 [label="CompilationUnit"]
+n389 [label="ClassBodyDeclarations"]
 n389->n388;
-n390 [label="Program"]
-n390->n391;
-n390->n389;
-n391 [label=""]
+n389->n383;
+n390 [label="}"]
+n391 [label="ClassBody"]
+n391->n390;
+n391->n389;
+n391->n318;
+n392 [label="ClassDeclaration"]
+n392->n391;
+n392->n317;
+n392->n316;
+n392->n315;
+n393 [label="TypeDeclarations"]
+n393->n392;
+n393->n313;
+n394 [label="CompilationUnit"]
+n394->n393;
+n395 [label="Program"]
+n395->n396;
+n395->n394;
+n396 [label=""]
 }

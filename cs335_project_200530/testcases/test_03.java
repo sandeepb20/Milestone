@@ -7,7 +7,7 @@ public static public class test {
     int abc[][] = new int[3][4];
     int[][] xy = new int[3][3];
     private test(int x, int y, int z){
-        int a = kk;
+        int al= kk;
         
     }
     int kk;
@@ -48,6 +48,7 @@ public class took {
         obj.getdata(200, 100);
         obj.add();
     }
+    int c;
 }
 
 // public class MyClass {

@@ -115,6 +115,7 @@ vector<string> key_words = {"abstract","continue","for","new","switch","assert",
 string curr_class, curr_table;
 map<int, vector<string>> modifiers;
 map<int, string> scope;
+map<string, vector<string>> classMap;
 
 void createEntry(string currTableName, string temp, string type, int line, int size, int offset, int isArray, vector<int> ndim, vector<string> parameters){
     if(find(key_words.begin(), key_words.end(), temp) != key_words.end()){
@@ -154,6 +155,8 @@ string lookup(string id){
 		if((class_table[curr_class][temp]).find(id)!=(class_table[curr_class][temp]).end()) return temp;
 		temp = class_parent_table[curr_class][temp];
 	}
+    vector<string> mod = classMap[curr_class];
+    if(find(mod.begin(), mod.end(), id) != mod.end()) return curr_class;
 	return "null";
 }
 
@@ -165,6 +168,63 @@ void ParamList(int id){
     for(int i = 0; i < child.size(); i++){
         ParamList(child[i]);
     }
+}
+
+void ForClass(int id){
+    vector<int> child = tree[id].second;
+    string nodeName = tree[id].first;
+    if(nodeName == "Block"){
+        return;
+    }
+    if(nodeName == "FieldDeclaration"){
+        if(additionalInfo.find(child[2]) != additionalInfo.end()){
+            classMap[curr_class].push_back(tree[child[2]].first);
+        }
+    }
+    if(nodeName == "ConstructorBody"){
+        return;
+    }
+     
+    if(nodeName == "ClassDeclaration"){
+        curr_class = tree[child[2]].first;
+        ForClass(child[5]);
+        return;
+    }
+    if(nodeName == "ConstructorDeclarator"){
+        classMap[curr_class].push_back(tree[child[0]].first + ".constr");
+        return;
+    }
+    if(nodeName == "MethodDeclarator"){
+        classMap[curr_class].push_back(tree[child[0]].first);
+        return;
+    }
+    if(nodeName == "VariableDeclarators"){
+        if(tree[child[0]].first == "VariableDeclarator" || tree[child[0]].first == "VariableDeclarators" ){
+            ForClass(child[0]);
+        }
+        else{
+            classMap[curr_class].push_back(tree[child[0]].first);
+        }
+        if(tree[child[2]].first == "VariableDeclarator" || tree[child[2]].first == "VariableDeclarators" ){
+            ForClass(child[2]);
+        }
+        else{
+            classMap[curr_class].push_back(tree[child[0]].first);
+        }
+        return;
+    }
+    if(nodeName == "VariableDeclarator"){
+        if(tree[child[0]].first != "VariableDeclaratorId"){
+            classMap[curr_class].push_back(tree[child[0]].first);
+            return; 
+        }
+        return;
+    }
+    for(int i = 0; i < child.size(); i++){
+        ForClass(child[i]);
+    }
+    return;
+   
 }
 
 void symTable(int id){
@@ -209,7 +269,7 @@ void symTable(int id){
         parameters.clear();
         symTable(child[0]);
         makeSymbolTable(tree[child[0]].first+".constr");
-        symTable(child[2]);
+        symTable(child[2]);-
         return;
     }
     if(nodeName == "MethodDeclarator"){
@@ -917,6 +977,15 @@ void typeChecker(){
 /* ------------------------------------------------------------*/
 
 void print(){
+    ForClass(root);
+    cout << "printiing ClassMap"<< endl;
+    for(auto it : classMap){
+        cout << it.first << endl;
+        for(auto id : it.second){
+            cout << id << " ";
+        }
+        cout << endl;
+    }
     symTable(root);      //fills all the class name in the class_table
     // for(auto it : scope){
     //     cout << tree[it.first].first << " " << it.second << endl;
