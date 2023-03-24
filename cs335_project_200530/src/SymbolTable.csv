@@ -1,57 +1,10 @@
 Variable,Type,Line,Size,Offset
-Class : test
+Class : PrimeNumber
 
 
-Printing add Symbol Table
-e,char,37,1,0
+Printing PrimeNumber Symbol Table
+mymethod,void,2,4,0
 
-Printing for1 Symbol Table
-f,int,20,4,4
-i,int,18,4,0
-z,int,24,4,8
-
-Printing for2 Symbol Table
-
-Printing getdata Symbol Table
-x,int,14,4,0
-y,int,14,4,4
-z,int,17,4,8
-
-Printing ifelse1 Symbol Table
-a1,int,29,4,0
-
-Printing ifelse2 Symbol Table
-a2,int,32,4,0
-
-Printing test Symbol Table
-a,int,4,4,4
-abc,int[][],7,48,20
-add,void,36,4,8
-c,int,5,4,8
-getdata,void,14,4,112
-kk,int,13,4,108
-p,int,6,4,16
-s,int,6,4,12
-test.constr,,9,4,104
-x,int,2,4,0
-xy,int[][],8,36,68
-
-Printing test.constr Symbol Table
-al,int,10,4,12
-x,int,9,4,0
-y,int,9,4,4
-z,int,9,4,8
-
-Printing while1 Symbol Table
-for2,int,22,4,0
-Class : took
-
-
-Printing main Symbol Table
-args,ArrayType,45,4,0
-i,int,46,4,4
-obj,test,47,4,8
-
-Printing took Symbol Table
-c,int,51,4,4
-main,void,45,4,0
+Printing mymethod Symbol Table
+k,int,3,4,4
+l,int,2,4,0

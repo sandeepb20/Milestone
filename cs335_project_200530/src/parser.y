@@ -1147,24 +1147,61 @@ void typeChecker(){
 map<int, string> whtIsType;
 
 void tpc(int id){
-   
+    bool allVisited = true;
+    if(tree[id].first == "MethodInvocation"){
+        // cout << "im in methoid"<< endl;
+        string is_type = whtIsType[tree[id]]
+    }
     vector<int> child = tree[id].second;
     if(child.size() == 0 && id !=-1  && tree[parent[id]].first != "ClassDeclaration"){
-        if( additionalInfo.find(id) != additionalInfo.end() && additionalInfo[id] == "identifier"){
+        if(additionalInfo[id] == "identifier"){
             whtIsType[id] = customtypeof(id);
+            if (whtIsType[id]=="double") whtIsType[id]="float";
         }
-        else if( additionalInfo.find(id) != additionalInfo.end() && additionalInfo[id] == "IntegerLiteral"){
-            whtIsType[id] = "int";
+        else if(additionalInfo[id] == "type"){
+            whtIsType[id] = tree[id].first;
+            if (whtIsType[id]=="double") whtIsType[id]="float";
         }
+
+        else if(additionalInfo[id]=="IntegerLiteral")  whtIsType[id] = "int";
+        else if(additionalInfo[id]=="CharacterLiteral")  whtIsType[id] = "char";
+        else if(additionalInfo[id]=="FloatingPointLiteral")  whtIsType[id] = "float";
+        else if(additionalInfo[id]=="BooleanLiteral")  whtIsType[id] = "boolean";
+        else if(additionalInfo[id]=="StringLiteral")  whtIsType[id] = "String";
+        else if(additionalInfo[id]=="NullLiteral")  whtIsType[id] = "null";
     }
     int ischildcallistrue = 1;
     for(int i = 0; i < child.size(); i++){
+        
         tpc(child[i]);
     }
+    // multiplicative and additive
+    
     if(tree[id].first == "MultiplicativeExpression" || tree[id].first == "AdditiveExpression"){
-        if(whtIsType[child[0]]  == whtIsType[child[2]]){
+        if(whtIsType[child[0]]  == whtIsType[child[2]] && whtIsType[child[1]]!="String"){
             whtIsType[id] =  whtIsType[child[0]];
             tree[child[1]].first += "_" + whtIsType[child[0]];
+        }
+        else if((whtIsType[child[0]]=="int" && whtIsType[child[2]]=="float") ||
+        (whtIsType[child[2]]=="int" && whtIsType[child[0]]=="float") ){
+            whtIsType[child[0]]="float";
+            whtIsType[child[2]]="float";
+            whtIsType[id] =  "float";
+            tree[child[1]].first += "_float";
+        }
+        else if((whtIsType[child[0]]=="int" && whtIsType[child[2]]=="char") ||
+        (whtIsType[child[2]]=="int" && whtIsType[child[0]]=="char") ){
+            whtIsType[child[0]]="int";
+            whtIsType[child[2]]="int";
+            whtIsType[id] =  "int";
+            tree[child[1]].first += "_int";
+        }
+        else if((whtIsType[child[0]]=="float" && whtIsType[child[2]]=="char") ||
+        (whtIsType[child[2]]=="float" && whtIsType[child[0]]=="char") ){
+            whtIsType[child[0]]="float";
+            whtIsType[child[2]]="float";
+            whtIsType[id] =  "float";
+            tree[child[1]].first += "_float";
         }
         else{
             whtIsType[id] = "error";
@@ -1172,7 +1209,89 @@ void tpc(int id){
             exit(1);
         }
     }
-    
+
+    else if(tree[id].first == "ShiftExpression" ){
+        if(whtIsType[child[0]]  == whtIsType[child[2]] && (whtIsType[child[1]]!="String" ||whtIsType[child[1]]!="float")){
+            whtIsType[id] =  whtIsType[child[0]];
+            tree[child[1]].first += "_" + whtIsType[child[0]];
+        }
+        else if((whtIsType[child[0]]=="int" && whtIsType[child[2]]=="char") ||
+        (whtIsType[child[2]]=="int" && whtIsType[child[0]]=="char") ){
+            whtIsType[child[0]]="int";
+            whtIsType[child[2]]="int";
+            whtIsType[id] =  "int";
+            tree[child[1]].first += "_int";
+        }
+        else{
+            whtIsType[id] = "error";
+            cout << "Type Error at line " << LineNumber[child[0]] << endl;
+            exit(1);
+        }
+    }
+
+    else if(tree[id].first == "RelationalExpression" ){
+        if(whtIsType[child[0]]  == whtIsType[child[2]] && whtIsType[child[1]]!="String"){
+            whtIsType[id] =  whtIsType[child[0]];
+            tree[child[1]].first += "_" + whtIsType[child[0]];
+        }
+        else if((whtIsType[child[0]]=="int" && whtIsType[child[2]]=="float") ||
+        (whtIsType[child[2]]=="int" && whtIsType[child[0]]=="float") ){
+            whtIsType[child[0]]="float";
+            whtIsType[child[2]]="float";
+            whtIsType[id] =  "float";
+            tree[child[1]].first += "_float";
+        }
+        else if((whtIsType[child[0]]=="int" && whtIsType[child[2]]=="char") ||
+        (whtIsType[child[2]]=="int" && whtIsType[child[0]]=="char") ){
+            whtIsType[child[0]]="int";
+            whtIsType[child[2]]="int";
+            whtIsType[id] =  "int";
+            tree[child[1]].first += "_int";
+        }
+        else if((whtIsType[child[0]]=="float" && whtIsType[child[2]]=="char") ||
+        (whtIsType[child[2]]=="float" && whtIsType[child[0]]=="char") ){
+            whtIsType[child[0]]="float";
+            whtIsType[child[2]]="float";
+            whtIsType[id] =  "float";
+            tree[child[1]].first += "_float";
+        }
+        else{
+            whtIsType[id] = "error";
+            cout << "Type Error at line " << LineNumber[child[0]] << endl;
+            exit(1);
+        }
+    }
+    else if(tree[id].first == "VariableDeclarator"){
+        if(whtIsType[child[0]]  == whtIsType[child[2]]){
+            whtIsType[id] =  whtIsType[child[0]];
+            tree[child[1]].first += "_" + whtIsType[child[0]];
+        }
+        else if((whtIsType[child[2]]=="int" && whtIsType[child[0]]=="float") ){
+            whtIsType[child[0]]="float";
+            whtIsType[child[2]]="float";
+            whtIsType[id] =  "float";
+            tree[child[1]].first += "_float";
+        }
+        else if((whtIsType[child[0]]=="int" && whtIsType[child[2]]=="char") ||
+        (whtIsType[child[2]]=="int" && whtIsType[child[0]]=="char") ){
+            whtIsType[child[0]]="int";
+            whtIsType[child[2]]="int";
+            whtIsType[id] =  "int";
+            tree[child[1]].first += "_int";
+        }
+        else if((whtIsType[child[0]]=="float" && whtIsType[child[2]]=="char") ){
+            whtIsType[child[0]]="float";
+            whtIsType[child[2]]="float";
+            whtIsType[id] =  "float";
+            tree[child[1]].first += "_float";
+        }
+        else{
+            whtIsType[id] = "error";
+            cout << "Type Error at line " << LineNumber[child[0]] << endl;
+            exit(1);
+        }
+        
+    }
     
 }
 
@@ -1188,6 +1307,9 @@ void print(){
     // }
     PrintSymTable();
     tpc(root);
+    for(auto itr = whtIsType.begin();itr!=whtIsType.end();itr++){
+        cout<<itr->first<<": [ "<<tree[itr->first].first<<" ]   "<<itr->second<<endl;
+    }
     // ***************************
     cout << "******************** Three AC Printing**************" << endl;
     ThreeACHelperFunc(root);
@@ -2223,7 +2345,7 @@ ClassInstanceCreationExpression : NEW Name OPEN_BRACKETS ArgumentList2 CLOSE_BRA
 }
                         ;
 MethodInvocation        : Name OPEN_BRACKETS ArgumentList2 CLOSE_BRACKETS      {
-                                    int uid = makenode("MethodIncovation");
+                                    int uid = makenode("MethodInvocation");
                                     addChild(uid, $1);
                                     addChild(uid, $2);
                                     addChild(uid, $3);
@@ -2231,7 +2353,7 @@ MethodInvocation        : Name OPEN_BRACKETS ArgumentList2 CLOSE_BRACKETS      {
                                     $$ = uid;
 }
                         | Primary DOT identifier OPEN_BRACKETS ArgumentList2 CLOSE_BRACKETS     {
-                                    int uid = makenode("MethodIncovation");
+                                    int uid = makenode("MethodInvocation");
                                     addChild(uid, $1);
                                     addChild(uid, $2);
                                     addChild(uid, $3);
@@ -2241,7 +2363,7 @@ MethodInvocation        : Name OPEN_BRACKETS ArgumentList2 CLOSE_BRACKETS      {
                                     $$ = uid;
                         }
                         | SUPER DOT identifier OPEN_BRACKETS ArgumentList2 CLOSE_BRACKETS       {
-                                    int uid = makenode("MethodIncovation");
+                                    int uid = makenode("MethodInvocation");
                                     addChild(uid, $1);
                                     addChild(uid, $2);
                                     addChild(uid, $3);
