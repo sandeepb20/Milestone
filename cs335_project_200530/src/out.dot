@@ -35,15 +35,15 @@ n20 [label="int"]
 n21 [label="c"]
 n22 [label="="]
 n23 [label="a"]
-n24 [label="+"]
+n24 [label="+_int"]
 n25 [label="b"]
-n26 [label="*"]
+n26 [label="*_int"]
 n27 [label="3"]
 n28 [label="MultiplicativeExpression"]
 n28->n27;
 n28->n26;
 n28->n25;
-n29 [label="/"]
+n29 [label="/_int"]
 n30 [label="4"]
 n31 [label="MultiplicativeExpression"]
 n31->n30;

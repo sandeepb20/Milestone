@@ -182,7 +182,7 @@ string customtypeof(int id){
 
     // string find_it  = tree[id].first;
     string myCurrClass = nodeClass[id];
-    cout << myCurrClass << endl;
+    // cout << myCurrClass << endl;
     string temp = scope[id];
 	while(temp != "null"){
         auto it = class_table[myCurrClass][temp].find(tree[id].first);
@@ -1041,16 +1041,28 @@ map<int, string> whtIsType;
 
 void tpc(int id){
     vector<int> child = tree[id].second;
-    if(child.size() == 0 && id !=-1 && additionalInfo[id] == "identifier" && tree[parent[id]].first != "ClassDeclaration"){
-        cout << "*****  " <<tree[id].first << endl;
-           cout << customtypeof(id) << " " << tree[id].first << " " << id << endl;
+    if(child.size() == 0 && id !=-1  && tree[parent[id]].first != "ClassDeclaration"){
+        if(additionalInfo[id] == "identifier"){
+            whtIsType[id] = customtypeof(id);
+        }
+        if(additionalInfo[id] == "IntegerLiteral"){
+            whtIsType[id] = "int";
+        }
     }
     int ischildcallistrue = 1;
     for(int i = 0; i < child.size(); i++){
         tpc(child[i]);
     }
-    if(tree[id].first == "MultiplicativeExpression"){
-
+    if(tree[id].first == "MultiplicativeExpression" || tree[id].first == "AdditiveExpression"){
+        if(whtIsType[child[0]]  == whtIsType[child[2]]){
+            whtIsType[id] =  whtIsType[child[0]];
+            tree[child[1]].first += "_" + whtIsType[child[0]];
+        }
+        else{
+            whtIsType[id] = "error";
+            cout << "Type Error at line " << LineNumber[child[0]] << endl;
+            exit(1);
+        }
     }
     
     
@@ -1059,14 +1071,6 @@ void tpc(int id){
 
 void print(){
     ForClass(root);
-    // cout << "printiing ClassMap"<< endl;
-    // for(auto it : classMap){
-    //     cout << it.first << endl;
-    //     for(auto id : it.second){
-    //         cout << id << " ";
-    //     }
-    //     cout << endl;
-    // }
     symTable(root);      //fills all the class name in the class_table
     // for(auto it : scope){
     //     cout << tree[it.first].first << " " << it.second << endl;
