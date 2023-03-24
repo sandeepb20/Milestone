@@ -51,19 +51,19 @@ public class took {
     int c;
 }
 
-// public class MyClass {
-//   public static void main(String[] args) {
+public class MyClass {
+  public static void main(String[] args) {
       
-//      // interpreting char as ascii values
-//      for(int i = 'a';i<'z';i++){
-//          System.out.println(i);
-//          i=++i;
-//      }
+     // interpreting char as ascii values
+     for(int i = 'a';i<'z';i++){
+         System.out.println(i);
+         i=++i;
+     }
      
-//      // variables cannot be named as reverved keywords
-//       // int final = 1, someOther=56;   // expected error here 
-//       int someOther=56;   // expected error here 
+     // variables cannot be named as reverved keywords
+      // int final = 1, someOther=56;   // expected error here 
+      int someOther=56;   // expected error here 
 
-//       // final = someOther +4;
-//   }
-// }
+      // final = someOther +4;
+  }
+}

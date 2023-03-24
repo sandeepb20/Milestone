@@ -1181,6 +1181,20 @@ void typeChecker(){
 
 map<int, string> whtIsType;
 
+int getParamsOf(int id){
+    string cclass = nodeClass[id];
+    string name = tree[id].first;
+
+    for(auto it : class_table[cclass]){
+        for(auto it1 : it.second){
+            if(it1.first == name){
+                return (it1.second -> parameters).size();
+            }
+        }
+    }
+    return 0;
+}
+
 void tpc(int id){
     bool allVisited = true;
     // if(tree[id].first == "MethodInvocation"){
@@ -1211,8 +1225,19 @@ void tpc(int id){
         tpc(child[i]);
     }
     // multiplicative and additive
+    if(tree[id].first == "MethodInvocation"){
+        int num = getParamsOf((tree[id].second)[0]);
+        // cout << "num of formal parameters should be:  " << num << endl;
+
+    }
     
     if(tree[id].first == "MultiplicativeExpression" || tree[id].first == "AdditiveExpression"){
+         if(whtIsType[child[0]] == "" || whtIsType[child[0]] == "null"){
+            whtIsType[child[0]] = whtIsType[child[2]];
+        }
+        if(whtIsType[child[2]] == "" || whtIsType[child[2]] == "null"){
+            whtIsType[child[2]] = whtIsType[child[0]];
+        }
         if(whtIsType[child[0]]  == whtIsType[child[2]] && whtIsType[child[1]]!="String"){
             whtIsType[id] =  whtIsType[child[0]];
             tree[child[1]].first += "_" + whtIsType[child[0]];
@@ -1246,6 +1271,12 @@ void tpc(int id){
     }
 
     else if(tree[id].first == "ShiftExpression" ){
+         if(whtIsType[child[0]] == "" || whtIsType[child[0]] == "null"){
+            whtIsType[child[0]] = whtIsType[child[2]];
+        }
+        if(whtIsType[child[2]] == "" || whtIsType[child[2]] == "null"){
+            whtIsType[child[2]] = whtIsType[child[0]];
+        }
         if(whtIsType[child[0]]  == whtIsType[child[2]] && (whtIsType[child[1]]!="String" ||whtIsType[child[1]]!="float")){
             whtIsType[id] =  whtIsType[child[0]];
             tree[child[1]].first += "_" + whtIsType[child[0]];
@@ -1265,6 +1296,13 @@ void tpc(int id){
     }
 
     else if(tree[id].first == "RelationalExpression" ){
+        // cout << whtIsType[child[0]] << ' ' << whtIsType[child[2]] << endl;
+         if(whtIsType[child[0]] == "" || whtIsType[child[0]] == "null"){
+            whtIsType[child[0]] = whtIsType[child[2]];
+        }
+        if(whtIsType[child[2]] == "" || whtIsType[child[2]] == "null"){
+            whtIsType[child[2]] = whtIsType[child[0]];
+        }
         if(whtIsType[child[0]]  == whtIsType[child[2]] && whtIsType[child[1]]!="String"){
             whtIsType[id] =  whtIsType[child[0]];
             tree[child[1]].first += "_" + whtIsType[child[0]];
@@ -1290,13 +1328,19 @@ void tpc(int id){
             whtIsType[id] =  "float";
             tree[child[1]].first += "_float";
         }
-        else{
+        else if(whtIsType[child[0]]!="null" || whtIsType[child[2]]=="null"){
             whtIsType[id] = "error";
             cout << "Type Error at line " << LineNumber[child[0]] << endl;
-            exit(1);
+            // exit(1);
         }
     }
     else if(tree[id].first == "VariableDeclarator"){
+        if(whtIsType[child[0]] == "" || whtIsType[child[0]] == "null"){
+            whtIsType[child[0]] = whtIsType[child[2]];
+        }
+        if(whtIsType[child[2]] == "" || whtIsType[child[2]] == "null"){
+            whtIsType[child[2]] = whtIsType[child[0]];
+        }
         if(whtIsType[child[0]]  == whtIsType[child[2]]){
             whtIsType[id] =  whtIsType[child[0]];
             tree[child[1]].first += "_" + whtIsType[child[0]];
@@ -1321,6 +1365,7 @@ void tpc(int id){
             tree[child[1]].first += "_float";
         }
         else{
+            cout << whtIsType[child[0]] << ' ' << whtIsType[child[2]] << endl;
             whtIsType[id] = "error";
             cout << "Type Error at line " << LineNumber[child[0]] << endl;
             exit(1);
@@ -1340,11 +1385,11 @@ void print(){
     // for(auto i : classOffset){
     //     cout << i.first << " " << i.second << endl;
     // }
-    PrintSymTable();
-    // tpc(root);
-    for(auto itr = whtIsType.begin();itr!=whtIsType.end();itr++){
-        cout<<itr->first<<": [ "<<tree[itr->first].first<<" ]   "<<itr->second<<endl;
-    }
+    // PrintSymTable();
+    tpc(root);
+    // for(auto itr = whtIsType.begin();itr!=whtIsType.end();itr++){
+    //     cout<<itr->first<<": [ "<<tree[itr->first].first<<" ]   "<<itr->second<<endl;
+    // }
     // ***************************
     cout << "******************** Three AC Printing**************" << endl;
     ThreeACHelperFunc(root);
