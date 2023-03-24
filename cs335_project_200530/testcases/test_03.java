@@ -5,7 +5,7 @@ public static public class test {
     int c;
     int s; int p;
     int abc[][] = new int[3][4];
-    int[] xy = new int[3];
+    int[][] xy = new int[3][3];
     private test(int x, int y, int z){
         int a = kk;
         
@@ -23,9 +23,8 @@ public static public class test {
             }
             int z;
         }
-        for (a = 0;; a++) {
-            int ab = 1;
-        }
+        for(a = 0;; a++)
+            cgs++;
         if(a > 0){
             int a1 = 1;
         }

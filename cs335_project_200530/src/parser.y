@@ -21,7 +21,6 @@ map<int, pair<string, vector<int> >> tree;
 map<int, string> additionalInfo;
 map<int, int> LineNumber;
 map<int, int> parent;
-map<int, string> scope;
 map<int, vector<int>> backlist;
 /*------------------------------------------------------------*/
 
@@ -115,6 +114,7 @@ map<string, parent_table> class_parent_table;
 vector<string> key_words = {"abstract","continue","for","new","switch","assert","default","if","package","synchronized","boolean","do","goto","private","this","break","double","implements","protected","throw","byte","else","import","public","throws","case","enum","instanceof","return","transient","catch","extends","int","short","try","String","char","final","interface","static","void","class","finally","long","strictfp","volatile","const","float","native","super","while","_","exports","opens","requires","uses","module","permit","sealed","var","non-sealed","provides","to","with","open","record","transitive","yield"}; 
 string curr_class, curr_table;
 map<int, vector<string>> modifiers;
+map<int, string> scope;
 
 void createEntry(string currTableName, string temp, string type, int line, int size, int offset, int isArray, vector<int> ndim, vector<string> parameters){
     if(find(key_words.begin(), key_words.end(), temp) != key_words.end()){
@@ -170,7 +170,9 @@ void ParamList(int id){
 void symTable(int id){
     vector<int> child = tree[id].second;
     string nodeName = tree[id].first;
+    if(child.size() == 0) scope[id] = curr_table;
     if(nodeName == "ClassDeclaration"){
+        symTable(child[2]);
         curr_class = tree[child[2]].first;
         table t;
         class_table[curr_class] = t;
@@ -182,7 +184,9 @@ void symTable(int id){
             modifiers[child[2]].push_back(tree[child1[0]].first);
             tempid = child1[1];
         }
+        
         symTable(child[5]);
+        
         return;
     }
      if(nodeName == "ConstructorDeclaration"){
@@ -203,11 +207,13 @@ void symTable(int id){
         ParamList(child[2]);
         createEntry(curr_table,tree[child[0]].first+".constr","",LineNumber[child[0]],4,stoffset,0,stndim,parameters);
         parameters.clear();
+        symTable(child[0]);
         makeSymbolTable(tree[child[0]].first+".constr");
         symTable(child[2]);
         return;
     }
     if(nodeName == "MethodDeclarator"){
+        symTable(child[0]);
         ParamList(child[2]);
         createEntry(curr_table,tree[child[0]].first,sttype,LineNumber[child[0]],getSize(sttype),stoffset,0,stndim,parameters);
         parameters.clear();
@@ -230,6 +236,7 @@ void symTable(int id){
     }
     if(nodeName == "FormalParameter"){
         int tempid = child[0];
+        symTable(child[2]);
         while(tree[tempid].first == "Modifiers"){
             vector<int> child1 = tree[tempid].second;
             modifiers[child[2]].push_back(tree[child1[0]].first);
@@ -246,7 +253,15 @@ void symTable(int id){
             stmodifiers.push_back(tree[child1[0]].first);
             tempid = child1[1];
         }
-        sttype = tree[child[1]].first;
+        if(tree[child[1]].first == "ArrayType"){
+            // vector<int> child1 = tree[child[1]].second;
+            // sttype = "[]"
+            // while(tree[child1[0]].first == "ArrayType"){
+
+            // }
+        }
+        else{
+        sttype = tree[child[1]].first;}
         if(additionalInfo.find(child[2]) != additionalInfo.end() && additionalInfo[child[2]] == "identifier"){
             createEntry(curr_table, tree[child[2]].first, sttype, LineNumber[child[2]], getSize(sttype), stoffset, 0, stndim, parameters);
         }
@@ -258,19 +273,24 @@ void symTable(int id){
             symTable(child[0]);
         }
         else{
+            symTable(child[0]);
             createEntry(curr_table, tree[child[0]].first, sttype, LineNumber[child[0]], getSize(sttype), stoffset, 0, stndim, parameters);
         }
         if(tree[child[2]].first == "VariableDeclarator" || tree[child[2]].first == "VariableDeclarators" ){
-            symTable(child[0]);
+            symTable(child[2]);
         }
         else{
+            symTable(child[2]);
             createEntry(curr_table, tree[child[2]].first, sttype, LineNumber[child[2]], getSize(sttype), stoffset, 0, stndim, parameters);
         }
         return;
     }
     if(nodeName == "VariableDeclarator"){
         if(tree[child[0]].first != "VariableDeclaratorId"){
+            symTable(child[0]);
+            
             createEntry(curr_table, tree[child[0]].first, sttype, LineNumber[child[0]], getSize(sttype), stoffset, 0, stndim, parameters);
+            symTable(child[2]);
         }
         return;
     }
@@ -280,6 +300,10 @@ void symTable(int id){
         makeSymbolTable(stname);
         symTable(child[2]);
         symTable(child[8]);
+        if(tree[child[8]].first != "Block"){
+            curr_table = class_parent_table[curr_class][curr_table];
+            stoffset = prevoffset;
+        }
         return;
     }
     if(nodeName == "whileStmt"){
@@ -287,6 +311,10 @@ void symTable(int id){
         whilenum++;
         makeSymbolTable(stname);
         symTable(child[4]);
+        if(tree[child[4]].first != "Block"){
+            curr_table = class_parent_table[curr_class][curr_table];
+            stoffset = prevoffset;
+        }
         return;
     }
     if(nodeName == "LocalVariableDeclaration"){
@@ -306,6 +334,10 @@ void symTable(int id){
         ifelsenum++;
         makeSymbolTable(stname);
         symTable(child[4]);
+        if(tree[child[4]].first != "Block"){
+            curr_table = class_parent_table[curr_class][curr_table];
+            stoffset = prevoffset;
+        }
         return;
     }
     if(nodeName == "ifThenElseStmt"){
@@ -313,10 +345,18 @@ void symTable(int id){
         ifelsenum++;
         makeSymbolTable(stname);
         symTable(child[4]);
+        if(tree[child[4]].first != "Block"){
+            curr_table = class_parent_table[curr_class][curr_table];
+            stoffset = prevoffset;
+        }
         stname = "ifelse" + to_string(ifelsenum);
         ifelsenum++;
         makeSymbolTable(stname);
         symTable(child[6]);
+        if(tree[child[6]].first != "Block"){
+            curr_table = class_parent_table[curr_class][curr_table];
+            stoffset = prevoffset;
+        }
         return;
     }
     for(int i = 0; i < child.size(); i++){
@@ -878,14 +918,17 @@ void typeChecker(){
 
 void print(){
     symTable(root);      //fills all the class name in the class_table
+    // for(auto it : scope){
+    //     cout << tree[it.first].first << " " << it.second << endl;
+    // }
     PrintSymTable();
-    typeChecker();
+    // typeChecker();
     // ***************************
     cout << "******************** Three AC Printing**************" << endl;
     ThreeACHelperFunc(root);
     printThreeAC();
     // ****************************
-    typeChecker();
+    // typeChecker();
     ofstream fout;
     fout.open(OutputFileName);
     fout << "digraph G {" << endl;
