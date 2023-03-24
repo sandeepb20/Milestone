@@ -321,16 +321,21 @@ void symTable(int id){
             tempid = child1[1];
         }
         if(tree[child[1]].first == "ArrayType"){
-            // vector<int> child1 = tree[child[1]].second;
-            // sttype = "[]"
-            // while(tree[child1[0]].first == "ArrayType"){
-
-            // }
+            stisArray = 1;
+            vector<int> child1 = tree[child[1]].second;
+            int n1 = child1[0];
+            sttype = "[]";
+            if(tree[n1].first == "ArrayType"){
+                vector<int> child1 = tree[n1].second;
+                sttype += "[]";
+                n1 = child1[0];
+            }
+            sttype = tree[n1].first + sttype;
         }
         else{
         sttype = tree[child[1]].first;}
         if(additionalInfo.find(child[2]) != additionalInfo.end() && additionalInfo[child[2]] == "identifier"){
-            createEntry(curr_table, tree[child[2]].first, sttype, LineNumber[child[2]], getSize(sttype), stoffset, 0, stndim, parameters);
+            createEntry(curr_table, tree[child[2]].first, sttype, LineNumber[child[2]], getSize(sttype), stoffset, stisArray, stndim, parameters);
         }
         symTable(child[2]);
         return;
@@ -355,12 +360,35 @@ void symTable(int id){
         return;
     }
     if(nodeName == "VariableDeclarator"){
+        stndim.clear();
+        int count = 1;
+        if(tree[child[2]].first == "ArrayCreationExpr"){
+            vector<int> ch = tree[child[2]].second;
+            vector<int> ch1 = tree[ch[2]].second;
+            for(auto it : ch1){
+                vector<int> ch2 = tree[it].second;
+                stndim.push_back(stoi(tree[ch2[1]].first));
+                count *= stoi(tree[ch2[1]].first);
+            }
+            stsize = count * getSize(sttype);
+        }
         if(tree[child[0]].first != "VariableDeclaratorId"){
             
             
             createEntry(curr_table, tree[child[0]].first, sttype, LineNumber[child[0]], getSize(sttype), stoffset, 0, stndim, parameters);
             symTable(child[0]);
             symTable(child[2]);
+        }
+        else if(tree[child[0]].first == "VariableDeclaratorId"){
+            vector<int> child1 = tree[child[0]].second;
+            int n1 = child1[0];
+            sttype += "[]";
+            if(tree[n1].first == "VariableDeclaratorId"){
+                vector<int> child1 = tree[n1].second;
+                sttype += "[]";
+                n1 = child1[0];
+            }
+            createEntry(curr_table, tree[n1].first, sttype, LineNumber[n1], stsize, stoffset, 1, stndim, parameters);
         }
         return;
     }
@@ -389,6 +417,9 @@ void symTable(int id){
     }
     if(nodeName == "LocalVariableDeclaration"){
         sttype = tree[child[0]].first;
+        if(additionalInfo.find(child[1]) != additionalInfo.end()){
+            createEntry(curr_table, tree[child[1]].first, sttype, LineNumber[child[1]], getSize(sttype), stoffset, 0, stndim, parameters);
+        }
         symTable(child[1]);
         return;
     }
