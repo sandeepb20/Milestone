@@ -184,7 +184,17 @@ string customtypeof(int id){
     string temp = scope[id];
 	while(temp != "null" && temp != ""){
         auto it = class_table[myCurrClass][temp].find(tree[id].first);
-        if(it!=class_table[myCurrClass][temp].end()) return class_table[myCurrClass][temp][tree[id].first]->type;
+        if(it!=class_table[myCurrClass][temp].end()){
+            string typet = class_table[myCurrClass][temp][tree[id].first]->type;
+            string typeans = "";
+            for(int i=0; i<typet.length(); i++){
+                if(typet[i] == '['){
+                    break;
+                }
+                typeans += typet[i];
+            }
+            return typeans;
+        } 
 		else{
 		temp = class_parent_table[myCurrClass][temp];}
 	}
@@ -1236,6 +1246,7 @@ void tpc(int id){
     if(child.size() == 0 && id !=-1  && tree[parent[id]].first != "ClassDeclaration"){
         if(additionalInfo[id] == "identifier"){
             whtIsType[id] = customtypeof(id);
+            // whtIsType[id] = "int";
             if (whtIsType[id]=="double") whtIsType[id]="float";
         }
         else if(additionalInfo[id] == "type"){
@@ -1255,7 +1266,7 @@ void tpc(int id){
         
         tpc(child[i]);
     }
-    // multiplicative and additive
+    
      if(tree[id].first == "MethodInvocation"){
         vector<int> child1 = tree[id].second;
         if(tree[child1[0]].first != "QualifiedName"){
@@ -1295,6 +1306,61 @@ void tpc(int id){
             vector<string> parameters = getParameters(child1[2]);
         }
 
+    }
+    if(tree[id].first == "ArrayCreationExpr"){
+        
+        string typel, typer,  boxl = "", boxr = "";
+        int diml = 0, dimr = 0;
+        
+        vector<int> ch0 = tree[id].second;
+        typer = tree[ch0[1]].first;
+        
+        if(tree[ch0[2]].first == "DimExpr"){
+            boxr = "[]";
+            dimr = 1;
+        }
+        else{
+            int temp = ch0[2];
+            while(tree[temp].first == "DimExprs"){
+                vector<int> ch1 = tree[temp].second;
+                dimr += 1;
+                boxr += "[]";
+                temp = ch1[0];
+            }
+            dimr += 1;
+            boxr += "[]";
+        }
+        
+        id = parent[parent[id]];
+        // cout << tree[id].first << endl;
+        vector<int> ch = tree[id].second;
+        if(tree[ch[1]].first == "ArrayType"){
+            // cout << "dimr: " << dimr << endl;
+            int temp = ch[1];
+            while(tree[temp].first == "ArrayType"){
+                vector<int> ch1 = tree[temp].second;
+                diml += 1;
+                boxl += "[]";
+                temp = ch1[0];
+            }
+            typel = tree[temp].first;
+        }
+        else{
+            typel = tree[ch[1]].first;
+            int temp1 = ch[2];
+            vector<int> ch1 = tree[temp1].second;
+            int temp = ch1[0];
+            while(tree[temp].first == "VariableDeclaratorId"){
+                vector<int> ch1 = tree[temp].second;
+                diml += 1;
+                boxl += "[]";
+                temp = ch1[0];
+            }
+        }
+        // cout << "dimr: " << dimr << endl;
+        if(typel != typer || diml != dimr){
+            cout << "error: incompatible types: " << typer + boxr << " cannot be converted to " << typel + boxl << endl;
+        }
     }
     if(tree[id].first == "Assignment"){
         if(whtIsType[child[0]] == whtIsType[child[2]]){
@@ -1416,7 +1482,7 @@ void tpc(int id){
             // exit(1);
         }
     }
-    else if(tree[id].first == "VariableDeclarator"){
+    else if(tree[id].first == "VariableDeclarator" && tree[(tree[id].second)[2]].first != "ArrayCreationExpr"){
         if(whtIsType[child[0]]  == whtIsType[child[2]]){
             whtIsType[id] =  whtIsType[child[0]];
             tree[child[1]].first += "_" + whtIsType[child[0]];
@@ -1468,8 +1534,8 @@ void print(){
     // }
     // ***************************
     cout << "******************** Three AC Printing**************" << endl;
-    ThreeACHelperFunc(root);
-    printThreeAC();
+    // ThreeACHelperFunc(root);
+    // printThreeAC();
     // ****************************
     // typeChecker();
     ofstream fout;
