@@ -1332,10 +1332,9 @@ void tpc(int id){
         }
         
         id = parent[parent[id]];
-        // cout << tree[id].first << endl;
         vector<int> ch = tree[id].second;
+        if(tree[id].first == "FieldDeclaration"){
         if(tree[ch[1]].first == "ArrayType"){
-            // cout << "dimr: " << dimr << endl;
             int temp = ch[1];
             while(tree[temp].first == "ArrayType"){
                 vector<int> ch1 = tree[temp].second;
@@ -1357,7 +1356,31 @@ void tpc(int id){
                 temp = ch1[0];
             }
         }
-        // cout << "dimr: " << dimr << endl;
+        }
+        else if(tree[id].first == "LocalVariableDeclaration"){
+            if(tree[ch[0]].first == "ArrayType"){
+            int temp = ch[0];
+            while(tree[temp].first == "ArrayType"){
+                vector<int> ch1 = tree[temp].second;
+                diml += 1;
+                boxl += "[]";
+                temp = ch1[0];
+            }
+            typel = tree[temp].first;
+        }
+        else{
+            typel = tree[ch[0]].first;
+            int temp1 = ch[1];
+            vector<int> ch1 = tree[temp1].second;
+            int temp = ch1[0];
+            while(tree[temp].first == "VariableDeclaratorId"){
+                vector<int> ch1 = tree[temp].second;
+                diml += 1;
+                boxl += "[]";
+                temp = ch1[0];
+            }
+        }
+        }
         if(typel != typer || diml != dimr){
             cout << "error: incompatible types: " << typer + boxr << " cannot be converted to " << typel + boxl << endl;
         }
