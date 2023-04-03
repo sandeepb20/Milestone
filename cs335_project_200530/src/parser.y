@@ -347,7 +347,7 @@ void symTable(int id){
             vector<int> child1 = tree[child[1]].second;
             int n1 = child1[0];
             sttype = "[]";
-            if(tree[n1].first == "ArrayType"){
+            while(tree[n1].first == "ArrayType"){
                 vector<int> child1 = tree[n1].second;
                 sttype += "[]";
                 n1 = child1[0];
@@ -389,14 +389,33 @@ void symTable(int id){
         stndim.clear();
         int count = 1;
         if(tree[child[2]].first == "ArrayCreationExpr"){
-            vector<int> ch = tree[child[2]].second;
-            vector<int> ch1 = tree[ch[2]].second;
-            for(auto it : ch1){
-                vector<int> ch2 = tree[it].second;
-                stndim.push_back(stoi(tree[ch2[1]].first));
-                count *= stoi(tree[ch2[1]].first);
+            vector<int> ch = tree[child[2]].second;  // ch are children of ArrayCreationExpr
+            // vector<int> ch1 = tree[ch[2]].second; // ch1 are children of dimeprs;
+            int temp = ch[2]; // temp is dimeprs
+            if(tree[temp].first == "DimExpr"){
+                vector<int> ch3 = tree[temp].second;
+                stndim.push_back(stoi(tree[ch3[1]].first));
+                count *= stoi(tree[ch3[1]].first);
+            }
+            while(tree[temp].first == "DimExprs"){
+                vector<int> ch2 = tree[temp].second;
+                if(tree[ch2[1]].first == "DimExpr"){
+                    vector<int> ch3 = tree[ch2[1]].second;
+                    stndim.push_back(stoi(tree[ch3[1]].first));
+                    count *= stoi(tree[ch3[1]].first);
+                }
+                if(tree[ch2[0]].first == "DimExpr"){
+                    vector<int> ch3 = tree[ch2[0]].second;
+                    stndim.push_back(stoi(tree[ch3[1]].first));
+                    count *= stoi(tree[ch3[1]].first);
+                    break;
+                }
+                else{
+                    temp = ch2[0];
+                }
             }
             stsize = count * getSize(sttype);
+            reverse(stndim.begin(),stndim.end());
         }
         if(tree[child[0]].first != "VariableDeclaratorId"){
             
@@ -419,7 +438,7 @@ void symTable(int id){
             vector<int> child1 = tree[child[0]].second;
             int n1 = child1[0];
             sttype += "[]";
-            if(tree[n1].first == "VariableDeclaratorId"){
+            while(tree[n1].first == "VariableDeclaratorId"){
                 vector<int> child1 = tree[n1].second;
                 sttype += "[]";
                 n1 = child1[0];
@@ -459,7 +478,7 @@ void symTable(int id){
             vector<int> child1 = tree[child[0]].second;
             int n1 = child1[0];
             sttype = "[]";
-            if(tree[n1].first == "ArrayType"){
+            while(tree[n1].first == "ArrayType"){
                 vector<int> child1 = tree[n1].second;
                 sttype += "[]";
                 n1 = child1[0];
@@ -1277,9 +1296,44 @@ void tpc(int id){
         }
 
     }
-    
+    if(tree[id].first == "Assignment"){
+        if(whtIsType[child[0]] == whtIsType[child[2]]){
+            whtIsType[id] = whtIsType[child[0]];
+            tree[child[1]].first += "_" + whtIsType[child[0]];
+        }
+        else if((whtIsType[child[0]]=="int" && whtIsType[child[2]]=="float") ){
+            whtIsType[id] = "error";
+            cout << "Type Error at line " << LineNumber[child[0]] << ". Incompatible types: possible lossy conversion from double to int"  << endl;
+            exit(1);
+        }
+        else if((whtIsType[child[2]]=="int" && whtIsType[child[0]]=="float") ){
+            whtIsType[child[0]]="float";
+            whtIsType[child[2]]="float";
+            whtIsType[id] =  "float";
+            tree[child[1]].first += "_float";
+        }
+        else if((whtIsType[child[0]]=="int" && whtIsType[child[2]]=="char") ||
+        (whtIsType[child[2]]=="int" && whtIsType[child[0]]=="char") ){
+            whtIsType[child[0]]="int";
+            whtIsType[child[2]]="int";
+            whtIsType[id] =  "int";
+            tree[child[1]].first += "_int";
+        }
+        else if((whtIsType[child[0]]=="float" && whtIsType[child[2]]=="char") ||
+        (whtIsType[child[2]]=="float" && whtIsType[child[0]]=="char") ){
+            whtIsType[child[0]]="float";
+            whtIsType[child[2]]="float";
+            whtIsType[id] =  "float";
+            tree[child[1]].first += "_float";
+        }
+        else{
+            whtIsType[id] = "error";
+            cout << "Type Error at line " << LineNumber[child[0]] << endl;
+            exit(1);
+        }
+    }
     if(tree[id].first == "MultiplicativeExpression" || tree[id].first == "AdditiveExpression"){
-        if(whtIsType[child[0]]  == whtIsType[child[2]] && whtIsType[child[1]]!="String"){
+        if(whtIsType[child[0]]  == whtIsType[child[2]]){
             whtIsType[id] =  whtIsType[child[0]];
             tree[child[1]].first += "_" + whtIsType[child[0]];
         }
@@ -1387,7 +1441,7 @@ void tpc(int id){
             tree[child[1]].first += "_float";
         }
         else{
-            cout << whtIsType[child[0]] << ' ' << whtIsType[child[2]] << endl;
+            // cout << whtIsType[child[0]] << ' ' << whtIsType[child[2]] << endl;
             whtIsType[id] = "error";
             cout << "Type Error at line " << LineNumber[child[0]] << endl;
             exit(1);
@@ -1407,7 +1461,7 @@ void print(){
     // for(auto i : classOffset){
     //     cout << i.first << " " << i.second << endl;
     // }
-    // PrintSymTable();
+    PrintSymTable();
     tpc(root);
     // for(auto itr = whtIsType.begin();itr!=whtIsType.end();itr++){
     //     cout<<itr->first<<": [ "<<tree[itr->first].first<<" ]   "<<itr->second<<endl;
