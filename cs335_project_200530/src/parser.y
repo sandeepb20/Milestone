@@ -1181,18 +1181,30 @@ void typeChecker(){
 
 map<int, string> whtIsType;
 
-int getParamsOf(int id){
+vector<string> getParamsOf(int id){
     string cclass = nodeClass[id];
     string name = tree[id].first;
-
+    vector<string> param;
     for(auto it : class_table[cclass]){
         for(auto it1 : it.second){
             if(it1.first == name){
-                return (it1.second -> parameters).size();
+                return (it1.second -> parameters);
             }
         }
     }
-    return 0;
+      
+    return {};
+}
+
+vector<string> getParameters(int id){
+    vector<string> params;
+    while(tree[id].first == "ArgumentList"){
+        vector<int> child1 = tree[id].second;
+        params.push_back(whtIsType[child1[2]]);
+        id = child1[0];
+    }
+    params.push_back(whtIsType[id]);
+    return params;
 }
 
 void tpc(int id){
@@ -1225,19 +1237,48 @@ void tpc(int id){
         tpc(child[i]);
     }
     // multiplicative and additive
-    if(tree[id].first == "MethodInvocation"){
-        int num = getParamsOf((tree[id].second)[0]);
-        // cout << "num of formal parameters should be:  " << num << endl;
+     if(tree[id].first == "MethodInvocation"){
+        vector<int> child1 = tree[id].second;
+        if(tree[child1[0]].first != "QualifiedName"){
+            vector<string> params = getParamsOf(child1[0]);
+            
+            vector<string> parameters = getParameters(child1[2]);
+            if(parameters.size() != params.size()){
+                cout << "Error: actual and formal argument lists differ in length" << endl;
+                // exit(0);
+            }
+            else{
+                for(int i=0; i<params.size(); i++){
+                    if(params[i] != parameters[i]){
+                        if(parameters[i] == "int" && params[i] == "float"){
+                            ;
+                        }
+                        else if(parameters[i] == "char" && params[i] == "int"){
+                            ;
+                        }
+                        else if(parameters[i] == "char" && params[i] == "float"){
+                            ;
+                        }
+                        else if(parameters[i] == "int" && (params[i] == "boolean" || params[i] == "bool")){
+                            ;
+                        }
+                        else{
+                        cout << "Error: incompatible types" << endl;}
+                        // exit(0);
+                    }
+                }
+            }
+        }
+        else{
+            // QualifiedName
+            vector<int> child2 = tree[child1[0]].second;
+            vector<string> params = getParamsOf(child2[2]);
+            vector<string> parameters = getParameters(child1[2]);
+        }
 
     }
     
     if(tree[id].first == "MultiplicativeExpression" || tree[id].first == "AdditiveExpression"){
-         if(whtIsType[child[0]] == "" || whtIsType[child[0]] == "null"){
-            whtIsType[child[0]] = whtIsType[child[2]];
-        }
-        if(whtIsType[child[2]] == "" || whtIsType[child[2]] == "null"){
-            whtIsType[child[2]] = whtIsType[child[0]];
-        }
         if(whtIsType[child[0]]  == whtIsType[child[2]] && whtIsType[child[1]]!="String"){
             whtIsType[id] =  whtIsType[child[0]];
             tree[child[1]].first += "_" + whtIsType[child[0]];
@@ -1271,12 +1312,6 @@ void tpc(int id){
     }
 
     else if(tree[id].first == "ShiftExpression" ){
-         if(whtIsType[child[0]] == "" || whtIsType[child[0]] == "null"){
-            whtIsType[child[0]] = whtIsType[child[2]];
-        }
-        if(whtIsType[child[2]] == "" || whtIsType[child[2]] == "null"){
-            whtIsType[child[2]] = whtIsType[child[0]];
-        }
         if(whtIsType[child[0]]  == whtIsType[child[2]] && (whtIsType[child[1]]!="String" ||whtIsType[child[1]]!="float")){
             whtIsType[id] =  whtIsType[child[0]];
             tree[child[1]].first += "_" + whtIsType[child[0]];
@@ -1296,13 +1331,6 @@ void tpc(int id){
     }
 
     else if(tree[id].first == "RelationalExpression" ){
-        // cout << whtIsType[child[0]] << ' ' << whtIsType[child[2]] << endl;
-         if(whtIsType[child[0]] == "" || whtIsType[child[0]] == "null"){
-            whtIsType[child[0]] = whtIsType[child[2]];
-        }
-        if(whtIsType[child[2]] == "" || whtIsType[child[2]] == "null"){
-            whtIsType[child[2]] = whtIsType[child[0]];
-        }
         if(whtIsType[child[0]]  == whtIsType[child[2]] && whtIsType[child[1]]!="String"){
             whtIsType[id] =  whtIsType[child[0]];
             tree[child[1]].first += "_" + whtIsType[child[0]];
@@ -1335,12 +1363,6 @@ void tpc(int id){
         }
     }
     else if(tree[id].first == "VariableDeclarator"){
-        if(whtIsType[child[0]] == "" || whtIsType[child[0]] == "null"){
-            whtIsType[child[0]] = whtIsType[child[2]];
-        }
-        if(whtIsType[child[2]] == "" || whtIsType[child[2]] == "null"){
-            whtIsType[child[2]] = whtIsType[child[0]];
-        }
         if(whtIsType[child[0]]  == whtIsType[child[2]]){
             whtIsType[id] =  whtIsType[child[0]];
             tree[child[1]].first += "_" + whtIsType[child[0]];
