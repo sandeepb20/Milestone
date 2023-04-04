@@ -129,6 +129,9 @@ void createEntry(string currTableName, string temp, string type, int line, int s
         cout << temp << " Already declared " << line << endl;
         exit(1);
     }
+    if(type == "String"){
+        size = 8;
+    }
     sym_entry* ent = new sym_entry();
 	    ent->type = type;
         ent->line = line;
@@ -345,7 +348,22 @@ void symTable(int id){
             modifiers[tree[child[2]].first].push_back(tree[child1[0]].first);
             tempid = child1[1];
         }
-        createEntry(curr_table, tree[child[2]].first, tree[child[1]].first, LineNumber[child[2]], getSize(tree[child[1]].first), stoffset, 0, "variable", stndim, parameters);
+        if(tree[child[1]].first == "ArrayType"){
+            stisArray = 1;
+            vector<int> child1 = tree[child[1]].second;
+            int n1 = child1[0];
+            sttype = "[]";
+            while(tree[n1].first == "ArrayType"){
+                vector<int> child1 = tree[n1].second;
+                sttype += "[]";
+                n1 = child1[0];
+            }
+            sttype = tree[n1].first + sttype;
+        }
+        else{
+            sttype = tree[child[1]].first;
+        }
+        createEntry(curr_table, tree[child[2]].first, sttype, LineNumber[child[2]], getSize(tree[child[1]].first), stoffset, 0, "variable", stndim, parameters);
         symTable(child[2]);
         return;
     }
@@ -1239,6 +1257,39 @@ vector<string> getParamsOf(int id){
     return {};
 }
 
+int paramSize(vector<string> param){
+    int ssize = 0;
+    for(auto i : param){
+        ssize += getSize(i);
+    }
+    return ssize;
+}
+
+int funcSize(int id){
+    int temp = parent[id];
+    string cclass;
+    int ssize = 0;
+    sym_table t;
+    if(tree[temp].first == "QualifiedName"){
+        cclass = customtypeof((tree[temp].second)[0]);
+    }
+    else{
+        cclass = nodeClass[id];
+    }
+    string name = tree[id].first;
+    vector<string> param;
+    for(auto it : class_table[cclass]){
+            if(it.first == name){
+                t = class_table[cclass][name];
+                break;
+            }
+    }
+    for(auto it : t) {
+        ssize += (it.second)->size;
+    }
+    return ssize;
+}
+
 vector<string> getParameters(int id){
     vector<string> params;
     while(tree[id].first == "ArgumentList"){
@@ -1282,11 +1333,14 @@ void tpc(int id){
     }
     
      if(tree[id].first == "MethodInvocation"){
+        
         vector<int> child1 = tree[id].second;
+        int s;
         vector<string> params, parameters;
         if(tree[child1[0]].first != "QualifiedName"){
             params = getParamsOf(child1[0]);
             parameters = getParameters(child1[2]);
+            whtIsType[id] = customtypeof(child1[0]);
         }
         else{
             vector<int> child2 = tree[child1[0]].second;
@@ -1615,6 +1669,7 @@ void print(){
     //     cout << i.first << " " << i.second << endl;
     // }
     PrintSymTable();
+
     tpc(root);
     // for(auto itr = whtIsType.begin();itr!=whtIsType.end();itr++){
     //     cout<<itr->first<<": [ "<<tree[itr->first].first<<" ]   "<<itr->second<<endl;
