@@ -1,29 +1,30 @@
 class Test1{
-    int a = 1+2+3;
-    public static int foo(){
-      int[][] arr = new int[4][5];  // Array declaration
-      int a = arr[3][4];    // Array Access
-      a = 0;
-  
-      while(a < 10){ // While loop
-        a = a + 1;
-      }
-      return a;
-    }
-    int foo1(int a, int b){
-      
-      b = 0; 
-      // int b; // B already deaclared
-      int d = foo();            // method call
-      int e = foo1(9,8);  // Support Recursion
-      while( b < 10){
-        b = b + 1;
-        int c;
-      }
-      while( b < 10){
-        b = b + 1;
-        int c;
-      }
-      return b+1; // Return statement
-    }
-  };
+  float[] a = new float[20];
+  int b[][] = new int[10][10];
+  int[][] c = new int[10][10];
+  // int d[][] = new char[10][10];
+  // int[][][] e = new int[10][10][10];
+  int f[][][] = new int[10][15][5];
+  // int g[][][][] = new int[10][10][10][10];
+  // int [][][][] h = new int[10][10][10][10];
+  // int i[][][][][] = new int[10][10][10][10][10];
+  // int [][][][][] j = new int[10][10][10][10][10];
+  public int add(){
+  int[] a = new int[10];
+  // int b[] = new int[10];
+  // int[][] c = new int[10][10];
+  int d[][] = new int[10][10];
+  int[][][] e = new int[10][10][10];
+  // int f[][][] = new int[10][15][5];
+  // int g[][][][] = new int[10][10][10][10];
+  // int [][][][] h = new int[10][10][10][10];
+  // int i[][][][][] = new int[10][10][10][10][10];
+  // int [][][][][] j = new int[10][10][10][10][10];
+  int k = e[3][4][2];
+  int l = b[4];
+  int m = d[12][3];
+  a[3] = 9;
+  c[3][4] = 0;
+  f[3][4][2] = 4;
+  }
+}

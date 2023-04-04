@@ -456,6 +456,8 @@ void symTable(int id){
             createEntry(curr_table, tree[n1].first, sttype, LineNumber[n1], stsize, stoffset, 1, stndim, parameters);
             modifiers[tree[n1].first] = stmodifiers;
             stmodifiers.clear();
+
+            symTable(child[0]);
         }
         return;
     }
@@ -791,15 +793,16 @@ vector<int> getDim(string cclass, string ArrayName){
 }
 int getSizeOfArray(int id){
     string ArrayName = tree[id].first;
-    cout << ArrayName << endl;
+    cout << ArrayName << " " << nodeClass[id] << endl;
     for(auto it : class_table[nodeClass[id]]){
         for(auto itr : it.second){
+            cout << "checking " << itr.first << endl;
             if(itr.first == ArrayName){
                 return itr.second -> size;
             }
         }
     }
-    return 0;
+    return -1;
 }
 
 void ThreeACHelperFunc(int id){
@@ -1031,14 +1034,18 @@ void ThreeACHelperFunc(int id){
     if(tree[id].first == "ArrayCreationExpr"){
         childcallistrue = 0;
         vector<int> temp2 = tree[parent[id]].second;
-
-        int sizeOfArr = getSizeOfArray(temp2[0]);
-        cout << "size of array " << sizeOfArr << endl;
+        int arrayId = temp2[0];
+        while(tree[arrayId].first == "VariableDeclaratorId"){
+            vector<int> temp3 = tree[arrayId].second;
+            arrayId = temp3[0];
+        }
+        int sizeOfArr = getSizeOfArray(arrayId);
+        cout << "size of array " << tree[arrayId].first << "  " << sizeOfArr << endl;
         tac* t = createTacCustom("=", to_string(sizeOfArr), "", "t1");
         tacMap[currTacVec].push_back(t);
         tac* t1 = createTacCustom("param", "t1", "", "");
         tacMap[currTacVec].push_back(t1);
-        tac *t2 = createTacCustom("call", "allocmem", "1", "");
+        tac *t2 = createTacCustom("call", "allocmem", "1", "_v" + to_string(id));
         tacMap[currTacVec].push_back(t2);
 
     }
@@ -1145,11 +1152,22 @@ void ThreeACHelperFunc(int id){
         ThreeACHelperFunc(temp[2]);
     }
 
+    // if(tree[id].first == "VariableDeclarator"){
+    //     int child1 = temp[0];
+    //     while(tree[child1].first == "VariableDeclaratorId"){
+    //         vector<int> temp1 = tree[child1].second;
+    //         child1 = temp1[0];
+    //     }
+    //     tac* t = createTacCustom("=", createArg(temp[2]), "", createArg(child1));
+    //     tacMap[currTacVec].push_back(t);
+    // }
+
     if(childcallistrue){         
         for(int i = 0; i < temp.size(); i++){
             ThreeACHelperFunc(temp[i]);
         }
     }
+   
     if(tree[id].first == "Expression")  tacMap[currTacVec].push_back(createTacCustom("=", createArg(temp[0]), "", createArg(id)));
     if(tree[id].first == "Assignment") tacMap[currTacVec].push_back(createTac1(id));
     if(tree[id].first == "PreIncExpression") tacMap[currTacVec].push_back(createTac1Dplus(id));
@@ -1164,11 +1182,20 @@ void ThreeACHelperFunc(int id){
     if(tree[id].first == "EqualityExpression"){tacMap[currTacVec].push_back(createTac2(id));}
     if(tree[id].first == "AssignmentExpression"){tacMap[currTacVec].push_back(createTac1(id));}
     if(tree[id].first == "PrimaryExpression"){tacMap[currTacVec].push_back(createTac1(id));}
-    if(tree[id].first == "VariableDeclarator"){tacMap[currTacVec].push_back(createTac1(id));}
+    // if(tree[id].first == "VariableDeclarator"){tacMap[currTacVec].push_back(createTac1(id));}
     if(tree[id].first == "InclusiveOrExpression"){tacMap[currTacVec].push_back(createTac2(id));}
     if(tree[id].first == "ExclusiveOrExpression"){tacMap[currTacVec].push_back(createTac2(id));}
     if(tree[id].first == "AndExpression"){tacMap[currTacVec].push_back(createTac2(id));}
     if(tree[id].first == "ShiftExpression"){tacMap[currTacVec].push_back(createTac2(id));} 
+     if(tree[id].first == "VariableDeclarator"){
+        int child1 = temp[0];
+        while(tree[child1].first == "VariableDeclaratorId"){
+            vector<int> temp1 = tree[child1].second;
+            child1 = temp1[0];
+        }
+        tac* t = createTacCustom("=", createArg(temp[2]), "", createArg(child1));
+        tacMap[currTacVec].push_back(t);
+    }
 }
 // ****************************************************************
 
@@ -1334,28 +1361,28 @@ void tpc(int id){
         id = parent[parent[id]];
         vector<int> ch = tree[id].second;
         if(tree[id].first == "FieldDeclaration"){
-        if(tree[ch[1]].first == "ArrayType"){
-            int temp = ch[1];
-            while(tree[temp].first == "ArrayType"){
-                vector<int> ch1 = tree[temp].second;
-                diml += 1;
-                boxl += "[]";
-                temp = ch1[0];
+            if(tree[ch[1]].first == "ArrayType"){
+                int temp = ch[1];
+                while(tree[temp].first == "ArrayType"){
+                    vector<int> ch1 = tree[temp].second;
+                    diml += 1;
+                    boxl += "[]";
+                    temp = ch1[0];
+                }
+                typel = tree[temp].first;
             }
-            typel = tree[temp].first;
-        }
-        else{
-            typel = tree[ch[1]].first;
-            int temp1 = ch[2];
-            vector<int> ch1 = tree[temp1].second;
-            int temp = ch1[0];
-            while(tree[temp].first == "VariableDeclaratorId"){
-                vector<int> ch1 = tree[temp].second;
-                diml += 1;
-                boxl += "[]";
-                temp = ch1[0];
-            }
-        }
+            else{
+                typel = tree[ch[1]].first;
+                int temp1 = ch[2];
+                vector<int> ch1 = tree[temp1].second;
+                int temp = ch1[0];
+                while(tree[temp].first == "VariableDeclaratorId"){
+                    vector<int> ch1 = tree[temp].second;
+                    diml += 1;
+                    boxl += "[]";
+                    temp = ch1[0];
+                }
+            }   
         }
         else if(tree[id].first == "LocalVariableDeclaration"){
             if(tree[ch[0]].first == "ArrayType"){
@@ -1551,14 +1578,14 @@ void print(){
     //     cout << i.first << " " << i.second << endl;
     // }
     PrintSymTable();
-    tpc(root);
+    // tpc(root);
     // for(auto itr = whtIsType.begin();itr!=whtIsType.end();itr++){
     //     cout<<itr->first<<": [ "<<tree[itr->first].first<<" ]   "<<itr->second<<endl;
     // }
     // ***************************
     cout << "******************** Three AC Printing**************" << endl;
-    // ThreeACHelperFunc(root);
-    // printThreeAC();
+    ThreeACHelperFunc(root);
+    printThreeAC();
     // ****************************
     // typeChecker();
     ofstream fout;
