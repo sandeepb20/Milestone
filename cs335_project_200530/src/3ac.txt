@@ -1,5 +1,5 @@
  Test1.: 
-      t2_0: =  0    t1
+      t2_0: =  80    t1
       t2_1: param  t1    
       t2_2: call  allocmem  1  _v16
       t2_3: =  _v16    a
@@ -7,7 +7,7 @@
       t2_5: param  t1    
       t2_6: call  allocmem  1  _v40
       t2_7: =  _v40    b
-      t2_8: =  0    t1
+      t2_8: =  400    t1
       t2_9: param  t1    
       t2_10: call  allocmem  1  _v64
       t2_11: =  _v64    c
@@ -17,8 +17,8 @@
       t2_15: =  _v96    f
  Test1.add: 
       t3_0: BeginFunc      
-      t3_1: stackPointer -=   412  // Manipulating stack (equal to size of function)  
-      t3_2: =  0    t1
+      t3_1: stackPointer -=   4452  // Manipulating stack (equal to size of function)  
+      t3_2: =  80    t1
       t3_3: param  t1    
       t3_4: call  allocmem  1  _v121
       t3_5: =  _v121    a
@@ -26,7 +26,7 @@
       t3_7: param  t1    
       t3_8: call  allocmem  1  _v146
       t3_9: =  _v146    d
-      t3_10: =  0    t1
+      t3_10: =  4000    t1
       t3_11: param  t1    
       t3_12: call  allocmem  1  _v180
       t3_13: =  _v180    e

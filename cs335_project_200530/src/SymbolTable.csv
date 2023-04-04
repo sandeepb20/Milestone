@@ -3,16 +3,16 @@ Class : Test1
 
 
 Printing Test1 Symbol Table
-f,int[][][],7,3000,400,variable
-add,int,12,4,3400,method
-c,int[][],4,0,400,variable
-b,int[][],3,400,0,variable
-a,float[],2,0,0,variable
+f,int[][][],7,3000,880,variable
+add,int,12,4,3880,method
+c,int[][],4,400,480,variable
+b,int[][],3,400,80,variable
+a,float[],2,80,0,variable
 
 Printing add Symbol Table
-m,int,25,4,408,variable
-l,int,24,4,404,variable
-k,int,23,4,400,variable
-e,int[][][],17,0,400,variable
-d,int[][],16,400,0,variable
-a,int[],13,0,0,variable
+m,int,25,4,4448,variable
+l,int,24,4,4444,variable
+k,int,23,4,4440,variable
+e,int[][][],17,4000,440,variable
+d,int[][],16,400,40,variable
+a,int[],13,40,0,variable

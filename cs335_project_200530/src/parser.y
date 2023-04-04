@@ -43,6 +43,14 @@ int makenode( string name, string type){
 }
 
 int getSize(string id){
+    string t = "";
+    for(int i=0; i<id.size(); i++){
+        if(id[i] == '['){
+            break;
+        }
+        t += id[i];
+    }
+    id = t;
   if(id == "char") return sizeof(char);
   if(id == "short") return sizeof(short);
   if(id == "int") return sizeof(int);
@@ -1157,7 +1165,6 @@ void ThreeACHelperFunc(int id){
             arrayId = temp3[0];
         }
         int sizeOfArr = getSizeOfArray(arrayId);
-        cout << "size of array " << tree[arrayId].first << "  " << sizeOfArr << endl;
         tac* t = createTacCustom("=", to_string(sizeOfArr), "", "t1");
         tacMap[currTacVec].push_back(t);
         tac* t1 = createTacCustom("param", "t1", "", "");
@@ -1465,6 +1472,13 @@ void tpc(int id){
         }
         
         int id1 = parent[parent[id]];
+        if(tree[id1].first == "VariableDeclarators"){
+            int temp = id1;
+            while(tree[temp].first == "VariableDeclarators"){
+                temp = parent[temp];
+            }
+            id1 = temp;
+        }
         vector<int> ch = tree[id1].second;
         if(tree[id1].first == "FieldDeclaration"){
         if(tree[ch[1]].first == "ArrayType"){
@@ -1503,7 +1517,7 @@ void tpc(int id){
         }
         else{
             typel = tree[ch[0]].first;
-            int temp1 = ch[1];
+            int temp1 = parent[id];
             vector<int> ch1 = tree[temp1].second;
             int temp = ch1[0];
             while(tree[temp].first == "VariableDeclaratorId"){
