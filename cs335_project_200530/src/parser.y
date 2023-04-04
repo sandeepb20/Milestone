@@ -639,7 +639,7 @@ void PrintSymTable(){
             fout << "Printing " << id2.first << " Symbol Table" <<endl ;
             for(auto itr : id2.second){
             // for(auto itr : it.second){
-        fout << itr.first.c_str() << "," << itr.second->type.c_str() << "," << (itr.second)->line << "," << (itr.second)->size << "," << (itr.second)->offset << "," << (itr.second)->what << endl;
+        fout << "   " << itr.first.c_str() << "," << itr.second->type.c_str() << "," << (itr.second)->line << "," << (itr.second)->size << "," << (itr.second)->offset << "," << (itr.second)->what << endl;
         // }
         }
         }
@@ -935,6 +935,32 @@ int funcSize(int id){
                 t = class_table[cclass][name];
                 break;
             }
+            
+    }
+    for(auto it : t) {
+        ssize += (it.second)->size;
+    }
+    return ssize;
+}
+int constrSize(int id){
+    int temp = parent[id];
+    string cclass;
+    int ssize = 0;
+    sym_table t;
+    if(tree[temp].first == "QualifiedName"){
+        cclass = customtypeof((tree[temp].second)[0]);
+    }
+    else{
+        cclass = nodeClass[id];
+    }
+    string name = tree[id].first + ".constr";
+    vector<string> param;
+    for(auto it : class_table[cclass]){
+            if(it.first == name){
+                t = class_table[cclass][name];
+                break;
+            }
+            
     }
     for(auto it : t) {
         ssize += (it.second)->size;
@@ -977,6 +1003,13 @@ void ThreeACHelperFunc(int id){
             childcallistrue = 0;
             tac* t = createTacCustom("BeginConstructor", "", "","");
             tacMap[currTacVec].push_back(t);
+            
+            int size = constrSize(temp[0]);
+            // cout << size << endl;
+            t = createTacCustom("stackPointer -=", to_string(size), "", "");
+            tacMap[currTacVec].push_back(t);
+
+
             tac* t1 = createTacCustom("=", "getparam", "",createArg(id));
             memoryLoc.push(createArg(id));
             tacMap[currTacVec].push_back(t1);
@@ -1301,10 +1334,10 @@ void ThreeACHelperFunc(int id){
                 t = createTacCustom("Adjust Base Pointer to previous base pointer", "", "", "");
                 tacMap[currTacVec].push_back(t);
                 
-                vector<string> param = getParamsOf(temp[0]);
-                int paramSize1 = paramSize(param);
+                vector<string> param = getParamsOfCons(temp[1]);
+                int paramSize1 = paramSize(param) + 4;
                 // cout << paramSize1 << endl; 
-                 t = createTacCustom("stackpointer +=", to_string(paramSize1), "// Remove parameters passed into stack", "");
+                 t = createTacCustom("stackpointer +=", to_string(paramSize1), "// Remove parameters passed into stack + object refernce", "");
                 tacMap[currTacVec].push_back(t);
 
 

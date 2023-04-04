@@ -1,18 +1,18 @@
-<<<<<<< HEAD
  Example1.: 
       t2_0: =  1    k
  Example1.Constructor: 
       t3_0: BeginConstructor      
-      t3_1: =  getparam    _v32
-      t3_2: =  getparam    a
-      t3_3: =  getparam    b
-      t3_4: =  SymbolEntry( Example1, x)    x
-      t3_5: =  *(_v32 + x)    _v37
-      t3_6: =  a    _v37
-      t3_7: =  SymbolEntry( Example1, y)    y
-      t3_8: =  *(_v32 + y)    _v46
-      t3_9: =  b    _v46
-      t3_10: EndConstructor      
+      t3_1: stackPointer -=  8    
+      t3_2: =  getparam    _v32
+      t3_3: =  getparam    a
+      t3_4: =  getparam    b
+      t3_5: =  SymbolEntry( Example1, x)    x
+      t3_6: =  *(_v32 + x)    _v37
+      t3_7: =  a    _v37
+      t3_8: =  SymbolEntry( Example1, y)    y
+      t3_9: =  *(_v32 + y)    _v46
+      t3_10: =  b    _v46
+      t3_11: EndConstructor      
  Example1.main: 
       t4_0: BeginFunc      
       t4_1: stackPointer -=   8  // Manipulating stack (equal to size of function)  
@@ -26,7 +26,7 @@
       t4_9: =  ConstructorValReturned    _v78
       t4_10: stackPointer  =  basePointer  
       t4_11: Adjust Base Pointer to previous base pointer      
-      t4_12: stackpointer +=  0  // Remove parameters passed into stack  
+      t4_12: stackpointer +=  12  // Remove parameters passed into stack + object refernce  
       t4_13: =  _v78    a
       t4_14: =  SymbolEntry( Example1, x)    x
       t4_15: =  *(_v77 + x)    _v89
@@ -35,46 +35,3 @@
       t4_18: =  *(_v77 + y)    _v101
       t4_19: =  _v101    d
       t4_20: EndFunc      
-=======
- Example1.Constructor: 
-      t2_0: BeginFunc      
-      t2_1: =  popparam    _v25
-      t2_2: =  getparam    a
-      t2_3: =  getparam    b
-      t2_4: =  SymbolEntry( Example1, x)    x
-      t2_5: =  *(_v25 + x)    _v30
-      t2_6: =_int  a    _v30
-      t2_7: =  SymbolEntry( Example1, y)    y
-      t2_8: =  *(_v25 + y)    _v39
-      t2_9: =_float  b    _v39
-      t2_10: EndConstructor      
- Example1.main: 
-      t3_0: BeginFunc      
-      t3_1: stackPointer -=   12  // Manipulating stack (equal to size of function)  
-      t3_2: PushParam      3.14
-      t3_3: PushParam      2
-      t3_4: =  16    _v65
-      t3_5: =  param  _v65  
-      t3_6: =  PopParam  // Store Object ref  _v70
-      t3_7: PushParam      _v70
-      t3_8: =  LCall  Example1.Constructor  _v71
-      t3_9: =  _v71    a
-      t3_10: PushParam      0
-      t3_11: PushParam      0
-      t3_12: =  16    _v81
-      t3_13: =  param  _v81  
-      t3_14: =  PopParam  // Store Object ref  _v86
-      t3_15: PushParam      _v86
-      t3_16: =  LCall  Example1.Constructor  _v87
-      t3_17: =  _v87    b
-      t3_18: =  SymbolEntry( Example1, x)    x
-      t3_19: =  *(_v70 + x)    _v99
-      t3_20: =  _v99    c
-      t3_21: =  SymbolEntry( Example1, y)    y
-      t3_22: =  *(_v70 + y)    _v111
-      t3_23: =  _v111    d
-      t3_24: +_int  1  2  _v123
-      t3_25: +_int  _v123  7  _v126
-      t3_26: =  _v126    p
-      t3_27: EndFunc      
->>>>>>> a0ae7814a8248a9025fcd26eb33a3c098e0ebfe1

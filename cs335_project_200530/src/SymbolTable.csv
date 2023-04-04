@@ -3,35 +3,17 @@ Class : Example1
 
 
 Printing Example1 Symbol Table
-<<<<<<< HEAD
-main,void,10,0,20,method
-Example1.constr,,5,4,16,constructor
-k,int,4,4,12,variable
-y,double,3,8,4,variable
-x,int,2,4,0,variable
+   main,void,10,0,20,method
+   Example1.constr,,5,4,16,constructor
+   k,int,4,4,12,variable
+   y,float,3,8,4,variable
+   x,int,2,4,0,variable
 
 Printing Example1.constr Symbol Table
-b,double,5,8,4,variable
-a,int,5,4,0,variable
+   b,float,5,4,4,variable
+   a,int,5,4,0,variable
 
 Printing main Symbol Table
-c,int,12,4,0,variable
-d,int,13,4,4,variable
-a,Example1,11,0,0,variable
-=======
-main,void,9,0,16,method
-Example1.constr,,4,4,12,constructor
-y,float,3,8,4,variable
-x,int,2,4,0,variable
-
-Printing Example1.constr Symbol Table
-b,float,4,4,4,variable
-a,int,4,4,0,variable
-
-Printing main Symbol Table
-p,int,14,4,8,variable
-c,int,12,4,0,variable
-b,Example1,11,0,0,variable
-d,float,13,4,4,variable
-a,Example1,10,0,0,variable
->>>>>>> a0ae7814a8248a9025fcd26eb33a3c098e0ebfe1
+   c,int,12,4,0,variable
+   d,int,13,4,4,variable
+   a,Example1,11,0,0,variable
