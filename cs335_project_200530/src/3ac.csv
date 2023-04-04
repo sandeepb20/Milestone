@@ -1,64 +1,34 @@
-,Test1.: 
-      t2_0: ,=,  80   , t1
-      t2_1: ,param,  t1   , 
-      t2_2: ,call,  allocmem  1 , _v16
-      t2_3: ,=,  _v16   , a
-      t2_4: ,=,  400   , t1
-      t2_5: ,param,  t1   , 
-      t2_6: ,call,  allocmem  1 , _v40
-      t2_7: ,=,  _v40   , b
-      t2_8: ,=,  400   , t1
-      t2_9: ,param,  t1   , 
-      t2_10: ,call,  allocmem  1 , _v64
-      t2_11: ,=,  _v64   , c
-      t2_12: ,=,  3000   , t1
-      t2_13: ,param,  t1   , 
-      t2_14: ,call,  allocmem  1 , _v96
-      t2_15: ,=,  _v96   , f
-,Test1.add: 
+,test_31.add_num: 
+      t2_0: ,BeginFunc,     , 
+      //stackptr = base + (size of main);
+      t2_1: ,=,  popparam   , x
+      t2_2: ,=,  popparam   , y
+      t2_3: ,=,  popparam   , z
+      t2_4: ,=,  x   , c
+      t2_5: ,=,  y   , d
+      t2_6: ,+,  c  d , _v51
+      t2_7: ,=,  _v51   , e
+      t2_8: ,Return,  e   ,  // load e in rtr
+      t2_9: ,EndFunc,     , 
+,test_31.main: 
       t3_0: ,BeginFunc,     , 
-      t3_1: ,=,  80   , t1
-      t3_2: ,param,  t1   , 
-      t3_3: ,call,  allocmem  1 , _v121
-      t3_4: ,=,  _v121   , a
-      t3_5: ,=,  400   , t1
-      t3_6: ,param,  t1   , 
-      t3_7: ,call,  allocmem  1 , _v146
-      t3_8: ,=,  _v146   , d
-      t3_9: ,=,  4000   , t1
-      t3_10: ,param,  t1   , 
-      t3_11: ,call,  allocmem  1 , _v180
-      t3_12: ,=,  _v180   , e
-      t3_13: ,=,  3   , _v191
-      t3_14: ,*,  _v191  10 , _v191
-      t3_15: ,+,  _v191  4 , _v191
-      t3_16: ,*,  _v191  10 , _v191
-      t3_17: ,+,  _v191  2 , _v191
-      t3_18: ,=,  e[_v191]   , _v201
-      t3_19: ,=,  _v201   , k
-      t3_20: ,=,  4   , _v212
-      t3_21: ,*,  _v212  10 , _v212
-      t3_22: ,+,  _v212  4 , _v212
-      t3_23: ,=,  b[_v212]   , _v214
-      t3_24: ,=,  _v214   , l
-      t3_25: ,=,  12   , _v225
-      t3_26: ,*,  _v225  10 , _v225
-      t3_27: ,+,  _v225  3 , _v225
-      t3_28: ,=,  d[_v225]   , _v231
-      t3_29: ,=,  _v231   , m
-      t3_30: ,=,  3   , _v239
-      t3_31: ,=,  a[_v239]   , _v241
-      t3_32: ,=,  9   , _v241
-      t3_33: ,=,  3   , _v250
-      t3_34: ,*,  _v250  10 , _v250
-      t3_35: ,+,  _v250  4 , _v250
-      t3_36: ,=,  c[_v250]   , _v256
-      t3_37: ,=,  0   , _v256
-      t3_38: ,=,  3   , _v265
-      t3_39: ,*,  _v265  5 , _v265
-      t3_40: ,+,  _v265  4 , _v265
-      t3_41: ,*,  _v265  15 , _v265
-      t3_42: ,+,  _v265  2 , _v265
-      t3_43: ,=,  f[_v265]   , _v275
-      t3_44: ,=,  4   , _v275
-      t3_45: ,EndFunc,     , 
+      stackptr = base + (size of main);
+      t3_1: ,=,  1   , a
+      t3_2: ,=,  2   , b
+      t3_3: ,PushParam,     , 0
+      t3_4: ,PushParam,     , b
+      t3_5: ,PushParam,     , a
+      t3_6: ,=,  LCall  add_num , _v104
+            _v104 = rtr;// store return value in _v104 
+            Stackptr = baseptr;// pop the stack
+            // Adjust base ptr to prevois base ptr
+            // Stackptr += (size of parameters in func)
+      t3_7: ,=,  _v104   , c
+      t3_8: ,=,  6   , d
+      t3_9: ,PushParam,     , 0
+      t3_10: ,PushParam,     , d
+      t3_11: ,PushParam,     , c
+      t3_12: ,=,  LCall  add_num , _v132
+      t3_13: ,=,  _v132   , k
+      t3_14: ,Return,  0   , 
+      t3_15: ,EndFunc,     , 

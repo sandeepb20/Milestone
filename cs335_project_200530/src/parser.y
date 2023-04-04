@@ -684,20 +684,40 @@ string createArg5(int id){
 
 
 
+// void printThreeAC(){
+//     std::ofstream myfile;
+//       myfile.open ("3ac.csv");
+//     int uid = 1;
+//     for(auto i = tacMap.begin(); i != tacMap.end(); i++){
+//         currTacVec =  i->first ;
+//         myfile << ","+ currTacVec + ": \n";
+//         uid++;
+//         for(int i = 0; i < tacMap[currTacVec].size(); i++){
+//             if(tacMap[currTacVec][i] -> isGoto == true){
+//                myfile <<"      t" + to_string(uid) + "_" +  to_string(i)  + ": ," + tacMap[currTacVec][i] -> gotoLabel + ",  " + tacMap[currTacVec][i] -> arg+ ",  " << tacMap[currTacVec][i] -> g +",  " + "t"  + to_string(uid) + "_" + tacMap[currTacVec][i] -> label + "\n";
+//                 continue;
+//             }
+//             myfile <<"      t" + to_string(uid) + "_" +  to_string(i)  + ": ," + tacMap[currTacVec][i] -> op + ",  " + tacMap[currTacVec][i] -> arg1 + "  " + tacMap[currTacVec][i] -> arg2 + " , " +tacMap[currTacVec][i] -> res + "\n";
+//         }
+//     }
+//      myfile.close();
+// }
+
+
 void printThreeAC(){
     std::ofstream myfile;
-      myfile.open ("3ac.csv");
+      myfile.open ("3ac.txt");
     int uid = 1;
     for(auto i = tacMap.begin(); i != tacMap.end(); i++){
         currTacVec =  i->first ;
-        myfile << ","+ currTacVec + ": \n";
+        myfile << " "+ currTacVec + ": \n";
         uid++;
         for(int i = 0; i < tacMap[currTacVec].size(); i++){
             if(tacMap[currTacVec][i] -> isGoto == true){
-               myfile <<"      t" + to_string(uid) + "_" +  to_string(i)  + ": ," + tacMap[currTacVec][i] -> gotoLabel + ",  " + tacMap[currTacVec][i] -> arg+ ",  " << tacMap[currTacVec][i] -> g +",  " + "t"  + to_string(uid) + "_" + tacMap[currTacVec][i] -> label + "\n";
+               myfile <<"      t" + to_string(uid) + "" +  to_string(i)  + ": " + tacMap[currTacVec][i] -> gotoLabel + "  " + tacMap[currTacVec][i] -> arg+ "  " << tacMap[currTacVec][i] -> g +"  " + "t"  + to_string(uid) + "" + tacMap[currTacVec][i] -> label + "\n";
                 continue;
             }
-            myfile <<"      t" + to_string(uid) + "_" +  to_string(i)  + ": ," + tacMap[currTacVec][i] -> op + ",  " + tacMap[currTacVec][i] -> arg1 + "  " + tacMap[currTacVec][i] -> arg2 + " , " +tacMap[currTacVec][i] -> res + "\n";
+            myfile <<"      t" + to_string(uid) + "_" +  to_string(i)  + ": " + tacMap[currTacVec][i] -> op + "  " + tacMap[currTacVec][i] -> arg1 + "  " + tacMap[currTacVec][i] -> arg2 + "  " +tacMap[currTacVec][i] -> res + "\n";
         }
     }
      myfile.close();
@@ -865,21 +885,23 @@ void ThreeACHelperFunc(int id){
     if(tree[id].first == "FormalParameterList"){
         childcallistrue = 0;
         if(tree[temp[0]].first == "FormalParameterList"){
+            ThreeACHelperFunc(temp[0]);
             ThreeACHelperFunc(temp[2]);
             vector<int> temp1 = tree[temp[2]].second;
             tac* t = createTacCustom("=","popparam", "", createArg3(temp1[2]));
             tacMap[currTacVec].push_back(t);
-            ThreeACHelperFunc(temp[0]);
+            
         }
         else{
-            ThreeACHelperFunc(temp[2]);
-             vector<int> temp1 = tree[temp[2]].second;
-            tac* t = createTacCustom("=","popparam", "", createArg3(temp1[2]));
-            tacMap[currTacVec].push_back(t);
+           
             ThreeACHelperFunc(temp[0]);
-            temp1 = tree[temp[0]].second;
+             vector<int>  temp1 = tree[temp[0]].second;
             tac* t1 = createTacCustom("=","popparam",  "", createArg3(temp1[2]));
             tacMap[currTacVec].push_back(t1);
+             ThreeACHelperFunc(temp[2]);
+            temp1 = tree[temp[2]].second;
+            tac* t = createTacCustom("=","popparam", "", createArg3(temp1[2]));
+            tacMap[currTacVec].push_back(t);
         }
     }
 
@@ -1647,9 +1669,9 @@ void print(){
     //     cout<<itr->first<<": [ "<<tree[itr->first].first<<" ]   "<<itr->second<<endl;
     // }
     // ***************************
-    // cout << "******************** Three AC Printing**************" << endl;
-    // ThreeACHelperFunc(root);
-    // printThreeAC();
+    cout << "******************** Three AC Printing**************" << endl;
+    ThreeACHelperFunc(root);
+    printThreeAC();
     // ****************************
     // typeChecker();
     ofstream fout;

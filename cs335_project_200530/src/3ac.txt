@@ -1,0 +1,28 @@
+ test_31.add_num: 
+      t2_0: BeginFunc      
+      t2_1: =  popparam    x
+      t2_2: =  popparam    y
+      t2_3: =  popparam    z
+      t2_4: =  x    c
+      t2_5: =  y    d
+      t2_6: +  c  d  _v51
+      t2_7: =  _v51    e
+      t2_8: Return  e    
+      t2_9: EndFunc      
+ test_31.main: 
+      t3_0: BeginFunc      
+      t3_1: =  1    a
+      t3_2: =  2    b
+      t3_3: PushParam      0
+      t3_4: PushParam      b
+      t3_5: PushParam      a
+      t3_6: =  LCall  add_num  _v104
+      t3_7: =  _v104    c
+      t3_8: =  6    d
+      t3_9: PushParam      0
+      t3_10: PushParam      d
+      t3_11: PushParam      c
+      t3_12: =  LCall  add_num  _v132
+      t3_13: =  _v132    k
+      t3_14: Return  0    
+      t3_15: EndFunc      
