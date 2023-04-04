@@ -1,18 +1,38 @@
 Variable,Type,Line,Size,Offset
-Class : Test1
+Class : test
 
-
-Printing Test1 Symbol Table
-add,int,13,4,3504
-c,int[][],4,400,0
-d,char[][],5,100,400
-f,int[][][],7,3000,500
-s,int,8,4,3500
 
 Printing add Symbol Table
-a,int[],14,40,0
-b,int[],15,40,40
-e,int[][][],18,4000,80
-k,int,24,4,4080
-l,int,25,4,4084
-m,char,26,1,4088
+a,int,14,4,0
+b,int,14,4,4
+
+Printing getdata Symbol Table
+a,int,8,4,12
+b,String,9,4,16
+c,int,10,4,20
+x,int,7,4,0
+y,int,7,4,4
+z,int,7,4,8
+
+Printing test Symbol Table
+add,void,14,4,12
+getdata,void,7,4,8
+kk,int,6,4,4
+test.constr,,2,4,0
+
+Printing test.constr Symbol Table
+al,int,3,4,12
+x,int,2,4,0
+y,int,2,4,4
+z,int,2,4,8
+Class : took
+
+
+Printing main Symbol Table
+args,ArrayType,23,4,0
+i,int,24,4,4
+obj,test,25,4,8
+
+Printing took Symbol Table
+c,int,30,4,4
+main,void,23,4,0

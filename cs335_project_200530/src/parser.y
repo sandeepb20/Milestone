@@ -169,7 +169,7 @@ string lookup2(string id, string tbl){
 void ParamList(int id){
     vector<int> child = tree[id].second;
     if(tree[id].first == "FormalParameter"){
-        parameters.push_back(tree[child[0]].first);
+        parameters.push_back(tree[child[1]].first);
     }
     for(int i = 0; i < child.size(); i++){
         ParamList(child[i]);
@@ -1211,7 +1211,14 @@ void typeChecker(){
 map<int, string> whtIsType;
 
 vector<string> getParamsOf(int id){
-    string cclass = nodeClass[id];
+    int temp = parent[id];
+    string cclass;
+    if(tree[temp].first == "QualifiedName"){
+        cclass = customtypeof((tree[temp].second)[0]);
+    }
+    else{
+        cclass = nodeClass[id];
+    }
     string name = tree[id].first;
     vector<string> param;
     for(auto it : class_table[cclass]){
@@ -1269,10 +1276,16 @@ void tpc(int id){
     
      if(tree[id].first == "MethodInvocation"){
         vector<int> child1 = tree[id].second;
+        vector<string> params, parameters;
         if(tree[child1[0]].first != "QualifiedName"){
-            vector<string> params = getParamsOf(child1[0]);
-            
-            vector<string> parameters = getParameters(child1[2]);
+            params = getParamsOf(child1[0]);
+            parameters = getParameters(child1[2]);
+        }
+        else{
+            vector<int> child2 = tree[child1[0]].second;
+            params = getParamsOf(child2[2]);
+            parameters = getParameters(child1[2]);
+        }
             if(parameters.size() != params.size()){
                 cout << "Error: actual and formal argument lists differ in length" << endl;
                 // exit(0);
@@ -1293,20 +1306,12 @@ void tpc(int id){
                             ;
                         }
                         else{
-                        cout << "Error: incompatible types" << endl;}
+                        cout << "Error: incompatible types, " << parameters[i] << " and " << params[i] << endl;}
                         // exit(0);
                     }
                 }
             }
         }
-        else{
-            // QualifiedName
-            vector<int> child2 = tree[child1[0]].second;
-            vector<string> params = getParamsOf(child2[2]);
-            vector<string> parameters = getParameters(child1[2]);
-        }
-
-    }
     if(tree[id].first == "ArrayCreationExpr"){
         
         string typel, typer,  boxl = "", boxr = "";
