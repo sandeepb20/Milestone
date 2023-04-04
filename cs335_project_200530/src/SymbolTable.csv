@@ -3,36 +3,36 @@ Class : test
 
 
 Printing add Symbol Table
-a,int,14,4,0
-b,int,14,4,4
+b,int,14,4,4,variable
+a,int,14,4,0,variable
 
 Printing getdata Symbol Table
-a,int,8,4,12
-b,String,9,4,16
-c,int,10,4,20
-x,int,7,4,0
-y,int,7,4,4
-z,int,7,4,8
+c,int,10,4,52,variable
+b,String,9,0,52,variable
+a,int[],8,40,12,variable
+z,int,7,4,8,variable
+y,int,7,4,4,variable
+x,int,7,4,0,variable
 
 Printing test Symbol Table
-add,void,14,4,12
-getdata,void,7,4,8
-kk,int,6,4,4
-test.constr,,2,4,0
+add,void,14,0,8,method
+getdata,void,7,0,8,method
+kk,int,6,4,4,variable
+test.constr,,2,4,0,constructor
 
 Printing test.constr Symbol Table
-al,int,3,4,12
-x,int,2,4,0
-y,int,2,4,4
-z,int,2,4,8
+al,int,3,4,12,variable
+z,int,2,4,8,variable
+y,int,2,4,4,variable
+x,int,2,4,0,variable
 Class : took
 
 
 Printing main Symbol Table
-args,ArrayType,23,4,0
-i,int,24,4,4
-obj,test,25,4,8
+obj,test,25,0,4,variable
+i,int,24,4,0,variable
+args,ArrayType,23,0,0,variable
 
 Printing took Symbol Table
-c,int,30,4,4
-main,void,23,4,0
+c,int,30,4,0,variable
+main,void,23,0,0,method

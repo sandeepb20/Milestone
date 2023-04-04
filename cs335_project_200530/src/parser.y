@@ -49,7 +49,7 @@ int getSize(string id){
   if(id == "float") return sizeof(float);
   if(id == "double") return sizeof(double);
 
-  return 4; // for any ptr
+  return 0; // for any ptr
 }
 /*------------------------------------------------------------*/
 
@@ -83,6 +83,7 @@ void tempfunc1(ofstream& fout, unordered_map<int,int> &visited, int id){
 
 string stname;
 string sttype;
+string iswhat;
 int stline;
 int stsize = 4;
 int stoffset = 0;
@@ -102,11 +103,12 @@ typedef struct sym_entry{
 	int size = 0;
 	int offset = 0;
     int isArray;
+    string what;
     vector<int> ndim;
     vector<string> parameters;
 }sym_entry;
 
-typedef map<string, sym_entry* > sym_table;
+typedef unordered_map<string, sym_entry* > sym_table;
 typedef map<string, sym_table> table;
 typedef map<string, string> parent_table;
 map<string, table> class_table, class_table1;
@@ -118,7 +120,7 @@ map<int, string> scope;
 map<string, vector<string>> classMap;
 map<string, int> classOffset;
 
-void createEntry(string currTableName, string temp, string type, int line, int size, int offset, int isArray, vector<int> ndim, vector<string> parameters){
+void createEntry(string currTableName, string temp, string type, int line, int size, int offset, int isArray, string what, vector<int> ndim, vector<string> parameters){
     if(find(key_words.begin(), key_words.end(), temp) != key_words.end()){
         cout << "Keyword cannot be declared as a variable"<< endl;
         exit(0);
@@ -133,6 +135,7 @@ void createEntry(string currTableName, string temp, string type, int line, int s
 	    ent->size = size;
 	    ent->offset = offset;
         ent->isArray = isArray;
+        ent->what = what;
         ent->ndim = ndim;
         ent->parameters = parameters;
         class_table[curr_class][currTableName].insert(make_pair(temp, ent));
@@ -302,8 +305,9 @@ void symTable(int id){
         return;
     }
     if(nodeName == "ConstructorDeclarator"){
+        stwhat = "constructor";
         ParamList(child[2]);
-        createEntry(curr_table,tree[child[0]].first+".constr","",LineNumber[child[0]],4,stoffset,0,stndim,parameters);
+        createEntry(curr_table,tree[child[0]].first+".constr","",LineNumber[child[0]],4,stoffset,0,"constructor",stndim,parameters);
         parameters.clear();
         symTable(child[0]);
         makeSymbolTable(tree[child[0]].first+".constr");
@@ -311,8 +315,9 @@ void symTable(int id){
         return;
     }
     if(nodeName == "MethodDeclarator"){
+        stwhat = "method";
         ParamList(child[2]);
-        createEntry(curr_table,tree[child[0]].first,sttype,LineNumber[child[0]],getSize(sttype),stoffset,0,stndim,parameters);
+        createEntry(curr_table,tree[child[0]].first,sttype,LineNumber[child[0]],getSize(sttype),stoffset,0,"method",stndim,parameters);
         parameters.clear();
         symTable(child[0]);
         makeSymbolTable(tree[child[0]].first);
@@ -340,7 +345,7 @@ void symTable(int id){
             modifiers[tree[child[2]].first].push_back(tree[child1[0]].first);
             tempid = child1[1];
         }
-        createEntry(curr_table, tree[child[2]].first, tree[child[1]].first, LineNumber[child[2]], getSize(tree[child[1]].first), stoffset, 0, stndim, parameters);
+        createEntry(curr_table, tree[child[2]].first, tree[child[1]].first, LineNumber[child[2]], getSize(tree[child[1]].first), stoffset, 0, "variable", stndim, parameters);
         symTable(child[2]);
         return;
     }
@@ -367,18 +372,19 @@ void symTable(int id){
         else{
         sttype = tree[child[1]].first;}
         if(additionalInfo.find(child[2]) != additionalInfo.end() && additionalInfo[child[2]] == "identifier"){
-            createEntry(curr_table, tree[child[2]].first, sttype, LineNumber[child[2]], getSize(sttype), stoffset, stisArray, stndim, parameters);
+            createEntry(curr_table, tree[child[2]].first, sttype, LineNumber[child[2]], getSize(sttype), stoffset, stisArray, "variable", stndim, parameters);
             stisArray = 0;
         }
         symTable(child[2]);
         return;
     }
     if(nodeName == "VariableDeclarators"){
+        stwhat = "variable";
         if(tree[child[0]].first == "VariableDeclarator" || tree[child[0]].first == "VariableDeclarators" ){
             symTable(child[0]);
         }
         else{
-            createEntry(curr_table, tree[child[0]].first, sttype, LineNumber[child[0]], getSize(sttype), stoffset, 0, stndim, parameters);
+            createEntry(curr_table, tree[child[0]].first, sttype, LineNumber[child[0]], getSize(sttype), stoffset, 0, "variable", stndim, parameters);
             modifiers[tree[child[0]].first] = stmodifiers;
             stmodifiers.clear();
             symTable(child[0]);
@@ -388,7 +394,7 @@ void symTable(int id){
         }
         else{
             
-            createEntry(curr_table, tree[child[2]].first, sttype, LineNumber[child[2]], getSize(sttype), stoffset, 0, stndim, parameters);
+            createEntry(curr_table, tree[child[2]].first, sttype, LineNumber[child[2]], getSize(sttype), stoffset, 0, "variable", stndim, parameters);
             modifiers[tree[child[2]].first] = stmodifiers;
             stmodifiers.clear();
             symTable(child[2]);
@@ -396,6 +402,7 @@ void symTable(int id){
         return;
     }
     if(nodeName == "VariableDeclarator"){
+        stwhat = "variable";
         stndim.clear();
         int count = 1;
         if(tree[child[2]].first == "ArrayCreationExpr"){
@@ -430,12 +437,12 @@ void symTable(int id){
         if(tree[child[0]].first != "VariableDeclaratorId"){
             
             if(stisArray){
-                createEntry(curr_table, tree[child[0]].first, sttype, LineNumber[child[0]], stsize, stoffset, 1, stndim, parameters);
+                createEntry(curr_table, tree[child[0]].first, sttype, LineNumber[child[0]], stsize, stoffset, 1, "variable", stndim, parameters);
                 modifiers[tree[child[0]].first] = stmodifiers;
                 stmodifiers.clear();
             }
             else{
-                createEntry(curr_table, tree[child[0]].first, sttype, LineNumber[child[0]], getSize(sttype), stoffset, 0, stndim, parameters);
+                createEntry(curr_table, tree[child[0]].first, sttype, LineNumber[child[0]], getSize(sttype), stoffset, 0, "variable", stndim, parameters);
                 modifiers[tree[child[0]].first] = stmodifiers;
                 stmodifiers.clear();
             }
@@ -453,7 +460,7 @@ void symTable(int id){
                 sttype += "[]";
                 n1 = child1[0];
             }
-            createEntry(curr_table, tree[n1].first, sttype, LineNumber[n1], stsize, stoffset, 1, stndim, parameters);
+            createEntry(curr_table, tree[n1].first, sttype, LineNumber[n1], stsize, stoffset, 1, "variable", stndim, parameters);
             modifiers[tree[n1].first] = stmodifiers;
             stmodifiers.clear();
         }
@@ -498,7 +505,7 @@ void symTable(int id){
         else{
         sttype = tree[child[0]].first;
         if(additionalInfo.find(child[1]) != additionalInfo.end()){
-            createEntry(curr_table, tree[child[1]].first, sttype, LineNumber[child[1]], getSize(sttype), stoffset, 0, stndim, parameters);
+            createEntry(curr_table, tree[child[1]].first, sttype, LineNumber[child[1]], getSize(sttype), stoffset, 0, "variable", stndim, parameters);
         }
         }
         symTable(child[1]);
@@ -593,12 +600,12 @@ void PrintSymTable(){
         for(auto id : class_table){
         curr_class = id.first;
         fout << "Class : " << id.first << endl << endl;
-        for(auto id2 : id.second){
+        for(auto id2 : (id.second)){
             fout <<"\n";
             fout << "Printing " << id2.first << " Symbol Table" <<endl ;
             for(auto itr : id2.second){
             // for(auto itr : it.second){
-        fout << itr.first.c_str() << "," << itr.second->type.c_str() << "," << (itr.second)->line << "," << (itr.second)->size << "," << (itr.second)->offset << endl;
+        fout << itr.first.c_str() << "," << itr.second->type.c_str() << "," << (itr.second)->line << "," << (itr.second)->size << "," << (itr.second)->offset << "," << (itr.second)->what << endl;
         // }
         }
         }
