@@ -43,6 +43,14 @@ int makenode( string name, string type){
 }
 
 int getSize(string id){
+    string t = "";
+    for(int i=0; i<id.size(); i++){
+        if(id[i] == '['){
+            break;
+        }
+        t += id[i];
+    }
+    id = t;
   if(id == "char") return sizeof(char);
   if(id == "short") return sizeof(short);
   if(id == "int") return sizeof(int);
@@ -132,6 +140,9 @@ void createEntry(string currTableName, string temp, string type, int line, int s
     if(type == "String"){
         size = 8;
     }
+    if(type == "double"){
+        type = "float";
+    }
     sym_entry* ent = new sym_entry();
 	    ent->type = type;
         ent->line = line;
@@ -175,6 +186,9 @@ string lookup2(string id, string tbl){
 void ParamList(int id){
     vector<int> child = tree[id].second;
     if(tree[id].first == "FormalParameter"){
+        if(tree[child[1]].first == "double"){
+            tree[child[1]].first = "float";
+        }
         parameters.push_back(tree[child[1]].first);
     }
     for(int i = 0; i < child.size(); i++){
@@ -873,6 +887,28 @@ vector<string> getParamsOf(int id){
     return {};
 }
 
+vector<string> getParamsOfCons(int id){
+    int temp = parent[id];
+    string cclass;
+    if(tree[temp].first == "QualifiedName"){
+        cclass = customtypeof((tree[temp].second)[0]);
+    }
+    else{
+        cclass = nodeClass[id];
+    }
+    string name = (tree[id].first)+".constr";
+    vector<string> param;
+    for(auto it : class_table[cclass]){
+        for(auto it1 : it.second){
+            if(it1.first == name){
+                return (it1.second -> parameters);
+            }
+        }
+    }
+      
+    return {};
+}
+
 int paramSize(vector<string> param){
     int ssize = 0;
     for(auto i : param){
@@ -1157,7 +1193,6 @@ void ThreeACHelperFunc(int id){
             arrayId = temp3[0];
         }
         int sizeOfArr = getSizeOfArray(arrayId);
-        cout << "size of array " << tree[arrayId].first << "  " << sizeOfArr << endl;
         tac* t = createTacCustom("=", to_string(sizeOfArr), "", "t1");
         tacMap[currTacVec].push_back(t);
         tac* t1 = createTacCustom("param", "t1", "", "");
@@ -1414,7 +1449,47 @@ void tpc(int id){
         
         tpc(child[i]);
     }
-    
+     if(tree[id].first == "FieldAccess"){
+        whtIsType[id] = whtIsType[(tree[id].second)[2]];
+     }
+     if(tree[id].first == "QualifiedName"){
+        whtIsType[id] = whtIsType[(tree[id].second)[2]];
+     }
+     if(tree[id].first == "ClassInstanceCreationExpression"){
+        string cls = nodeClass[(tree[id].second)[1]];
+        whtIsType[id] = cls;
+        vector<int> child1 = tree[id].second;
+        int s;
+        vector<string> params, parameters;
+        params = getParamsOfCons(child1[1]);
+        parameters = getParameters(child1[3]);
+        reverse(parameters.begin(), parameters.end());
+        if(parameters.size() != params.size()){
+                cout << "Error: actual and formal argument lists differ in length" << endl;
+                // exit(0);
+            }
+            else{
+                for(int i=0; i<params.size(); i++){
+                    if(params[i] != parameters[i]){
+                        if(parameters[i] == "int" && params[i] == "float"){
+                            ;
+                        }
+                        else if(parameters[i] == "char" && params[i] == "int"){
+                            ;
+                        }
+                        else if(parameters[i] == "char" && params[i] == "float"){
+                            ;
+                        }
+                        else if(parameters[i] == "int" && (params[i] == "boolean" || params[i] == "bool")){
+                            ;
+                        }
+                        else{
+                        cout << "Error: incompatible types, " << parameters[i] << " and " << params[i] << " " << i << endl;}
+                        // exit(0);
+                    }
+                }
+            }
+     }
      if(tree[id].first == "MethodInvocation"){
         
         vector<int> child1 = tree[id].second;
@@ -1430,6 +1505,7 @@ void tpc(int id){
             params = getParamsOf(child2[2]);
             parameters = getParameters(child1[2]);
         }
+        reverse(parameters.begin(), parameters.end());
             if(parameters.size() != params.size()){
                 cout << "Error: actual and formal argument lists differ in length" << endl;
                 // exit(0);
@@ -1481,6 +1557,13 @@ void tpc(int id){
         }
         
         int id1 = parent[parent[id]];
+        if(tree[id1].first == "VariableDeclarators"){
+            int temp = id1;
+            while(tree[temp].first == "VariableDeclarators"){
+                temp = parent[temp];
+            }
+            id1 = temp;
+        }
         vector<int> ch = tree[id1].second;
         if(tree[id1].first == "FieldDeclaration"){
         if(tree[ch[1]].first == "ArrayType"){
@@ -1519,7 +1602,7 @@ void tpc(int id){
         }
         else{
             typel = tree[ch[0]].first;
-            int temp1 = ch[1];
+            int temp1 = parent[id];
             vector<int> ch1 = tree[temp1].second;
             int temp = ch1[0];
             while(tree[temp].first == "VariableDeclaratorId"){
