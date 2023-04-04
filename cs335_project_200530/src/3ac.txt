@@ -1,16 +1,20 @@
+ Example1.: 
+      t2_0: =  1    k
  Example1.Constructor: 
-      t2_0: BeginFunc      
-      t2_1: =  popparam    _v25
-      t2_2: =  getparam    a
-      t2_3: =  getparam    b
-      t2_4: =  SymbolEntry( Example1, x)    x
-      t2_5: =  *(_v25 + x)    _v30
-      t2_6: =_int  a    _v30
-      t2_7: =  SymbolEntry( Example1, y)    y
-      t2_8: =  *(_v25 + y)    _v39
-      t2_9: =_float  b    _v39
-      t2_10: EndConstructor      
+      t3_0: BeginConstructor      
+      t3_1: stackPointer -=  8    
+      t3_2: =  getparam    _v32
+      t3_3: =  getparam    a
+      t3_4: =  getparam    b
+      t3_5: =  SymbolEntry( Example1, x)    x
+      t3_6: =  *(_v32 + x)    _v37
+      t3_7: =  a    _v37
+      t3_8: =  SymbolEntry( Example1, y)    y
+      t3_9: =  *(_v32 + y)    _v46
+      t3_10: =  b    _v46
+      t3_11: EndConstructor      
  Example1.main: 
+<<<<<<< HEAD
       t3_0: BeginFunc      
       t3_1: stackPointer -=   12  // Manipulating stack (equal to size of function)  
       t3_2: PushParam      3.14
@@ -38,3 +42,26 @@
       t3_24: +_int  1  2  _v123
       t3_25: =  _v123    p
       t3_26: EndFunc      
+=======
+      t4_0: BeginFunc      
+      t4_1: stackPointer -=   8  // Manipulating stack (equal to size of function)  
+      t4_2: PushParam      3.14
+      t4_3: PushParam      2
+      t4_4: =  20    _v72
+      t4_5: =  param  _v72  
+      t4_6: =  PopParam  // Store Object ref  _v77
+      t4_7: PushParam      _v77
+      t4_8: =  LCall  Example1.Constructor  
+      t4_9: =  ConstructorValReturned    _v78
+      t4_10: stackPointer  =  basePointer  
+      t4_11: Adjust Base Pointer to previous base pointer      
+      t4_12: stackpointer +=  12  // Remove parameters passed into stack + object refernce  
+      t4_13: =  _v78    a
+      t4_14: =  SymbolEntry( Example1, x)    x
+      t4_15: =  *(_v77 + x)    _v89
+      t4_16: =  _v89    c
+      t4_17: =  SymbolEntry( Example1, y)    y
+      t4_18: =  *(_v77 + y)    _v101
+      t4_19: =  _v101    d
+      t4_20: EndFunc      
+>>>>>>> f14808a89f11d0b12dfca7a14eba622649118bab

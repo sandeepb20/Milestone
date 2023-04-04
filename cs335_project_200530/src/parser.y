@@ -639,7 +639,7 @@ void PrintSymTable(){
             fout << "Printing " << id2.first << " Symbol Table" <<endl ;
             for(auto itr : id2.second){
             // for(auto itr : it.second){
-        fout << itr.first.c_str() << "," << itr.second->type.c_str() << "," << (itr.second)->line << "," << (itr.second)->size << "," << (itr.second)->offset << "," << (itr.second)->what << endl;
+        fout << "   " << itr.first.c_str() << "," << itr.second->type.c_str() << "," << (itr.second)->line << "," << (itr.second)->size << "," << (itr.second)->offset << "," << (itr.second)->what << endl;
         // }
         }
         }
@@ -935,6 +935,32 @@ int funcSize(int id){
                 t = class_table[cclass][name];
                 break;
             }
+            
+    }
+    for(auto it : t) {
+        ssize += (it.second)->size;
+    }
+    return ssize;
+}
+int constrSize(int id){
+    int temp = parent[id];
+    string cclass;
+    int ssize = 0;
+    sym_table t;
+    if(tree[temp].first == "QualifiedName"){
+        cclass = customtypeof((tree[temp].second)[0]);
+    }
+    else{
+        cclass = nodeClass[id];
+    }
+    string name = tree[id].first + ".constr";
+    vector<string> param;
+    for(auto it : class_table[cclass]){
+            if(it.first == name){
+                t = class_table[cclass][name];
+                break;
+            }
+            
     }
     for(auto it : t) {
         ssize += (it.second)->size;
@@ -975,9 +1001,16 @@ void ThreeACHelperFunc(int id){
     if(tree[id].first == "ConstructorDeclarator"){
         if(tree[temp[1]].first == "("){
             childcallistrue = 0;
-            tac* t = createTacCustom("BeginFunc", "", "","");
+            tac* t = createTacCustom("BeginConstructor", "", "","");
             tacMap[currTacVec].push_back(t);
-            tac* t1 = createTacCustom("=", "popparam", "",createArg(id));
+            
+            int size = constrSize(temp[0]);
+            // cout << size << endl;
+            t = createTacCustom("stackPointer -=", to_string(size), "", "");
+            tacMap[currTacVec].push_back(t);
+
+
+            tac* t1 = createTacCustom("=", "getparam", "",createArg(id));
             memoryLoc.push(createArg(id));
             tacMap[currTacVec].push_back(t1);
             ThreeACHelperFunc(temp[2]);
@@ -1290,8 +1323,24 @@ void ThreeACHelperFunc(int id){
                 tacMap[currTacVec].push_back(t);
                 tac* t1 = createTacCustom("PushParam", "", "", "_v" + to_string(temp[i+2]));
                 tacMap[currTacVec].push_back(t1);
-                tac* t2 = createTacCustom("=", "LCall", tree[temp[i-1]].first + ".Constructor", createArg(id));
+                tac* t2 = createTacCustom("=", "LCall", tree[temp[i-1]].first + ".Constructor", "");
                 tacMap[currTacVec].push_back(t2);
+
+                /************** */
+                 t = createTacCustom("=", "ConstructorValReturned", "", createArg(id));
+                tacMap[currTacVec].push_back(t);
+                t = createTacCustom("stackPointer", "=", "basePointer", "");
+                tacMap[currTacVec].push_back(t);
+                t = createTacCustom("Adjust Base Pointer to previous base pointer", "", "", "");
+                tacMap[currTacVec].push_back(t);
+                
+                vector<string> param = getParamsOfCons(temp[1]);
+                int paramSize1 = paramSize(param) + 4;
+                // cout << paramSize1 << endl; 
+                 t = createTacCustom("stackpointer +=", to_string(paramSize1), "// Remove parameters passed into stack + object refernce", "");
+                tacMap[currTacVec].push_back(t);
+
+
                 int t9 = parent[id];
                 vector<int> t10 = tree[t9].second;
                 string t11 = createArg(t10[0]);
@@ -1820,7 +1869,7 @@ void print(){
     // }
     PrintSymTable();
 
-    tpc(root);
+    // tpc(root);
     // for(auto itr = whtIsType.begin();itr!=whtIsType.end();itr++){
     //     cout<<itr->first<<": [ "<<tree[itr->first].first<<" ]   "<<itr->second<<endl;
     // }
