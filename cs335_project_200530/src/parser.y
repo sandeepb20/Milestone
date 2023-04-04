@@ -1385,6 +1385,29 @@ void tpc(int id){
             cout << "error: incompatible types: " << typer + boxr << " cannot be converted to " << typel + boxl << endl;
         }
     }
+    if(tree[id].first == "ArrayAccess" && tree[parent[id]].first != "ArrayAccess"){
+        int temp = id;
+        vector<int> dims;
+        while(tree[temp].first == "ArrayAccess"){
+            vector<int> ch = tree[temp].second;
+            temp = ch[0];
+            dims.push_back(stoi(tree[ch[2]].first));
+        }
+        string arrname = tree[temp].first;
+        string cclass = nodeClass[temp];
+        vector<int> dimensions = getDim(cclass, arrname);
+        reverse(dimensions.begin(), dimensions.end());
+        if(dims.size() != dimensions.size()){
+            cout << "error: array required, but int found" << endl;
+        }
+        else{
+            for(int i=0; i<dims.size(); i++){
+                if(dims[i] < 0 || dims[i] >= dimensions[i]){
+                    cout << "Index " << dims[i] << " out of bounds for length " << dimensions[i] << endl;
+                }
+            }
+        }
+    }
     if(tree[id].first == "Assignment"){
         if(whtIsType[child[0]] == whtIsType[child[2]]){
             whtIsType[id] = whtIsType[child[0]];
@@ -1505,7 +1528,7 @@ void tpc(int id){
             // exit(1);
         }
     }
-    else if(tree[id].first == "VariableDeclarator" && tree[(tree[id].second)[2]].first != "ArrayCreationExpr"){
+    else if(tree[id].first == "VariableDeclarator" && (tree[(tree[id].second)[2]].first != "ArrayCreationExpr" && tree[(tree[id].second)[2]].first != "ArrayAccess")){
         if(whtIsType[child[0]]  == whtIsType[child[2]]){
             whtIsType[id] =  whtIsType[child[0]];
             tree[child[1]].first += "_" + whtIsType[child[0]];
@@ -1556,7 +1579,7 @@ void print(){
     //     cout<<itr->first<<": [ "<<tree[itr->first].first<<" ]   "<<itr->second<<endl;
     // }
     // ***************************
-    cout << "******************** Three AC Printing**************" << endl;
+    // cout << "******************** Three AC Printing**************" << endl;
     // ThreeACHelperFunc(root);
     // printThreeAC();
     // ****************************
