@@ -16,5 +16,5 @@ Printing main Symbol Table
 p,int,14,4,8,variable
 c,int,12,4,0,variable
 b,Example1,11,0,0,variable
-d,float,13,4,4,variable
+d,int,13,4,4,variable
 a,Example1,10,0,0,variable

@@ -7,10 +7,10 @@ public class Example1 {
     }
 
   public static void main( /*so that we can compile with javac*/) {
- 		Example1 a = new Example1(2,3.14, 4);
-    Example2 b = new Example1(0,0);
+ 		Example1 a = new Example1(2,3.14);
+    Example1 b = new Example1(0,0);
     int c = a.x;
     int d = a.y;
-    int p = 1 + 2 + 7;
+    int p = 1 + 2;
  }
 }

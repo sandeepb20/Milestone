@@ -1,7 +1,7 @@
-package project.unittests;
+// package project.unittests;
 
 class Inner1 {
-    long a[];
+    int a[];
     float b[][];
 
     public Inner1(int dim1, int dim2, int dim3) {
@@ -56,6 +56,6 @@ class ArrayTypeCheck {
 
         int b[] = new int[2];
         b[1] = obj2.c[0][1];
-        System.out.println("a: " + a + " b[0]: " + b[0] + " b[1]: " + b[1]);
+        // System.out.println("a: " + a + " b[0]: " + b[0] + " b[1]: " + b[1]);
     }
 }

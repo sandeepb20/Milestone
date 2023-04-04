@@ -1685,7 +1685,7 @@ void tpc(int id){
         }
         else{
             whtIsType[id] = "error";
-            cout << "Type Error at line " << LineNumber[child[0]] << endl;
+            cout << "Type Error at line " << LineNumber[child[1]] << endl;
             exit(1);
         }
     }
@@ -1717,7 +1717,7 @@ void tpc(int id){
         }
         else{
             whtIsType[id] = "error";
-            cout << "Type Error at line " << LineNumber[child[0]] << endl;
+            cout << "Type Error at line " << LineNumber[child[1]] << endl;
             exit(1);
         }
     }
@@ -1736,7 +1736,7 @@ void tpc(int id){
         }
         else{
             whtIsType[id] = "error";
-            cout << "Type Error at line " << LineNumber[child[0]] << endl;
+            cout << "Type Error at line " << LineNumber[child[1]] << endl;
             exit(1);
         }
     }
@@ -1769,7 +1769,7 @@ void tpc(int id){
         }
         else if(whtIsType[child[0]]!="null" || whtIsType[child[2]]=="null"){
             whtIsType[id] = "error";
-            cout << "Type Error at line " << LineNumber[child[0]] << endl;
+            cout << "Type Error at line " << LineNumber[child[1]] << endl;
             // exit(1);
         }
     }
@@ -1800,7 +1800,7 @@ void tpc(int id){
         else{
             // cout << whtIsType[child[0]] << ' ' << whtIsType[child[2]] << endl;
             whtIsType[id] = "error";
-            cout << "Type Error at line " << LineNumber[child[0]] << endl;
+            cout << "Type Error at line " << LineNumber[child[1]] << endl;
             exit(1);
         }
         
