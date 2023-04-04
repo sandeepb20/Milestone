@@ -1331,9 +1331,9 @@ void tpc(int id){
             boxr += "[]";
         }
         
-        id = parent[parent[id]];
-        vector<int> ch = tree[id].second;
-        if(tree[id].first == "FieldDeclaration"){
+        int id1 = parent[parent[id]];
+        vector<int> ch = tree[id1].second;
+        if(tree[id1].first == "FieldDeclaration"){
         if(tree[ch[1]].first == "ArrayType"){
             int temp = ch[1];
             while(tree[temp].first == "ArrayType"){
@@ -1357,7 +1357,7 @@ void tpc(int id){
             }
         }
         }
-        else if(tree[id].first == "LocalVariableDeclaration"){
+        else if(tree[id1].first == "LocalVariableDeclaration"){
             if(tree[ch[0]].first == "ArrayType"){
             int temp = ch[0];
             while(tree[temp].first == "ArrayType"){
@@ -1385,8 +1385,17 @@ void tpc(int id){
             cout << "error: incompatible types: " << typer + boxr << " cannot be converted to " << typel + boxl << endl;
         }
     }
-    if(tree[id].first == "ArrayAccess" && tree[parent[id]].first != "ArrayAccess"){
+    if(tree[id].first == "ArrayAccess"){
+        int childnum = (tree[id].second)[0];
+        if(additionalInfo.find(childnum) != additionalInfo.end()){
+            whtIsType[id] = customtypeof(childnum);
+        }
+        else{
+            whtIsType[id] = whtIsType[childnum];
+        }
+        if(tree[parent[id]].first != "ArrayAccess"){
         int temp = id;
+        string typer, typel;
         vector<int> dims;
         while(tree[temp].first == "ArrayAccess"){
             vector<int> ch = tree[temp].second;
@@ -1394,6 +1403,7 @@ void tpc(int id){
             dims.push_back(stoi(tree[ch[2]].first));
         }
         string arrname = tree[temp].first;
+        typer = whtIsType[temp];
         string cclass = nodeClass[temp];
         vector<int> dimensions = getDim(cclass, arrname);
         reverse(dimensions.begin(), dimensions.end());
@@ -1407,8 +1417,27 @@ void tpc(int id){
                 }
             }
         }
+        int id1 = parent[parent[id]];
+        int id2 = parent[id];
+        if(tree[id].first == "FieldDeclaration" || tree[id].first == "LocalVariableDeclaration"){
+        if(tree[id1].first == "FieldDeclaration"){
+            vector<int> ch = tree[id1].second;
+            typel = tree[ch[1]].first;
+        }
+        else if(tree[id1].first == "LocalVariableDeclaration"){
+            vector<int> ch = tree[id1].second;
+            typel = tree[ch[0]].first;
+        }
+        if(typel != typer){
+            cout << "error: incompatible types: possible lossy conversion from " << typer << " to " << typel << endl;
+        }
+        }
+    }
     }
     if(tree[id].first == "Assignment"){
+        // if(tree[child[0]].first == "ArrayAccess" || tree[child[2]].first == "ArrayAccess"){
+        //     cout << whtIsType[child[0]] << endl;
+        // }
         if(whtIsType[child[0]] == whtIsType[child[2]]){
             whtIsType[id] = whtIsType[child[0]];
             tree[child[1]].first += "_" + whtIsType[child[0]];

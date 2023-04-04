@@ -3,12 +3,16 @@ Class : Test1
 
 
 Printing Test1 Symbol Table
-add,int,12,4,400
-d,int[][],5,400,0
+add,int,13,4,3504
+c,int[][],4,400,0
+d,char[][],5,100,400
+f,int[][][],7,3000,500
+s,int,8,4,3500
 
 Printing add Symbol Table
-b,int[],14,40,0
-e,int[][][],17,4000,40
-k,int,23,4,4040
-l,int,24,4,4044
-m,int,25,4,4048
+a,int[],14,40,0
+b,int[],15,40,40
+e,int[][][],18,4000,80
+k,int,24,4,4080
+l,int,25,4,4084
+m,char,26,1,4088
