@@ -939,9 +939,9 @@ void ThreeACHelperFunc(int id){
     if(tree[id].first == "ConstructorDeclarator"){
         if(tree[temp[1]].first == "("){
             childcallistrue = 0;
-            tac* t = createTacCustom("BeginFunc", "", "","");
+            tac* t = createTacCustom("BeginConstructor", "", "","");
             tacMap[currTacVec].push_back(t);
-            tac* t1 = createTacCustom("=", "popparam", "",createArg(id));
+            tac* t1 = createTacCustom("=", "getparam", "",createArg(id));
             memoryLoc.push(createArg(id));
             tacMap[currTacVec].push_back(t1);
             ThreeACHelperFunc(temp[2]);
@@ -1255,8 +1255,24 @@ void ThreeACHelperFunc(int id){
                 tacMap[currTacVec].push_back(t);
                 tac* t1 = createTacCustom("PushParam", "", "", "_v" + to_string(temp[i+2]));
                 tacMap[currTacVec].push_back(t1);
-                tac* t2 = createTacCustom("=", "LCall", tree[temp[i-1]].first + ".Constructor", createArg(id));
+                tac* t2 = createTacCustom("=", "LCall", tree[temp[i-1]].first + ".Constructor", "");
                 tacMap[currTacVec].push_back(t2);
+
+                /************** */
+                 t = createTacCustom("=", "ConstructorValReturned", "", createArg(id));
+                tacMap[currTacVec].push_back(t);
+                t = createTacCustom("stackPointer", "=", "basePointer", "");
+                tacMap[currTacVec].push_back(t);
+                t = createTacCustom("Adjust Base Pointer to previous base pointer", "", "", "");
+                tacMap[currTacVec].push_back(t);
+                
+                vector<string> param = getParamsOf(temp[0]);
+                int paramSize1 = paramSize(param);
+                // cout << paramSize1 << endl; 
+                 t = createTacCustom("stackpointer +=", to_string(paramSize1), "// Remove parameters passed into stack", "");
+                tacMap[currTacVec].push_back(t);
+
+
                 int t9 = parent[id];
                 vector<int> t10 = tree[t9].second;
                 string t11 = createArg(t10[0]);
@@ -1737,7 +1753,7 @@ void print(){
     // }
     PrintSymTable();
 
-    tpc(root);
+    // tpc(root);
     // for(auto itr = whtIsType.begin();itr!=whtIsType.end();itr++){
     //     cout<<itr->first<<": [ "<<tree[itr->first].first<<" ]   "<<itr->second<<endl;
     // }

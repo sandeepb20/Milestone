@@ -1,65 +1,36 @@
- Test1.: 
-      t2_0: =  0    t1
-      t2_1: param  t1    
-      t2_2: call  allocmem  1  _v16
-      t2_3: =  _v16    a
-      t2_4: =  400    t1
-      t2_5: param  t1    
-      t2_6: call  allocmem  1  _v40
-      t2_7: =  _v40    b
-      t2_8: =  0    t1
-      t2_9: param  t1    
-      t2_10: call  allocmem  1  _v64
-      t2_11: =  _v64    c
-      t2_12: =  3000    t1
-      t2_13: param  t1    
-      t2_14: call  allocmem  1  _v96
-      t2_15: =  _v96    f
- Test1.add: 
-      t3_0: BeginFunc      
-      t3_1: stackPointer -=   412  // Manipulating stack (equal to size of function)  
-      t3_2: =  0    t1
-      t3_3: param  t1    
-      t3_4: call  allocmem  1  _v121
-      t3_5: =  _v121    a
-      t3_6: =  400    t1
-      t3_7: param  t1    
-      t3_8: call  allocmem  1  _v146
-      t3_9: =  _v146    d
-      t3_10: =  0    t1
-      t3_11: param  t1    
-      t3_12: call  allocmem  1  _v180
-      t3_13: =  _v180    e
-      t3_14: =  3    _v191
-      t3_15: *  _v191  10  _v191
-      t3_16: +  _v191  4  _v191
-      t3_17: *  _v191  10  _v191
-      t3_18: +  _v191  2  _v191
-      t3_19: =  e[_v191]    _v201
-      t3_20: =  _v201    k
-      t3_21: =  4    _v212
-      t3_22: *  _v212  10  _v212
-      t3_23: +  _v212  4  _v212
-      t3_24: =  b[_v212]    _v214
-      t3_25: =  _v214    l
-      t3_26: =  12    _v225
-      t3_27: *  _v225  10  _v225
-      t3_28: +  _v225  3  _v225
-      t3_29: =  d[_v225]    _v231
-      t3_30: =  _v231    m
-      t3_31: =  3    _v239
-      t3_32: =  a[_v239]    _v241
-      t3_33: =_int  9    _v241
-      t3_34: =  3    _v250
-      t3_35: *  _v250  10  _v250
-      t3_36: +  _v250  4  _v250
-      t3_37: =  c[_v250]    _v256
-      t3_38: =_int  0    _v256
-      t3_39: =  3    _v265
-      t3_40: *  _v265  5  _v265
-      t3_41: +  _v265  4  _v265
-      t3_42: *  _v265  15  _v265
-      t3_43: +  _v265  2  _v265
-      t3_44: =  f[_v265]    _v275
-      t3_45: =_int  4    _v275
-      t3_46: EndFunc      
+ Example1.: 
+      t2_0: =  1    k
+ Example1.Constructor: 
+      t3_0: BeginConstructor      
+      t3_1: =  getparam    _v32
+      t3_2: =  getparam    a
+      t3_3: =  getparam    b
+      t3_4: =  SymbolEntry( Example1, x)    x
+      t3_5: =  *(_v32 + x)    _v37
+      t3_6: =  a    _v37
+      t3_7: =  SymbolEntry( Example1, y)    y
+      t3_8: =  *(_v32 + y)    _v46
+      t3_9: =  b    _v46
+      t3_10: EndConstructor      
+ Example1.main: 
+      t4_0: BeginFunc      
+      t4_1: stackPointer -=   8  // Manipulating stack (equal to size of function)  
+      t4_2: PushParam      3.14
+      t4_3: PushParam      2
+      t4_4: =  20    _v72
+      t4_5: =  param  _v72  
+      t4_6: =  PopParam  // Store Object ref  _v77
+      t4_7: PushParam      _v77
+      t4_8: =  LCall  Example1.Constructor  
+      t4_9: =  ConstructorValReturned    _v78
+      t4_10: stackPointer  =  basePointer  
+      t4_11: Adjust Base Pointer to previous base pointer      
+      t4_12: stackpointer +=  0  // Remove parameters passed into stack  
+      t4_13: =  _v78    a
+      t4_14: =  SymbolEntry( Example1, x)    x
+      t4_15: =  *(_v77 + x)    _v89
+      t4_16: =  _v89    c
+      t4_17: =  SymbolEntry( Example1, y)    y
+      t4_18: =  *(_v77 + y)    _v101
+      t4_19: =  _v101    d
+      t4_20: EndFunc      
