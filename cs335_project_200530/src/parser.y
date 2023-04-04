@@ -129,6 +129,9 @@ void createEntry(string currTableName, string temp, string type, int line, int s
         cout << temp << " Already declared " << line << endl;
         exit(1);
     }
+    if(type == "String"){
+        size = 8;
+    }
     sym_entry* ent = new sym_entry();
 	    ent->type = type;
         ent->line = line;
@@ -345,7 +348,22 @@ void symTable(int id){
             modifiers[tree[child[2]].first].push_back(tree[child1[0]].first);
             tempid = child1[1];
         }
-        createEntry(curr_table, tree[child[2]].first, tree[child[1]].first, LineNumber[child[2]], getSize(tree[child[1]].first), stoffset, 0, "variable", stndim, parameters);
+        if(tree[child[1]].first == "ArrayType"){
+            stisArray = 1;
+            vector<int> child1 = tree[child[1]].second;
+            int n1 = child1[0];
+            sttype = "[]";
+            while(tree[n1].first == "ArrayType"){
+                vector<int> child1 = tree[n1].second;
+                sttype += "[]";
+                n1 = child1[0];
+            }
+            sttype = tree[n1].first + sttype;
+        }
+        else{
+            sttype = tree[child[1]].first;
+        }
+        createEntry(curr_table, tree[child[2]].first, sttype, LineNumber[child[2]], getSize(tree[child[1]].first), stoffset, 0, "variable", stndim, parameters);
         symTable(child[2]);
         return;
     }
@@ -820,10 +838,8 @@ vector<int> getDim(string cclass, string ArrayName){
 }
 int getSizeOfArray(int id){
     string ArrayName = tree[id].first;
-    cout << ArrayName << " " << nodeClass[id] << endl;
     for(auto it : class_table[nodeClass[id]]){
         for(auto itr : it.second){
-            cout << "checking " << itr.first << endl;
             if(itr.first == ArrayName){
                 return itr.second -> size;
             }
@@ -831,6 +847,77 @@ int getSizeOfArray(int id){
     }
     return -1;
 }
+
+
+map<int, string> whtIsType;
+
+vector<string> getParamsOf(int id){
+    int temp = parent[id];
+    string cclass;
+    if(tree[temp].first == "QualifiedName"){
+        cclass = customtypeof((tree[temp].second)[0]);
+    }
+    else{
+        cclass = nodeClass[id];
+    }
+    string name = tree[id].first;
+    vector<string> param;
+    for(auto it : class_table[cclass]){
+        for(auto it1 : it.second){
+            if(it1.first == name){
+                return (it1.second -> parameters);
+            }
+        }
+    }
+      
+    return {};
+}
+
+int paramSize(vector<string> param){
+    int ssize = 0;
+    for(auto i : param){
+        ssize += getSize(i);
+    }
+    return ssize;
+}
+
+int funcSize(int id){
+    int temp = parent[id];
+    string cclass;
+    int ssize = 0;
+    sym_table t;
+    if(tree[temp].first == "QualifiedName"){
+        cclass = customtypeof((tree[temp].second)[0]);
+    }
+    else{
+        cclass = nodeClass[id];
+    }
+    string name = tree[id].first;
+    vector<string> param;
+    for(auto it : class_table[cclass]){
+            if(it.first == name){
+                t = class_table[cclass][name];
+                break;
+            }
+    }
+    for(auto it : t) {
+        ssize += (it.second)->size;
+    }
+    return ssize;
+}
+
+vector<string> getParameters(int id){
+    vector<string> params;
+    while(tree[id].first == "ArgumentList"){
+        vector<int> child1 = tree[id].second;
+        params.push_back(whtIsType[child1[2]]);
+        id = child1[0];
+    }
+    params.push_back(whtIsType[id]);
+    return params;
+}
+
+
 
 void ThreeACHelperFunc(int id){
     int childcallistrue = 1;
@@ -888,7 +975,7 @@ void ThreeACHelperFunc(int id){
             ThreeACHelperFunc(temp[0]);
             ThreeACHelperFunc(temp[2]);
             vector<int> temp1 = tree[temp[2]].second;
-            tac* t = createTacCustom("=","popparam", "", createArg3(temp1[2]));
+            tac* t = createTacCustom("=","getparam", "", createArg3(temp1[2]));
             tacMap[currTacVec].push_back(t);
             
         }
@@ -896,11 +983,11 @@ void ThreeACHelperFunc(int id){
            
             ThreeACHelperFunc(temp[0]);
              vector<int>  temp1 = tree[temp[0]].second;
-            tac* t1 = createTacCustom("=","popparam",  "", createArg3(temp1[2]));
+            tac* t1 = createTacCustom("=","getparam",  "", createArg3(temp1[2]));
             tacMap[currTacVec].push_back(t1);
              ThreeACHelperFunc(temp[2]);
             temp1 = tree[temp[2]].second;
-            tac* t = createTacCustom("=","popparam", "", createArg3(temp1[2]));
+            tac* t = createTacCustom("=","getparam", "", createArg3(temp1[2]));
             tacMap[currTacVec].push_back(t);
         }
     }
@@ -911,6 +998,7 @@ void ThreeACHelperFunc(int id){
         tac* t = new tac();
         t -> op = "Return";
         t -> arg1 = createArg(temp[1]);
+        t -> arg2 = "// load return value to return register";
         tacMap[currTacVec].push_back(t);
         return;        
     }
@@ -1114,6 +1202,10 @@ void ThreeACHelperFunc(int id){
             string paraOffSet = "n";
             tac* t = createTacCustom("BeginFunc", "", "","");
             tacMap[currTacVec].push_back(t);
+            int funcSize1 = funcSize(temp[0]);
+            // cout << "Funcsize " << funcSize1 << endl; 
+            t = createTacCustom("stackPointer -= ", to_string(funcSize1), "// Manipulating stack (equal to size of function)","");
+            tacMap[currTacVec].push_back(t);
             if(tree[temp[2]].first != ")"){
                 ThreeACHelperFunc(temp[2]);
             }
@@ -1127,9 +1219,20 @@ void ThreeACHelperFunc(int id){
                 if(tree[temp[i+1]].first != ""){
                     ThreeACHelperFunc(temp[i+1]);
                 }
-                tac* t = createTacCustom("=", "LCall", tree[temp[i-1]].first, createArg(id));
+                tac* t = createTacCustom("LCall", tree[temp[i-1]].first, "", "");
                 tacMap[currTacVec].push_back(t);
-
+                t = createTacCustom("=", "returnRegister", "", createArg(id));
+                tacMap[currTacVec].push_back(t);
+                t = createTacCustom("stackPointer", "=", "basePointer", "");
+                tacMap[currTacVec].push_back(t);
+                t = createTacCustom("Adjust Base Pointer to previous base pointer", "", "", "");
+                tacMap[currTacVec].push_back(t);
+                
+                vector<string> param = getParamsOf(temp[0]);
+                int paramSize1 = paramSize(param);
+                // cout << paramSize1 << endl; 
+                 t = createTacCustom("stackpointer +=", to_string(paramSize1), "// Remove parameters passed into stack", "");
+                tacMap[currTacVec].push_back(t);
                  
             }
         }
@@ -1264,40 +1367,6 @@ void typeChecker(){
 }
 /* ------------------------------------------------------------*/
 
-map<int, string> whtIsType;
-
-vector<string> getParamsOf(int id){
-    int temp = parent[id];
-    string cclass;
-    if(tree[temp].first == "QualifiedName"){
-        cclass = customtypeof((tree[temp].second)[0]);
-    }
-    else{
-        cclass = nodeClass[id];
-    }
-    string name = tree[id].first;
-    vector<string> param;
-    for(auto it : class_table[cclass]){
-        for(auto it1 : it.second){
-            if(it1.first == name){
-                return (it1.second -> parameters);
-            }
-        }
-    }
-      
-    return {};
-}
-
-vector<string> getParameters(int id){
-    vector<string> params;
-    while(tree[id].first == "ArgumentList"){
-        vector<int> child1 = tree[id].second;
-        params.push_back(whtIsType[child1[2]]);
-        id = child1[0];
-    }
-    params.push_back(whtIsType[id]);
-    return params;
-}
 
 void tpc(int id){
     bool allVisited = true;
@@ -1331,11 +1400,14 @@ void tpc(int id){
     }
     
      if(tree[id].first == "MethodInvocation"){
+        
         vector<int> child1 = tree[id].second;
+        int s;
         vector<string> params, parameters;
         if(tree[child1[0]].first != "QualifiedName"){
             params = getParamsOf(child1[0]);
             parameters = getParameters(child1[2]);
+            whtIsType[id] = customtypeof(child1[0]);
         }
         else{
             vector<int> child2 = tree[child1[0]].second;
@@ -1664,7 +1736,8 @@ void print(){
     //     cout << i.first << " " << i.second << endl;
     // }
     PrintSymTable();
-    // tpc(root);
+
+    tpc(root);
     // for(auto itr = whtIsType.begin();itr!=whtIsType.end();itr++){
     //     cout<<itr->first<<": [ "<<tree[itr->first].first<<" ]   "<<itr->second<<endl;
     // }

@@ -1,7 +1,8 @@
 public class test_31 {
     public int add_num(int x, int y, int z){
         int c =x;
-        int d = y;
+        int d = c;
+
         int e = c + d;
         return e;
     }
