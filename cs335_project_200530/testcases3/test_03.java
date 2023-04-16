@@ -1,6 +1,5 @@
 class test {
-int a,b,c = a+b*c;
-int d;
+int a,b,c = a+b*c/d;
 void getdata(int x, int y) {
     a=x;
     b=y;
@@ -18,6 +17,15 @@ void getdata(int x, int y) {
 }
 void add() {
     char e=a+b*d/c;
-    
+    System.out.println("Addition = "+c);
 }
+}
+public class P8 {
+
+public static void main(String[] args) {
+
+    test obj = new test();
+    obj.getdata(200,100);
+    obj.add();
+    }
 }

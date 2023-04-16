@@ -1,0 +1,12 @@
+Variable,Type,Line,Size,Offset
+Class : test_1
+
+
+Printing main Symbol Table
+   c,int,5,4,8,variable
+   b,int,4,4,4,variable
+   d,int,6,4,12,variable
+   a,int,3,4,0,variable
+
+Printing test_1 Symbol Table
+   main,int,2,4,0,method

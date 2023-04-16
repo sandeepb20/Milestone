@@ -676,6 +676,7 @@ typedef struct ThreeAC {
     string arg;
     string g = "goto";
     string label = "";
+    
 } tac;
 // vector<tac*> tacVector;
 map<string,  vector<tac*>> tacMap;
@@ -720,32 +721,225 @@ string createArg5(int id){
     else return "_v" + to_string(id);
 }
 
-int offff = 0;
-int getOffset(string name){
-    offff += 4;
-    return offff;
+// /*************************************Milestone 4****************************************************/
+
+string getClass(string name){
+    return name.substr(0, name.find("."));
 }
 
-map<string, string> getreg;
-typedef struct Reg{
-    string name;
-    string type;
-    bool isUsed = false;
-    string val = "";
-} reg;
-
-
-void codeGen(){
-    for(auto i = tacMap.begin(); i != tacMap.end(); i++){
-        currTacVec =  i->first ;
-        for(int i = 0; i < tacMap[currTacVec].size(); i++){
-            if(tacMap[currTacVec][i] -> op == "+_int"){
-                cout << tacMap[currTacVec][i] -> res << " = " << tacMap[currTacVec][i] -> arg1 << " + " << tacMap[currTacVec][i] -> arg2 << endl;
+int offff = 0;
+int getOffset(string name){
+    string cclass = getClass(currTacVec);
+    for(auto it : class_table[cclass]){
+        for(auto itr : it.second){
+            if(itr.first == name){
+                return itr.second -> offset;
             }
         }
     }
+    return -1;
 }
 
+int getType(string name){
+    string cclass = getClass(currTacVec);
+    return 0;
+}
+//  Variable konse reg me stored hai
+map<string, string> getreg;
+
+
+
+
+// *************Registers**************
+typedef struct Reg{
+    string name;
+    bool isUsed = false;
+    string val = "";
+} reg;
+vector<reg> regT(8);
+vector<reg> regS(4);
+reg esp;
+reg ebp;
+
+void initRegisters(){
+    regT[0].name = "r8d";
+    regT[1].name = "r9d";
+    regT[2].name = "r10d";
+    regT[3].name = "r11d";
+    regT[4].name = "r12d";
+    regT[5].name = "r13d";
+    regT[6].name = "r14d";
+    regT[7].name = "r15d";
+
+    regS[0].name = "eax";
+    regS[1].name = "ebx";
+    regS[2].name = "ecx";
+    regS[3].name = "edx";
+
+    esp.name = "esp";
+    ebp.name = "ebp";
+
+}
+int tempregNum = 0;
+int getTempReg(string val){
+    // check if already in reg
+    for(int i = 0; i < regT.size(); i++){
+        if(regT[i].val == val){
+            return i;
+        }
+    }
+    int i = tempregNum%8;
+    tempregNum = i+1;
+    regT[i].isUsed = true;
+    regT[i].val = val;
+    return i;
+}
+
+int tempVarRegNum = 0;
+int getVarReg(string val){
+    // check if already in reg
+    for(int i = 0; i < regS.size(); i++){
+        if(regS[i].val == val){
+            return i;
+        }
+    }
+    int i = tempVarRegNum%4;
+    tempVarRegNum = i+1;
+    regS[i].isUsed = true;
+    regS[i].val = val;
+    return i;
+}
+
+
+void codeGen(){
+    initRegisters();
+    std::ofstream myfile;
+    myfile.open ("out.asm");
+    for(auto i = tacMap.begin(); i != tacMap.end(); i++){
+        currTacVec =  i->first ;
+
+        // cout << " "+ currTacVec + " : " << getClass(currTacVec) <<" \n";
+        for(int i = 0; i < tacMap[currTacVec].size(); i++){
+            if(tacMap[currTacVec][i] -> op == "="){
+                string r1 = "", r2 = "";
+                string arg1 = tacMap[currTacVec][i] -> arg1;
+                string res = tacMap[currTacVec][i] -> res;
+                if(getOffset(arg1) == -1){
+                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
+                    else  r1 = "$" + arg1;
+                }else  r1 = regS[getVarReg(arg1)].name;
+                if(getOffset(res) == -1){
+                    if(res[0] == '_')r2 = regT[getTempReg(res)].name;
+                    else  r2 = "$" + res;
+                }else{
+                    r2 = regS[getVarReg(res)].name;
+                }
+                myfile << "movl " << r1 << ", " << r2 << endl;
+            }
+            if(tacMap[currTacVec][i] -> op == "+_int"){
+                string r1 = "", r2 = "", r3 = "";
+                string arg1 = tacMap[currTacVec][i] -> arg1;
+                string arg2 = tacMap[currTacVec][i] -> arg2;
+                string res = tacMap[currTacVec][i] -> res;
+                if(getOffset(arg1) == -1){
+                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
+                    else  r1 = "$" + arg1;
+                }else  r1 = regS[getVarReg(arg1)].name;
+                if(getOffset(arg2) == -1){
+                    if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
+                    else  r2 = "$" + arg2;
+                }else  r2 = regS[getVarReg(arg2)].name;
+                if(getOffset(res) == -1){
+                    if(res[0] == '_')r3 = regT[getTempReg(res)].name;
+                    else  r3 = "$" + res;
+                }else{
+                    r3 = regS[getVarReg(res)].name;
+                }
+                myfile << "addl " << r1 << ", " << r2 << endl;
+                myfile << "movl " << r2 << ", " << r3 << endl;
+            }
+            if(tacMap[currTacVec][i] -> op == "-_int"){
+                string r1 = "", r2 = "", r3 = "";
+                string arg1 = tacMap[currTacVec][i] -> arg1;
+                string arg2 = tacMap[currTacVec][i] -> arg2;
+                string res = tacMap[currTacVec][i] -> res;
+                if(getOffset(arg1) == -1){
+                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
+                    else  r1 = "$" + arg1;
+                }else  r1 = regS[getVarReg(arg1)].name;
+                if(getOffset(arg2) == -1){
+                    if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
+                    else  r2 = "$" + arg2;
+                }else  r2 = regS[getVarReg(arg2)].name;
+                if(getOffset(res) == -1){
+                    if(res[0] == '_')r3 = regT[getTempReg(res)].name;
+                    else  r3 = "$" + res;
+                }else{
+                    r3 = regS[getVarReg(res)].name;
+                }
+                myfile << "subl " << r1 << ", " << r2 << endl;
+                myfile << "movl " << r2 << ", " << r3 << endl;
+            }
+            if(tacMap[currTacVec][i] -> op == "*_int"){
+                string r1 = "", r2 = "", r3 = "";
+                string arg1 = tacMap[currTacVec][i] -> arg1;
+                string arg2 = tacMap[currTacVec][i] -> arg2;
+                string res = tacMap[currTacVec][i] -> res;
+                if(getOffset(arg1) == -1){
+                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
+                    else  r1 = "$" + arg1;
+                }else  r1 = regS[getVarReg(arg1)].name;
+                if(getOffset(arg2) == -1){
+                    if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
+                    else  r2 = "$" + arg2;
+                }else  r2 = regS[getVarReg(arg2)].name;
+                if(getOffset(res) == -1){
+                    if(res[0] == '_')r3 = regT[getTempReg(res)].name;
+                    else  r3 = "$" + res;
+                }else{
+                    r3 = regS[getVarReg(res)].name;
+                }
+                myfile << "imull " << r1 << ", " << r2 << endl;
+                myfile << "movl " << r2 << ", " << r3 << endl;
+            }
+            if(tacMap[currTacVec][i] -> op == "/_int"){
+                string r1 = "", r2 = "", r3 = "";
+                string arg1 = tacMap[currTacVec][i] -> arg1;
+                string arg2 = tacMap[currTacVec][i] -> arg2;
+                string res = tacMap[currTacVec][i] -> res;
+                if(getOffset(arg1) == -1){
+                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
+                    else  r1 = "$" + arg1;
+                }else  r1 = regS[getVarReg(arg1)].name;
+                if(getOffset(arg2) == -1){
+                    if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
+                    else  r2 = "$" + arg2;
+                }else  r2 = regS[getVarReg(arg2)].name;
+                if(getOffset(res) == -1){
+                    if(res[0] == '_')r3 = regT[getTempReg(res)].name;
+                    else  r3 = "$" + res;
+                }else{
+                    r3 = regS[getVarReg(res)].name;
+                }
+                myfile << "movl " << r1 << ", %eax" << endl;
+                myfile << "cltd" << endl;
+                myfile << "idivl " << r2 << endl;
+                myfile << "movl " << "%eax" << ", " << r3 << endl;
+            }
+
+            // if(tacMap[currTacVec][i] -> op == "+_int"){
+            //     string arg1 = tacMap[currTacVec][i] -> arg1;
+            //     string arg2 = tacMap[currTacVec][i] -> arg2;
+            //     myfile << "Offset of " << arg1 << " " << getOffset(arg1) << endl;
+            //     myfile << "Offset of " << arg2 << " " << getOffset(arg2) << endl;
+            //     myfile << tacMap[currTacVec][i] -> res << " = " << tacMap[currTacVec][i] -> arg1 << " + " << tacMap[currTacVec][i] -> arg2 << endl;
+            // }
+        }
+    }
+    myfile.close();
+}
+
+// Milestone 4 end here ****************************************************************************************
 
 void printThreeAC(){
     std::ofstream myfile;

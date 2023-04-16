@@ -1,0 +1,14 @@
+ test_1.main: 
+      t2_0: BeginFunc      
+      t2_1: stackPointer -=   16  // Manipulating stack (equal to size of function)  
+      t2_2: =  0    a
+      t2_3: +_int  3  a  _v29
+      t2_4: =  _v29    b
+      t2_5: =  0    c
+      t2_6: +_int  c  6  _v50
+      t2_7: +_int  _v50  a  _v53
+      t2_8: +_int  _v53  b  _v56
+      t2_9: +_int  _v56  8  _v59
+      t2_10: =  _v59    d
+      t2_11: Return  d  // load return value to return register  
+      t2_12: EndFunc      

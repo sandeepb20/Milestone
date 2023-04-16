@@ -1,0 +1,14 @@
+movl $0, eax
+addl $3, eax
+movl eax, r8d
+movl r8d, ebx
+movl $0, ecx
+addl ecx, $6
+movl $6, r9d
+addl r9d, eax
+movl eax, r10d
+addl r10d, ebx
+movl ebx, r11d
+addl r11d, $8
+movl $8, r12d
+movl r12d, edx
