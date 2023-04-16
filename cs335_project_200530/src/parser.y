@@ -817,6 +817,7 @@ void codeGen(){
     myfile.open ("out.asm");
     for(auto i = tacMap.begin(); i != tacMap.end(); i++){
         currTacVec =  i->first ;
+        myfile << currTacVec.substr(currTacVec.find(".")+1, -1) << ":" << endl;
 
         // cout << " "+ currTacVec + " : " << getClass(currTacVec) <<" \n";
         for(int i = 0; i < tacMap[currTacVec].size(); i++){
@@ -834,7 +835,7 @@ void codeGen(){
                 }else{
                     r2 = regS[getVarReg(res)].name;
                 }
-                myfile << "movl " << r1 << ", " << r2 << endl;
+                myfile << "     movl " << r1 << ", " << r2 << endl;
             }
             if(tacMap[currTacVec][i] -> op == "+_int"){
                 string r1 = "", r2 = "", r3 = "";
@@ -855,8 +856,8 @@ void codeGen(){
                 }else{
                     r3 = regS[getVarReg(res)].name;
                 }
-                myfile << "addl " << r1 << ", " << r2 << endl;
-                myfile << "movl " << r2 << ", " << r3 << endl;
+                myfile << "     addl " << r1 << ", " << r2 << endl;
+                myfile << "     movl " << r2 << ", " << r3 << endl;
             }
             if(tacMap[currTacVec][i] -> op == "-_int"){
                 string r1 = "", r2 = "", r3 = "";
@@ -877,8 +878,8 @@ void codeGen(){
                 }else{
                     r3 = regS[getVarReg(res)].name;
                 }
-                myfile << "subl " << r1 << ", " << r2 << endl;
-                myfile << "movl " << r2 << ", " << r3 << endl;
+                myfile << "     subl " << r1 << ", " << r2 << endl;
+                myfile << "     movl " << r2 << ", " << r3 << endl;
             }
             if(tacMap[currTacVec][i] -> op == "*_int"){
                 string r1 = "", r2 = "", r3 = "";
@@ -899,8 +900,8 @@ void codeGen(){
                 }else{
                     r3 = regS[getVarReg(res)].name;
                 }
-                myfile << "imull " << r1 << ", " << r2 << endl;
-                myfile << "movl " << r2 << ", " << r3 << endl;
+                myfile << "     imull " << r1 << ", " << r2 << endl;
+                myfile << "     movl " << r2 << ", " << r3 << endl;
             }
             if(tacMap[currTacVec][i] -> op == "/_int"){
                 string r1 = "", r2 = "", r3 = "";
@@ -921,10 +922,10 @@ void codeGen(){
                 }else{
                     r3 = regS[getVarReg(res)].name;
                 }
-                myfile << "movl " << r1 << ", %eax" << endl;
-                myfile << "cltd" << endl;
-                myfile << "idivl " << r2 << endl;
-                myfile << "movl " << "%eax" << ", " << r3 << endl;
+                myfile << "     movl " << r1 << ", %eax" << endl;
+                myfile << "     cltd" << endl;
+                myfile << "     idivl " << r2 << endl;
+                myfile << "     movl " << "%eax" << ", " << r3 << endl;
             }
 
             // if(tacMap[currTacVec][i] -> op == "+_int"){

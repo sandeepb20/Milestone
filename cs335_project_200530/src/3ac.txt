@@ -12,3 +12,17 @@
       t2_10: =  _v59    d
       t2_11: Return  d  // load return value to return register  
       t2_12: EndFunc      
+ test_1.myfunc: 
+      t3_0: BeginFunc      
+      t3_1: stackPointer -=   16  // Manipulating stack (equal to size of function)  
+      t3_2: =  0    a
+      t3_3: +_int  3  a  _v96
+      t3_4: =  _v96    b
+      t3_5: =  0    c
+      t3_6: +_int  c  6  _v117
+      t3_7: +_int  _v117  a  _v120
+      t3_8: +_int  _v120  b  _v123
+      t3_9: +_int  _v123  8  _v126
+      t3_10: =  _v126    d
+      t3_11: Return  d  // load return value to return register  
+      t3_12: EndFunc      
