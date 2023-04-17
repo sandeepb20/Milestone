@@ -1,39 +1,18 @@
-public class Animal{
-    public static int foo() {
-      int a;
-      a = 0;
-      while (a < 10 && a > 0) {
-        a = a + 1;
-        a--;
-        ++a;
-      }
-      return a;
+/******************************************************************************
+Expected ans: error in line 14
+*******************************************************************************/
+
+public class Test2
+{
+    float[] a = new float[20];
+    int [][]b = new int[10][10];
+
+    public void main(String[] args) {
+
+        int[] a = new int[10];
+        int[][] d = new int[10][10];
+        a[45]=2;      // out of bound index
+        a[3] = 9;
+
     }
-  }
-  
-  public class Main {
-    public static int foo2() {
-      int a;
-      a = 0;
-      while (a < 10 && a > 0) {
-        a = a + 1;
-        a--;
-        ++a;
-      }
-      return a;
-    }
-    public int foo1(int a, int b) {
-    //   int b;
-      b = 0;
-    //   int d = foo();
-      while (b < 10) {
-        b = b + 1;
-      }
-      return b + 1;
-    }
-    public static void main(String[] args) {
-      int s;
-      Animal a = new Animal();
-      s = a.foo();
-    }
-  }
+}

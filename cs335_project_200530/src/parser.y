@@ -597,14 +597,20 @@ void symTable(int id){
         else if(tree[parent[id]].first == "QualifiedName" ){
             int pid = parent[id];
             vector<int> ch = tree[pid].second;
-            if(lookup(tree[ch[0]].first) == "null"){
+            if(tree[ch[0]].first == "QualifiedName" || tree[ch[0]].first == "System"){
+                ;
+            }
+            else {
+                
+                if(lookup(tree[ch[0]].first) == "null"){
                 cout << "Variable " << tree[ch[0]].first << " Not declared at line number: " << LineNumber[ch[0]] << endl; 
                 exit(1);
-            }
-            string ttt = class_table[curr_class][curr_table][tree[ch[0]].first]->type ;
-            if(lookup2(tree[ch[2]].first, ttt) == "null"){
-                cout << "Variable " << nodeName << " Not declared at line number*: " << LineNumber[id] << endl; 
-                exit(1);
+                }
+                string ttt = class_table[curr_class][curr_table][tree[ch[0]].first]->type ;
+                if(lookup2(tree[ch[2]].first, ttt) == "null"){
+                    cout << "Variable " << nodeName << " Not declared at line number*: " << LineNumber[id] << endl; 
+                    exit(1);
+                }
             }
           
            
@@ -980,7 +986,6 @@ vector<string> getParameters(int id){
 }
 
 
-
 void ThreeACHelperFunc(int id){
     int childcallistrue = 1;
     vector<int> temp = tree[id].second;
@@ -1277,6 +1282,11 @@ void ThreeACHelperFunc(int id){
             if(tree[temp[2]].first != ")"){
                 ThreeACHelperFunc(temp[2]);
             }
+            if(tree[temp[2]].first == "FormalParameter"){
+                vector<int> child1 = tree[temp[2]].second;
+                t = createTacCustom("=","getparam", "", createArg3(child1[2]));
+                tacMap[currTacVec].push_back(t);
+            }
         }
     }
     
@@ -1285,18 +1295,38 @@ void ThreeACHelperFunc(int id){
         for(int i = 0; i < temp.size(); i++){
             if(tree[temp[i]].first == "(") {
                 if(tree[temp[i+1]].first != ""){
+                    if(tree[temp[i+1]].first != "ArgumentList"){
+                        tac* t = createTacCustom("PushParam", tree[temp[i+1]].first, "", "");
+                        tacMap[currTacVec].push_back(t);
+                    }
                     ThreeACHelperFunc(temp[i+1]);
                 }
-                tac* t = createTacCustom("LCall", tree[temp[i-1]].first, "", "");
-                tacMap[currTacVec].push_back(t);
+                tac* t;
+                if(tree[temp[i-1]].first == "QualifiedName"){
+                    vector<int> temp1 = tree[temp[i-1]].second;
+                    // if(tree[temp1[2]].first == "println"){
+                    //     t = createTacCustom();
+                    //     tacMap[currTacVec].push_back(t);
+                    // }
+                     t = createTacCustom("LCall", tree[temp1[2]].first, "", "");
+                    tacMap[currTacVec].push_back(t);
+                }
+                else{
+                     t = createTacCustom("LCall", tree[temp[i-1]].first, "", "");
+                    tacMap[currTacVec].push_back(t);
+                }
                 t = createTacCustom("=", "returnRegister", "", createArg(id));
                 tacMap[currTacVec].push_back(t);
                 t = createTacCustom("stackPointer", "=", "basePointer", "");
                 tacMap[currTacVec].push_back(t);
-                t = createTacCustom("Adjust Base Pointer to previous base pointer", "", "", "");
+                t = createTacCustom("RestoreMachineState","//Adjust Base Pointer to previous base pointer and reload registers", "", "");
                 tacMap[currTacVec].push_back(t);
-                
-                vector<string> param = getParamsOf(temp[0]);
+                vector<string> param;
+                if(tree[temp[i-1]].first == "QualifiedName"){
+                    vector<int> child3 = tree[temp[i-1]].second;
+                    param = getParamsOf(child3[2]);
+                }
+                else  param = getParamsOf(temp[0]);
                 int paramSize1 = paramSize(param);
                 // cout << paramSize1 << endl; 
                  t = createTacCustom("stackpointer +=", to_string(paramSize1), "// Remove parameters passed into stack", "");
@@ -1306,7 +1336,7 @@ void ThreeACHelperFunc(int id){
         }
     }
     if(tree[id].first == "ClassInstanceCreationExpression"){
-        int classmem = classOffset[curr_class];
+        // int classmem = classOffset[curr_class];
         // cout << classmem << endl;
         childcallistrue = 0;
         for(int i = 0; i < temp.size(); i++){
@@ -1314,12 +1344,14 @@ void ThreeACHelperFunc(int id){
                 if(tree[temp[i+1]].first != ""){
                     ThreeACHelperFunc(temp[i+1]);
                 }
-                tac *t5 = createTacCustom("=",  to_string(classmem), "", "_v" + to_string(temp[i]));
+                int constSize = constrSize(temp[1]);
+                tac *t5 = createTacCustom("=",  to_string(constSize), "", "_v" + to_string(temp[i]));
                 tacMap[currTacVec].push_back(t5);
                 tac* t4 = createTacCustom("=", "param", "_v" + to_string(temp[i]), "");
                 tacMap[currTacVec].push_back(t4);
                 tac* t3 = createTacCustom("call", "allocmem", "", "1");
-                tac* t = createTacCustom("=", "PopParam", "// Store Object ref", "_v" + to_string(temp[i+2]));
+                tacMap[currTacVec].push_back(t3);
+                tac* t = createTacCustom("=", "GetObjRef", "// Store Object ref", "_v" + to_string(temp[i+2]));
                 tacMap[currTacVec].push_back(t);
                 tac* t1 = createTacCustom("PushParam", "", "", "_v" + to_string(temp[i+2]));
                 tacMap[currTacVec].push_back(t1);
@@ -1331,7 +1363,7 @@ void ThreeACHelperFunc(int id){
                 tacMap[currTacVec].push_back(t);
                 t = createTacCustom("stackPointer", "=", "basePointer", "");
                 tacMap[currTacVec].push_back(t);
-                t = createTacCustom("Adjust Base Pointer to previous base pointer", "", "", "");
+               t = createTacCustom("RestoreMachineState","//Adjust Base Pointer to previous base pointer and reload registers", "", "");
                 tacMap[currTacVec].push_back(t);
                 
                 vector<string> param = getParamsOfCons(temp[1]);
@@ -1497,8 +1529,8 @@ void tpc(int id){
         params = getParamsOfCons(child1[1]);
         parameters = getParameters(child1[3]);
         reverse(parameters.begin(), parameters.end());
-        if(parameters.size() != params.size()){
-                cout << "Error: actual and formal argument lists differ in length" << endl;
+        if(params.size() != 0 && parameters.size() != params.size()){
+                cout << "Error: actual and formal argument lists differ in length at line " << LineNumber[child1[1]] << endl;
                 // exit(0);
             }
             else{
@@ -1539,8 +1571,8 @@ void tpc(int id){
             parameters = getParameters(child1[2]);
         }
         reverse(parameters.begin(), parameters.end());
-            if(parameters.size() != params.size()){
-                cout << "Error: actual and formal argument lists differ in length" << endl;
+            if(params.size() != 0 && parameters.size() != params.size()){
+                cout << "Error: actual and formal argument lists differ in length at line " << LineNumber[child1[0]] << endl;
                 // exit(0);
             }
             else{
@@ -1861,24 +1893,10 @@ void tpc(int id){
 void print(){
     ForClass(root);
     symTable(root);      //fills all the class name in the class_table
-    // for(auto it : scope){
-    //     cout << tree[it.first].first << " " << it.second << endl;
-    // }
-    // for(auto i : classOffset){
-    //     cout << i.first << " " << i.second << endl;
-    // }
     PrintSymTable();
-
-    // tpc(root);
-    // for(auto itr = whtIsType.begin();itr!=whtIsType.end();itr++){
-    //     cout<<itr->first<<": [ "<<tree[itr->first].first<<" ]   "<<itr->second<<endl;
-    // }
-    // ***************************
-    cout << "******************** Three AC Printing**************" << endl;
+    tpc(root);
     ThreeACHelperFunc(root);
     printThreeAC();
-    // ****************************
-    // typeChecker();
     ofstream fout;
     fout.open(OutputFileName);
     fout << "digraph G {" << endl;
