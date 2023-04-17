@@ -8,12 +8,5 @@ Printing main Symbol Table
    d,int,6,4,12,variable
    a,int,3,4,0,variable
 
-Printing myfunc Symbol Table
-   c,int,12,4,8,variable
-   b,int,11,4,4,variable
-   d,int,13,4,12,variable
-   a,int,10,4,0,variable
-
 Printing test_1 Symbol Table
-   myfunc,int,9,4,4,method
    main,int,2,4,0,method

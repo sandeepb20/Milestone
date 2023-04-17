@@ -1,28 +1,16 @@
  test_1.main: 
       t2_0: BeginFunc      
       t2_1: stackPointer -=   16  // Manipulating stack (equal to size of function)  
-      t2_2: =  0    a
-      t2_3: +_int  3  a  _v29
-      t2_4: =  _v29    b
-      t2_5: =  0    c
-      t2_6: +_int  c  6  _v50
-      t2_7: +_int  _v50  a  _v53
-      t2_8: +_int  _v53  b  _v56
-      t2_9: +_int  _v56  8  _v59
-      t2_10: =  _v59    d
-      t2_11: Return  d  // load return value to return register  
-      t2_12: EndFunc      
- test_1.myfunc: 
-      t3_0: BeginFunc      
-      t3_1: stackPointer -=   16  // Manipulating stack (equal to size of function)  
-      t3_2: =  0    a
-      t3_3: +_int  3  a  _v96
-      t3_4: =  _v96    b
-      t3_5: =  0    c
-      t3_6: +_int  c  6  _v117
-      t3_7: +_int  _v117  a  _v120
-      t3_8: +_int  _v120  b  _v123
-      t3_9: +_int  _v123  8  _v126
-      t3_10: =  _v126    d
-      t3_11: Return  d  // load return value to return register  
-      t3_12: EndFunc      
+      t2_2: =  1    a
+      t2_3: =  2    b
+      t2_4: +_int  a  b  _v38
+      t2_5: =  _v38    c
+      t2_6: +_int  c  66  _v50
+      t2_7: =  _v50    d
+      t2_8: LCall  println_d    
+      t2_9: =  returnRegister    _v59
+      t2_10: stackPointer  =  basePointer  
+      t2_11: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
+      t2_12: stackpointer +=  0  // Remove parameters passed into stack  
+      t2_13: Return  c  // load return value to return register  
+      t2_14: EndFunc      

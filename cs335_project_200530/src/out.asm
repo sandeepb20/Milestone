@@ -1,30 +1,18 @@
-main:
-     movl $0, eax
-     addl $3, eax
-     movl eax, r8d
-     movl r8d, ebx
-     movl $0, ecx
-     addl ecx, $6
-     movl $6, r9d
-     addl r9d, eax
-     movl eax, r10d
-     addl r10d, ebx
-     movl ebx, r11d
-     addl r11d, $8
-     movl $8, r12d
-     movl r12d, edx
-myfunc:
-     movl $0, eax
-     addl $3, eax
-     movl eax, r13d
-     movl r13d, ebx
-     movl $0, ecx
-     addl ecx, $6
-     movl $6, r14d
-     addl r14d, eax
-     movl eax, r15d
-     addl r15d, ebx
-     movl ebx, r8d
-     addl r8d, $8
-     movl $8, r9d
-     movl r9d, edx
+        .global main
+     .data
+     .text
+ main:
+     mov %eax, 0
+     add %eax, 3
+     mov %r8d, %eax
+     mov %ebx, %r8d
+     mov %ecx, 0
+     add 6, %ecx
+     mov %r9d, 6
+     add %eax, %r9d
+     mov %r10d, %eax
+     add %ebx, %r10d
+     mov %r11d, %ebx
+     add 8, %r11d
+     mov %r12d, 8
+     mov %edx, %r12d

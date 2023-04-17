@@ -1,17 +1,10 @@
 public class test_1 {
     public int main(){
-        int a = 0;
-        int b = 3 + a;
-        int c = 0;
-        int d = c + 6 + a + b  + 8;
-        return d;
+        int a = 1;
+        int b = 2;
+        int c = a +  b;
+        int d = c + 66;
+        println_d();
+        return c;
     }
-    private int myfunc(){
-        int a = 0;
-        int b = 3 + a;
-        int c = 0;
-        int d = c + 6 + a + b  + 8;
-        return d;
-    }
-
 }
