@@ -1,24 +1,28 @@
  test_1.main: 
       t2_0: BeginFunc      
       t2_1: stackPointer-=  16  // Manipulating stack (equal to size of function)  
-      t2_2: *_int  10  5  _v29
-      t2_3: =  _v29    a
-      t2_4: >  a  5  _v40
-      t2_5: ifFalse  _v40  goto  t2_12
-      t2_6: LCall  println_a    
-      t2_7: =  returnRegister    _v46
-      t2_8: stackPointer=  basePointer    
-      t2_9: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
-      t2_10: stackpointer+=  0  // Remove parameters passed into stack  
-      t2_11:     goto  t2_12
-      t2_12: >  a  5  _v58
-      t2_13: ifFalse  _v58  goto  t2_17
-      t2_14: =  a    _v63
-      t2_15: --  a    a
-      t2_16:     goto  t2_12
-      t2_17: LCall  println_a    
-      t2_18: =  returnRegister    _v73
-      t2_19: stackPointer=  basePointer    
-      t2_20: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
-      t2_21: stackpointer+=  0  // Remove parameters passed into stack  
-      t2_22: EndFunc      
+      t2_2: =  5    c
+      t2_3: *_int  c  3  _v31
+      t2_4: +_int  5  _v31  _v32
+      t2_5: =  _v32    a
+      t2_6: =  a    b
+      t2_7: =_int  5    c
+      t2_8: >  a  5  _v59
+      t2_9: ifFalse  _v59  goto  t2_16
+      t2_10: LCall  println_a    
+      t2_11: =  returnRegister    _v65
+      t2_12: stackPointer=  basePointer    
+      t2_13: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
+      t2_14: stackpointer+=  0  // Remove parameters passed into stack  
+      t2_15:     goto  t2_16
+      t2_16: >  a  5  _v77
+      t2_17: ifFalse  _v77  goto  t2_26
+      t2_18: =  a    _v82
+      t2_19: --  a    a
+      t2_20: LCall  println_a    
+      t2_21: =  returnRegister    _v88
+      t2_22: stackPointer=  basePointer    
+      t2_23: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
+      t2_24: stackpointer+=  0  // Remove parameters passed into stack  
+      t2_25:     goto  t2_16
+      t2_26: EndFunc      

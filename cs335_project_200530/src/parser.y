@@ -806,7 +806,7 @@ int getTempReg(string val){
 }
 
 int tempVarRegNum = 0;
-int getVarReg(string val){
+int getVarReg(ofstream &myfile, string val){
     // check if already in reg
     for(int i = 0; i < regS.size(); i++){
         if(regS[i].val == val){
@@ -817,6 +817,21 @@ int getVarReg(string val){
     tempVarRegNum = i+1;
     regS[i].isUsed = true;
     regS[i].val = val;
+    myfile << "     mov -" << getOffset(val) << "(%rbp) ," << regS[i].name << "       # Load " << val << " from stack" << endl;
+    return i;
+}
+int setVarReg(ofstream &myfile, string val){
+    // check if already in reg
+    for(int i = 0; i < regS.size(); i++){
+        if(regS[i].val == val){
+            return i;
+        }
+    }
+    int i = tempVarRegNum%4;
+    tempVarRegNum = i+1;
+    regS[i].isUsed = true;
+    regS[i].val = val;
+    myfile << "     mov " << regS[i].name << ", -" << getOffset(val) << "(%rbp) "  << "       # Set " << val << " in stack" << endl;
     return i;
 }
 
@@ -848,7 +863,7 @@ void codeGen(){
                 if(getOffset(arg) == -1){
                     if(arg[0] == '_') r1 = regT[getTempReg(arg)].name;
                     else  r1 = "$" + arg;
-                }else  r1 = regS[getVarReg(arg)].name;
+                }else  r1 = regS[getVarReg(myfile, arg)].name;
                 if(r1 == "$returnRegister"){
                     continue;
                 }
@@ -872,11 +887,11 @@ void codeGen(){
                 if(getOffset(arg1) == -1){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
                     else  r1 = "$" + arg1;
-                }else  r1 = regS[getVarReg(arg1)].name;
+                }else  r1 = regS[getVarReg(myfile, arg1)].name;
                 if(getOffset(res) == -1){
                     if(res[0] == '_')r2 = regT[getTempReg(res)].name;
                     else  r2 = "$" +  res;
-                }else  r2 = regS[getVarReg(res)].name;
+                }else  r2 = regS[setVarReg(myfile, res)].name;
                 if(r1 == "$returnRegister"){
                     continue;
                 }
@@ -890,15 +905,15 @@ void codeGen(){
                 if(getOffset(arg1) == -1){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
                     else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(arg1)].name;
+                }else  r1 = regS[getVarReg(myfile, arg1)].name;
                 if(getOffset(arg2) == -1){
                     if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
                     else  r2 = "$" +  arg2;
-                }else  r2 = regS[getVarReg(arg2)].name;
+                }else  r2 = regS[getVarReg(myfile, arg2)].name;
                 if(getOffset(res) == -1){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(res)].name;
+                }else  r3 = regS[getVarReg(myfile, res)].name;
                 myfile << "     cmp " << r2 << ", " << r1 << endl;
                 myfile << "     je " << tacMap[currTacVec][i] -> labelname + "t" << endl;
                 myfile << "     mov " << "$0" << ", " << r3 << endl;
@@ -915,15 +930,15 @@ void codeGen(){
                 if(getOffset(arg1) == -1){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
                     else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(arg1)].name;
+                }else  r1 = regS[getVarReg(myfile, arg1)].name;
                 if(getOffset(arg2) == -1){
                     if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
                     else  r2 = "$" +  arg2;
-                }else  r2 = regS[getVarReg(arg2)].name;
+                }else  r2 = regS[getVarReg(myfile, arg2)].name;
                 if(getOffset(res) == -1){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(res)].name;
+                }else  r3 = regS[getVarReg(myfile, res)].name;
                 myfile << "     cmp " << r2 << ", " << r1 << endl;
                 myfile << "     jl " << tacMap[currTacVec][i] -> labelname + "t" << endl;
                 myfile << "     mov " << "$0" << ", " << r3 << endl;
@@ -940,15 +955,15 @@ void codeGen(){
                 if(getOffset(arg1) == -1){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
                     else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(arg1)].name;
+                }else  r1 = regS[getVarReg(myfile, arg1)].name;
                 if(getOffset(arg2) == -1){
                     if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
                     else  r2 = "$" +  arg2;
-                }else  r2 = regS[getVarReg(arg2)].name;
+                }else  r2 = regS[getVarReg(myfile, arg2)].name;
                 if(getOffset(res) == -1){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(res)].name;
+                }else  r3 = regS[getVarReg(myfile, res)].name;
                 myfile << "     cmp " << r2 << ", " << r1 << endl;
                 myfile << "     jg " << tacMap[currTacVec][i] -> labelname + "t" << endl;
                 myfile << "     mov " << "$0" << ", " << r3 << endl;
@@ -965,15 +980,15 @@ void codeGen(){
                 if(getOffset(arg1) == -1){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
                     else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(arg1)].name;
+                }else  r1 = regS[getVarReg(myfile, arg1)].name;
                 if(getOffset(arg2) == -1){
                     if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
                     else  r2 = "$" +  arg2;
-                }else  r2 = regS[getVarReg(arg2)].name;
+                }else  r2 = regS[getVarReg(myfile, arg2)].name;
                 if(getOffset(res) == -1){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(res)].name;
+                }else  r3 = regS[getVarReg(myfile, res)].name;
                 myfile << "     cmp " << r2 << ", " << r1 << endl;
                 myfile << "     jle " << tacMap[currTacVec][i] -> labelname + "t" << endl;
                 myfile << "     mov " << "$0" << ", " << r3 << endl;
@@ -990,15 +1005,15 @@ void codeGen(){
                 if(getOffset(arg1) == -1){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
                     else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(arg1)].name;
+                }else  r1 = regS[getVarReg(myfile, arg1)].name;
                 if(getOffset(arg2) == -1){
                     if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
                     else  r2 = "$" +  arg2;
-                }else  r2 = regS[getVarReg(arg2)].name;
+                }else  r2 = regS[getVarReg(myfile, arg2)].name;
                 if(getOffset(res) == -1){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(res)].name;
+                }else  r3 = regS[getVarReg(myfile, res)].name;
                 myfile << "     cmp " << r2 << ", " << r1 << endl;
                 myfile << "     jge " << tacMap[currTacVec][i] -> labelname + "t" << endl;
                 myfile << "     mov " << "$0" << ", " << r3 << endl;
@@ -1015,15 +1030,15 @@ void codeGen(){
                 if(getOffset(arg1) == -1){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
                     else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(arg1)].name;
+                }else  r1 = regS[getVarReg(myfile, arg1)].name;
                 if(getOffset(arg2) == -1){
                     if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
                     else  r2 = "$" +  arg2;
-                }else  r2 = regS[getVarReg(arg2)].name;
+                }else  r2 = regS[getVarReg(myfile, arg2)].name;
                 if(getOffset(res) == -1){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(res)].name;
+                }else  r3 = regS[getVarReg(myfile, res)].name;
                 myfile << "     cmp " << "$0" << ", " << r1 << endl;
                 myfile << "     je " << tacMap[currTacVec][i] -> labelname + "t" << endl;
                 myfile << "     cmp " << "$0" << ", " << r2 << endl;
@@ -1042,15 +1057,15 @@ void codeGen(){
                 if(getOffset(arg1) == -1){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
                     else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(arg1)].name;
+                }else  r1 = regS[getVarReg(myfile, arg1)].name;
                 if(getOffset(arg2) == -1){
                     if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
                     else  r2 = "$" +  arg2;
-                }else  r2 = regS[getVarReg(arg2)].name;
+                }else  r2 = regS[getVarReg(myfile, arg2)].name;
                 if(getOffset(res) == -1){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(res)].name;
+                }else  r3 = regS[getVarReg(myfile, res)].name;
                 myfile << "     cmp " << "$1" << ", " << r1 << endl;
                 myfile << "     je " << tacMap[currTacVec][i] -> labelname + "t" << endl;
                 myfile << "     cmp " << "$1" << ", " << r2 << endl;
@@ -1068,11 +1083,11 @@ void codeGen(){
                 if(getOffset(arg1) == -1){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
                     else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(arg1)].name;
+                }else  r1 = regS[getVarReg(myfile, arg1)].name;
                 if(getOffset(res) == -1){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(res)].name;
+                }else  r3 = regS[getVarReg(myfile, res)].name;
                 myfile << "     add " << "$1" << ", " << r3 << "      #   " << res << " = "<< arg1 << " + " << "1" <<  endl;
             }
             if(tacMap[currTacVec][i] -> op == "--"){
@@ -1082,11 +1097,11 @@ void codeGen(){
                 if(getOffset(arg1) == -1){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
                     else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(arg1)].name;
+                }else  r1 = regS[getVarReg(myfile, arg1)].name;
                 if(getOffset(res) == -1){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(res)].name;
+                }else  r3 = regS[getVarReg(myfile, res)].name;
                 myfile << "     sub " << "$1" << ", " << r3 << "      #   " << res << " = "<< arg1 << " - " << "1" <<  endl;
             }
             if(tacMap[currTacVec][i] -> op == "+_int"){
@@ -1097,15 +1112,15 @@ void codeGen(){
                 if(getOffset(arg1) == -1){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
                     else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(arg1)].name;
+                }else  r1 = regS[getVarReg(myfile, arg1)].name;
                 if(getOffset(arg2) == -1){
                     if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
                     else  r2 = "$" +  arg2;
-                }else  r2 = regS[getVarReg(arg2)].name;
+                }else  r2 = regS[getVarReg(myfile, arg2)].name;
                 if(getOffset(res) == -1){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(res)].name;
+                }else  r3 = regS[getVarReg(myfile, res)].name;
                 myfile << "     mov " << r1 << ", " << r3 << endl;
                 myfile << "     add " << r2 << ", " << r3 << "      #   " << res << " = "<< arg1 << " + " << arg2 <<  endl;
             }
@@ -1117,15 +1132,15 @@ void codeGen(){
                 if(getOffset(arg1) == -1){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
                     else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(arg1)].name;
+                }else  r1 = regS[getVarReg(myfile, arg1)].name;
                 if(getOffset(arg2) == -1){
                     if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
                     else  r2 = "$" +  arg2;
-                }else  r2 = regS[getVarReg(arg2)].name;
+                }else  r2 = regS[getVarReg(myfile, arg2)].name;
                 if(getOffset(res) == -1){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(res)].name;
+                }else  r3 = regS[getVarReg(myfile, res)].name;
                 myfile << "     mov " << r1 << ", " << r3 << endl;
                 myfile << "     sub " << r2 << ", " << r3 << "      #   " << res << " = "<< arg1 << " - " << arg2 <<  endl;
             }
@@ -1137,15 +1152,15 @@ void codeGen(){
                 if(getOffset(arg1) == -1){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
                     else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(arg1)].name;
+                }else  r1 = regS[getVarReg(myfile, arg1)].name;
                 if(getOffset(arg2) == -1){
                     if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
                     else  r2 = "$" +  arg2;
-                }else  r2 = regS[getVarReg(arg2)].name;
+                }else  r2 = regS[getVarReg(myfile, arg2)].name;
                 if(getOffset(res) == -1){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(res)].name;
+                }else  r3 = regS[getVarReg(myfile, res)].name;
                 myfile << "     mov " << r1 << ", " << r3 << endl;
                 myfile << "     imul " << r2 << ", " << r3 << "      #   " << res << " = "<< arg1 << " * " << arg2 <<  endl;
             }
@@ -1157,15 +1172,15 @@ void codeGen(){
                 if(getOffset(arg1) == -1){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
                     else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(arg1)].name;
+                }else  r1 = regS[getVarReg(myfile, arg1)].name;
                 if(getOffset(arg2) == -1){
                     if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
                     else  r2 = "$" +  arg2;
-                }else  r2 = regS[getVarReg(arg2)].name;
+                }else  r2 = regS[getVarReg(myfile, arg2)].name;
                 if(getOffset(res) == -1){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(res)].name;
+                }else  r3 = regS[getVarReg(myfile, res)].name;
                 myfile << "     mov " << r1 << ", " << r3 << endl;
                 myfile << "     div " << r2 << ", " << r3 << "      #   " << res << " = "<< arg1 << " / " << arg2 <<  endl;
             }
@@ -1177,15 +1192,15 @@ void codeGen(){
                 if(getOffset(arg1) == -1){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
                     else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(arg1)].name;
+                }else  r1 = regS[getVarReg(myfile, arg1)].name;
                 if(getOffset(arg2) == -1){
                     if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
                     else  r2 = "$" +  arg2;
-                }else  r2 = regS[getVarReg(arg2)].name;
+                }else  r2 = regS[getVarReg(myfile, arg2)].name;
                 if(getOffset(res) == -1){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(res)].name;
+                }else  r3 = regS[getVarReg(myfile, res)].name;
                 myfile << "     mov " << r1 << ", " << r3 << endl;
                 myfile << "     mod " << r2 << ", " << r3 << "      #   " << res << " = "<< arg1 << " % " << arg2 <<  endl;
             }
@@ -1195,7 +1210,7 @@ void codeGen(){
                     myfile << "     push %rbx" << endl;
                     myfile << "     push %rcx" << endl;
                     myfile << "     mov $format, %rdi" << endl;
-                    string r1 = regS[getVarReg(arg1.substr(8))].name;
+                    string r1 = regS[getVarReg(myfile, arg1.substr(8))].name;
                     // cout << r1;
                     myfile << "     mov "<< r1<<", %rsi" << endl;
                     myfile << "     call printf" << endl;

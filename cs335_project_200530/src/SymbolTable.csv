@@ -5,9 +5,9 @@ Class : test_1
 Printing ifelse1 Symbol Table
 
 Printing main Symbol Table
-   a,int,4,4,8,variable
-   c,int,3,4,4,variable
-   b,int,3,4,0,variable
+   b,int,5,4,8,variable
+   a,int,4,4,4,variable
+   c,int,3,4,0,variable
 
 Printing test_1 Symbol Table
    main,int,2,4,0,method
