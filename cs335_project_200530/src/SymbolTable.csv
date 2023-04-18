@@ -2,14 +2,18 @@ Variable,Type,Line,Size,Offset
 Class : test_1
 
 
-Printing ifelse1 Symbol Table
+Printing foo Symbol Table
+   k,int,3,4,12,variable
+   z,int,2,4,8,variable
+   y,int,2,4,4,variable
+   x,int,2,4,0,variable
 
 Printing main Symbol Table
-   b,int,5,4,8,variable
-   a,int,4,4,4,variable
-   c,int,3,4,0,variable
+   wz,int,16,4,12,variable
+   b,int,11,4,8,variable
+   a,int,9,4,4,variable
+   c,int,8,4,0,variable
 
 Printing test_1 Symbol Table
-   main,int,2,4,0,method
-
-Printing while1 Symbol Table
+   main,int,7,4,4,method
+   foo,int,2,4,0,method

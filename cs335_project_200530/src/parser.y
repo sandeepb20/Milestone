@@ -776,15 +776,15 @@ void initRegisters(){
     regT[1].name = "%r9";
     regT[2].name = "%r10";
     regT[3].name = "%r11";
-    regT[4].name = "%r12";
-    regT[5].name = "%r13";
-    regT[6].name = "%r14";
-    regT[7].name = "%r15";
+    regT[4].name = "%rdx";
+    regT[5].name = "%rcx";
+    regT[6].name = "%rbx";
+    regT[7].name = "%rax";
 
-    regS[0].name = "%rax";
-    regS[1].name = "%rbx";
-    regS[2].name = "%rcx";
-    regS[3].name = "%rdx";
+    regS[0].name = "%r12";
+    regS[1].name = "%r13";
+    regS[2].name = "%r14";
+    regS[3].name = "%r15";
 
     esp.name = "%rsp";
     ebp.name = "%rbp";
@@ -793,12 +793,12 @@ void initRegisters(){
 int tempregNum = 0;
 int getTempReg(string val){
     // check if already in reg
-    for(int i = 0; i < regT.size(); i++){
+    for(int i = 0; i < 4; i++){
         if(regT[i].val == val){
             return i;
         }
     }
-    int i = tempregNum%8;
+    int i = tempregNum%4;
     tempregNum = i+1;
     regT[i].isUsed = true;
     regT[i].val = val;
@@ -831,7 +831,6 @@ int setVarReg(ofstream &myfile, string val){
     tempVarRegNum = i+1;
     regS[i].isUsed = true;
     regS[i].val = val;
-    myfile << "     mov " << regS[i].name << ", -" << getOffset(val) << "(%rbp) "  << "       # Set " << val << " in stack" << endl;
     return i;
 }
 
@@ -880,22 +879,27 @@ void codeGen(){
             // if(tacMap[currTacVec][i] -> op == "EndFunc"){
             //     myfile << "     ret " << endl;
             // }
-            if(tacMap[currTacVec][i] -> op == "="){
+            if(tacMap[currTacVec][i] -> op == "=" || tacMap[currTacVec][i] -> op == "=_int"){
                 string r1 = "", r2 = "";
                 string arg1 = tacMap[currTacVec][i] -> arg1;
                 string res = tacMap[currTacVec][i] -> res;
                 if(getOffset(arg1) == -1){
-                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
-                    else  r1 = "$" + arg1;
-                }else  r1 = regS[getVarReg(myfile, arg1)].name;
-                if(getOffset(res) == -1){
-                    if(res[0] == '_')r2 = regT[getTempReg(res)].name;
-                    else  r2 = "$" +  res;
-                }else  r2 = regS[setVarReg(myfile, res)].name;
-                if(r1 == "$returnRegister"){
-                    continue;
+                    if(arg1[0] == '_') {r1 = regT[getTempReg(arg1)].name;}
+                    else  {r1 = "$" + arg1;}
                 }
-                else  myfile << "     mov " << r1 << ", " << r2 << "     # " << res << "=" << arg1 << endl;
+                else  r1 = regS[getVarReg(myfile, arg1)].name;
+                if(r1 == "$returnRegister")continue;
+                if(getOffset(res) == -1){
+                    if(res[0] == '_'){r2 = regT[getTempReg(res)].name;}
+                    else  {r2 = "$" +  res;}
+                    myfile << "     mov " << r1 << ", " << r2 << "     # " << res << "=" << arg1 << endl;
+                }
+                else {
+                    r2 = regS[setVarReg(myfile, res)].name;
+                    myfile << "     mov " << r1 << ", " << r2 << "     # " << res << "=" << arg1 << endl;
+                    myfile << "     mov " << r2 << ", -" << getOffset(res) << "(%rbp) "  << "       # Set " << res << " in stack" << endl;
+                
+                }
             }
             if(tacMap[currTacVec][i] -> op == "=="){
                 string r1 = "", r2 = "", r3 = "";
@@ -1547,7 +1551,7 @@ void ThreeACHelperFunc(int id){
             tacMap[currTacVec].push_back(t);
 
 
-            tac* t1 = createTacCustom("=", "getparam", "",createArg(id));
+            tac* t1 = createTacCustom("getparam", "","",createArg(id));
             memoryLoc.push(createArg(id));
             tacMap[currTacVec].push_back(t1);
             ThreeACHelperFunc(temp[2]);
@@ -1575,13 +1579,21 @@ void ThreeACHelperFunc(int id){
             memoryLoc.pop();
         }
     }
+    if(tree[id].first == "PrimaryNoNewArray"){
+        if(tree[temp[0]].first == "(" && tree[temp[2]].first == ")" )
+        {   childcallistrue = 0;
+        ThreeACHelperFunc(temp[1]);
+            tac* t = createTacCustom("=", createArg(temp[1]), "", createArg(id));
+            tacMap[currTacVec].push_back(t);
+        }
+    }
     if(tree[id].first == "FormalParameterList"){
         childcallistrue = 0;
         if(tree[temp[0]].first == "FormalParameterList"){
             ThreeACHelperFunc(temp[0]);
             ThreeACHelperFunc(temp[2]);
             vector<int> temp1 = tree[temp[2]].second;
-            tac* t = createTacCustom("=","getparam", "", createArg3(temp1[2]));
+            tac* t = createTacCustom("getparam","", "", createArg3(temp1[2]));
             tacMap[currTacVec].push_back(t);
             
         }
@@ -1589,11 +1601,11 @@ void ThreeACHelperFunc(int id){
            
             ThreeACHelperFunc(temp[0]);
              vector<int>  temp1 = tree[temp[0]].second;
-            tac* t1 = createTacCustom("=","getparam",  "", createArg3(temp1[2]));
+            tac* t1 = createTacCustom("getparam","",  "", createArg3(temp1[2]));
             tacMap[currTacVec].push_back(t1);
              ThreeACHelperFunc(temp[2]);
             temp1 = tree[temp[2]].second;
-            tac* t = createTacCustom("=","getparam", "", createArg3(temp1[2]));
+            tac* t = createTacCustom("getparam","", "", createArg3(temp1[2]));
             tacMap[currTacVec].push_back(t);
         }
     }
@@ -1822,7 +1834,7 @@ void ThreeACHelperFunc(int id){
             }
             if(tree[temp[2]].first == "FormalParameter"){
                 vector<int> child1 = tree[temp[2]].second;
-                t = createTacCustom("=","getparam", "", createArg3(child1[2]));
+                t = createTacCustom("getparam","", "", createArg3(child1[2]));
                 tacMap[currTacVec].push_back(t);
             }
         }
@@ -2053,6 +2065,9 @@ void tpc(int id){
     for(int i = 0; i < child.size(); i++){
         
         tpc(child[i]);
+    }
+    if(tree[id].first == "PrimaryNoNewArray"){
+        whtIsType[id] = whtIsType[(tree[id].second)[1]];
     }
      if(tree[id].first == "FieldAccess"){
         whtIsType[id] = whtIsType[(tree[id].second)[2]];
