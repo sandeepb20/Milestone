@@ -678,6 +678,8 @@ typedef struct ThreeAC {
     string arg2;
     string res;
 
+    string labelname;
+    string falseLabel;
     bool isGoto = false;
     string gotoLabel;
     string arg;
@@ -758,6 +760,7 @@ map<string, string> getreg;
 
 
 // *************Registers**************
+set<string> labels;
 typedef struct Reg{
     string name;
     bool isUsed = false;
@@ -829,9 +832,30 @@ void codeGen(){
     for(auto i = tacMap.begin(); i != tacMap.end(); i++){
         currTacVec =  i->first ;
         myfile << " "<< currTacVec.substr(currTacVec.find(".")+1, -1) << ":" << endl;
-
+        
         // cout << " "+ currTacVec + " : " << getClass(currTacVec) <<" \n";
         for(int i = 0; i < tacMap[currTacVec].size(); i++){
+            // cout << tacMap[currTacVec][i] -> labelname << endl;
+            string l = tacMap[currTacVec][i] -> labelname;
+            if(labels.find(l) != labels.end()){
+                myfile << " " << l << ":" << endl;
+            }
+            if(tacMap[currTacVec][i] -> gotoLabel == "ifFalse"){
+                string r1 = "", r2 = "";
+                string arg = tacMap[currTacVec][i] -> arg;
+                string res = tacMap[currTacVec][i] -> falseLabel;
+                if(getOffset(arg) == -1){
+                    if(arg[0] == '_') r1 = regT[getTempReg(arg)].name;
+                    else  r1 = "$" + arg;
+                }else  r1 = regS[getVarReg(arg)].name;
+                if(r1 == "$returnRegister"){
+                    continue;
+                }
+                else{
+                myfile << "     cmp " << "$1" << ", " << r1 << endl;
+                myfile << "     jne " << res << endl;
+                }
+            }
             if(tacMap[currTacVec][i] -> op == "="){
                 string r1 = "", r2 = "";
                 string arg1 = tacMap[currTacVec][i] -> arg1;
@@ -848,6 +872,185 @@ void codeGen(){
                     continue;
                 }
                 else  myfile << "     mov " << r1 << ", " << r2 << "     # " << res << "=" << arg1 << endl;
+            }
+            if(tacMap[currTacVec][i] -> op == "=="){
+                string r1 = "", r2 = "", r3 = "";
+                string arg1 = tacMap[currTacVec][i] -> arg1;
+                string arg2 = tacMap[currTacVec][i] -> arg2;
+                string res = tacMap[currTacVec][i] -> res;
+                if(getOffset(arg1) == -1){
+                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
+                    else  r1 = "$" +  arg1;
+                }else  r1 = regS[getVarReg(arg1)].name;
+                if(getOffset(arg2) == -1){
+                    if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
+                    else  r2 = "$" +  arg2;
+                }else  r2 = regS[getVarReg(arg2)].name;
+                if(getOffset(res) == -1){
+                    if(res[0] == '_')r3 = regT[getTempReg(res)].name;
+                    else  r3 = "$" +  res;
+                }else  r3 = regS[getVarReg(res)].name;
+                myfile << "     cmp " << r2 << ", " << r1 << endl;
+                myfile << "     je " << tacMap[currTacVec][i] -> labelname + "t" << endl;
+                myfile << "     mov " << "$0" << ", " << r3 << endl;
+                myfile << "     jmp " << tacMap[currTacVec][i] -> labelname + "f" << endl;
+                myfile << " " << tacMap[currTacVec][i] -> labelname + "t:" << endl;
+                myfile << "     mov " << "$1" << ", " << r3 << endl;
+                myfile << " " << tacMap[currTacVec][i] -> labelname + "f:" << endl;
+            }
+            if(tacMap[currTacVec][i] -> op == "<"){
+                string r1 = "", r2 = "", r3 = "";
+                string arg1 = tacMap[currTacVec][i] -> arg1;
+                string arg2 = tacMap[currTacVec][i] -> arg2;
+                string res = tacMap[currTacVec][i] -> res;
+                if(getOffset(arg1) == -1){
+                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
+                    else  r1 = "$" +  arg1;
+                }else  r1 = regS[getVarReg(arg1)].name;
+                if(getOffset(arg2) == -1){
+                    if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
+                    else  r2 = "$" +  arg2;
+                }else  r2 = regS[getVarReg(arg2)].name;
+                if(getOffset(res) == -1){
+                    if(res[0] == '_')r3 = regT[getTempReg(res)].name;
+                    else  r3 = "$" +  res;
+                }else  r3 = regS[getVarReg(res)].name;
+                myfile << "     cmp " << r2 << ", " << r1 << endl;
+                myfile << "     jl " << tacMap[currTacVec][i] -> labelname + "t" << endl;
+                myfile << "     mov " << "$0" << ", " << r3 << endl;
+                myfile << "     jmp " << tacMap[currTacVec][i] -> labelname + "f" << endl;
+                myfile << " " << tacMap[currTacVec][i] -> labelname + "t:" << endl;
+                myfile << "     mov " << "$1" << ", " << r3 << endl;
+                myfile << " " << tacMap[currTacVec][i] -> labelname + "f:" << endl;
+            }
+            if(tacMap[currTacVec][i] -> op == ">"){
+                string r1 = "", r2 = "", r3 = "";
+                string arg1 = tacMap[currTacVec][i] -> arg1;
+                string arg2 = tacMap[currTacVec][i] -> arg2;
+                string res = tacMap[currTacVec][i] -> res;
+                if(getOffset(arg1) == -1){
+                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
+                    else  r1 = "$" +  arg1;
+                }else  r1 = regS[getVarReg(arg1)].name;
+                if(getOffset(arg2) == -1){
+                    if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
+                    else  r2 = "$" +  arg2;
+                }else  r2 = regS[getVarReg(arg2)].name;
+                if(getOffset(res) == -1){
+                    if(res[0] == '_')r3 = regT[getTempReg(res)].name;
+                    else  r3 = "$" +  res;
+                }else  r3 = regS[getVarReg(res)].name;
+                myfile << "     cmp " << r2 << ", " << r1 << endl;
+                myfile << "     jg " << tacMap[currTacVec][i] -> labelname + "t" << endl;
+                myfile << "     mov " << "$0" << ", " << r3 << endl;
+                myfile << "     jmp " << tacMap[currTacVec][i] -> labelname + "f" << endl;
+                myfile << " " << tacMap[currTacVec][i] -> labelname + "t:" << endl;
+                myfile << "     mov " << "$1" << ", " << r3 << endl;
+                myfile << " " << tacMap[currTacVec][i] -> labelname + "f:" << endl;
+            }
+            if(tacMap[currTacVec][i] -> op == "<="){
+                string r1 = "", r2 = "", r3 = "";
+                string arg1 = tacMap[currTacVec][i] -> arg1;
+                string arg2 = tacMap[currTacVec][i] -> arg2;
+                string res = tacMap[currTacVec][i] -> res;
+                if(getOffset(arg1) == -1){
+                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
+                    else  r1 = "$" +  arg1;
+                }else  r1 = regS[getVarReg(arg1)].name;
+                if(getOffset(arg2) == -1){
+                    if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
+                    else  r2 = "$" +  arg2;
+                }else  r2 = regS[getVarReg(arg2)].name;
+                if(getOffset(res) == -1){
+                    if(res[0] == '_')r3 = regT[getTempReg(res)].name;
+                    else  r3 = "$" +  res;
+                }else  r3 = regS[getVarReg(res)].name;
+                myfile << "     cmp " << r2 << ", " << r1 << endl;
+                myfile << "     jle " << tacMap[currTacVec][i] -> labelname + "t" << endl;
+                myfile << "     mov " << "$0" << ", " << r3 << endl;
+                myfile << "     jmp " << tacMap[currTacVec][i] -> labelname + "f" << endl;
+                myfile << " " << tacMap[currTacVec][i] -> labelname + "t:" << endl;
+                myfile << "     mov " << "$1" << ", " << r3 << endl;
+                myfile << " " << tacMap[currTacVec][i] -> labelname + "f:" << endl;
+            }
+            if(tacMap[currTacVec][i] -> op == ">="){
+                string r1 = "", r2 = "", r3 = "";
+                string arg1 = tacMap[currTacVec][i] -> arg1;
+                string arg2 = tacMap[currTacVec][i] -> arg2;
+                string res = tacMap[currTacVec][i] -> res;
+                if(getOffset(arg1) == -1){
+                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
+                    else  r1 = "$" +  arg1;
+                }else  r1 = regS[getVarReg(arg1)].name;
+                if(getOffset(arg2) == -1){
+                    if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
+                    else  r2 = "$" +  arg2;
+                }else  r2 = regS[getVarReg(arg2)].name;
+                if(getOffset(res) == -1){
+                    if(res[0] == '_')r3 = regT[getTempReg(res)].name;
+                    else  r3 = "$" +  res;
+                }else  r3 = regS[getVarReg(res)].name;
+                myfile << "     cmp " << r2 << ", " << r1 << endl;
+                myfile << "     jge " << tacMap[currTacVec][i] -> labelname + "t" << endl;
+                myfile << "     mov " << "$0" << ", " << r3 << endl;
+                myfile << "     jmp " << tacMap[currTacVec][i] -> labelname + "f" << endl;
+                myfile << " " << tacMap[currTacVec][i] -> labelname + "t:" << endl;
+                myfile << "     mov " << "$1" << ", " << r3 << endl;
+                myfile << " " << tacMap[currTacVec][i] -> labelname + "f:" << endl;
+            }
+            if(tacMap[currTacVec][i] -> op == "&&"){
+                string r1 = "", r2 = "", r3 = "";
+                string arg1 = tacMap[currTacVec][i] -> arg1;
+                string arg2 = tacMap[currTacVec][i] -> arg2;
+                string res = tacMap[currTacVec][i] -> res;
+                if(getOffset(arg1) == -1){
+                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
+                    else  r1 = "$" +  arg1;
+                }else  r1 = regS[getVarReg(arg1)].name;
+                if(getOffset(arg2) == -1){
+                    if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
+                    else  r2 = "$" +  arg2;
+                }else  r2 = regS[getVarReg(arg2)].name;
+                if(getOffset(res) == -1){
+                    if(res[0] == '_')r3 = regT[getTempReg(res)].name;
+                    else  r3 = "$" +  res;
+                }else  r3 = regS[getVarReg(res)].name;
+                myfile << "     cmp " << "$0" << ", " << r1 << endl;
+                myfile << "     je " << tacMap[currTacVec][i] -> labelname + "t" << endl;
+                myfile << "     cmp " << "$0" << ", " << r2 << endl;
+                myfile << "     je " << tacMap[currTacVec][i] -> labelname + "t" << endl;
+                myfile << "     mov " << "$1" << ", " << r3 << endl;
+                myfile << "     jmp " << tacMap[currTacVec][i] -> labelname + "f" << endl;
+                myfile << " " << tacMap[currTacVec][i] -> labelname + "t:" << endl;
+                myfile << "     mov " << "$0" << ", " << r3 << endl;
+                myfile << " " << tacMap[currTacVec][i] -> labelname + "f:" << endl;
+            }
+            if(tacMap[currTacVec][i] -> op == "||"){
+                string r1 = "", r2 = "", r3 = "";
+                string arg1 = tacMap[currTacVec][i] -> arg1;
+                string arg2 = tacMap[currTacVec][i] -> arg2;
+                string res = tacMap[currTacVec][i] -> res;
+                if(getOffset(arg1) == -1){
+                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
+                    else  r1 = "$" +  arg1;
+                }else  r1 = regS[getVarReg(arg1)].name;
+                if(getOffset(arg2) == -1){
+                    if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
+                    else  r2 = "$" +  arg2;
+                }else  r2 = regS[getVarReg(arg2)].name;
+                if(getOffset(res) == -1){
+                    if(res[0] == '_')r3 = regT[getTempReg(res)].name;
+                    else  r3 = "$" +  res;
+                }else  r3 = regS[getVarReg(res)].name;
+                myfile << "     cmp " << "$1" << ", " << r1 << endl;
+                myfile << "     je " << tacMap[currTacVec][i] -> labelname + "t" << endl;
+                myfile << "     cmp " << "$1" << ", " << r2 << endl;
+                myfile << "     je " << tacMap[currTacVec][i] -> labelname + "t" << endl;
+                myfile << "     mov " << "$0" << ", " << r3 << endl;
+                myfile << "     jmp " << tacMap[currTacVec][i] -> labelname + "f" << endl;
+                myfile << " " << tacMap[currTacVec][i] -> labelname + "t:" << endl;
+                myfile << "     mov " << "$1" << ", " << r3 << endl;
+                myfile << " " << tacMap[currTacVec][i] -> labelname + "f:" << endl;
             }
             if(tacMap[currTacVec][i] -> op == "+_int"){
                 string r1 = "", r2 = "", r3 = "";
@@ -993,9 +1196,13 @@ void printThreeAC(){
         uid++;
         for(int i = 0; i < tacMap[currTacVec].size(); i++){
             if(tacMap[currTacVec][i] -> isGoto == true){
+                tacMap[currTacVec][i] -> labelname = "t" + to_string(uid) + "_" +  to_string(i);
+                tacMap[currTacVec][i] -> falseLabel = "t"  + to_string(uid) + "_" + tacMap[currTacVec][i] -> label;
                myfile <<"      t" + to_string(uid) + "_" +  to_string(i)  + ": " + tacMap[currTacVec][i] -> gotoLabel + "  " + tacMap[currTacVec][i] -> arg+ "  " << tacMap[currTacVec][i] -> g +"  " + "t"  + to_string(uid) + "_" + tacMap[currTacVec][i] -> label + "\n";
+               labels.insert(tacMap[currTacVec][i] -> falseLabel);
                 continue;
             }
+            tacMap[currTacVec][i] -> labelname = "t" + to_string(uid) + "_" +  to_string(i);
             myfile <<"      t" + to_string(uid) + "_" +  to_string(i)  + ": " + tacMap[currTacVec][i] -> op + "  " + tacMap[currTacVec][i] -> arg1 + "  " + tacMap[currTacVec][i] -> arg2 + "  " +tacMap[currTacVec][i] -> res + "\n";
         }
     }
