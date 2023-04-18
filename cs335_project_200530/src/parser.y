@@ -681,7 +681,7 @@ typedef struct ThreeAC {
     string labelname;
     string falseLabel;
     bool isGoto = false;
-    string gotoLabel;
+    string gotoLabel = "";
     string arg;
     string g = "goto";
     string label = "";
@@ -855,6 +855,14 @@ void codeGen(){
                 myfile << "     cmp " << "$1" << ", " << r1 << endl;
                 myfile << "     jne " << res << endl;
                 }
+            }
+            if(tacMap[currTacVec][i] -> gotoLabel == "" && tacMap[currTacVec][i] -> isGoto == true){
+                string res = tacMap[currTacVec][i] -> falseLabel;
+                
+                myfile << "     jmp " << res << endl;
+            }
+            if(tacMap[currTacVec][i] -> op == "EndFunc"){
+                myfile << "     ret " << endl;
             }
             if(tacMap[currTacVec][i] -> op == "="){
                 string r1 = "", r2 = "";
@@ -1051,6 +1059,34 @@ void codeGen(){
                 myfile << " " << tacMap[currTacVec][i] -> labelname + "t:" << endl;
                 myfile << "     mov " << "$1" << ", " << r3 << endl;
                 myfile << " " << tacMap[currTacVec][i] -> labelname + "f:" << endl;
+            }
+            if(tacMap[currTacVec][i] -> op == "++"){
+                string r1 = "", r3 = "";
+                string arg1 = tacMap[currTacVec][i] -> arg1;
+                string res = tacMap[currTacVec][i] -> res;
+                if(getOffset(arg1) == -1){
+                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
+                    else  r1 = "$" +  arg1;
+                }else  r1 = regS[getVarReg(arg1)].name;
+                if(getOffset(res) == -1){
+                    if(res[0] == '_')r3 = regT[getTempReg(res)].name;
+                    else  r3 = "$" +  res;
+                }else  r3 = regS[getVarReg(res)].name;
+                myfile << "     add " << "$1" << ", " << r3 << "      #   " << res << " = "<< arg1 << " + " << "1" <<  endl;
+            }
+            if(tacMap[currTacVec][i] -> op == "--"){
+                string r1 = "", r3 = "";
+                string arg1 = tacMap[currTacVec][i] -> arg1;
+                string res = tacMap[currTacVec][i] -> res;
+                if(getOffset(arg1) == -1){
+                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
+                    else  r1 = "$" +  arg1;
+                }else  r1 = regS[getVarReg(arg1)].name;
+                if(getOffset(res) == -1){
+                    if(res[0] == '_')r3 = regT[getTempReg(res)].name;
+                    else  r3 = "$" +  res;
+                }else  r3 = regS[getVarReg(res)].name;
+                myfile << "     sub " << "$1" << ", " << r3 << "      #   " << res << " = "<< arg1 << " - " << "1" <<  endl;
             }
             if(tacMap[currTacVec][i] -> op == "+_int"){
                 string r1 = "", r2 = "", r3 = "";

@@ -1,16 +1,12 @@
  test_1.main: 
       t2_0: BeginFunc      
       t2_1: stackPointer -=   12  // Manipulating stack (equal to size of function)  
-      t2_2: =  1    a
+      t2_2: =  10    a
       t2_3: =  2    b
       t2_4: =  0    c
-      t2_5: ==  a  b  _v43
-      t2_6: >  b  1  _v48
-      t2_7: <=  c  9  _v53
-      t2_8: &&  _v48  _v53  _v54
-      t2_9: ||  _v43  _v54  _v55
-      t2_10: ifFalse  _v55  goto  t2_13
-      t2_11: =  0    c
-      t2_12:     goto  t2_14
-      t2_13: =  1    c
-      t2_14: EndFunc      
+      t2_5: >  a  5  _v43
+      t2_6: ifFalse  _v43  goto  t2_10
+      t2_7: =  a    _v48
+      t2_8: --  a    a
+      t2_9:     goto  t2_5
+      t2_10: EndFunc      
