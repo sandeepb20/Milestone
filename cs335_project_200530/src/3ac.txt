@@ -1,52 +1,36 @@
  test_1.foo: 
       t2_0: BeginFunc      
       t2_1: stackPointer-=  16  // Manipulating stack (equal to size of function)  
-      t2_2: getparam      x
-      t2_3: getparam      y
-      t2_4: getparam      z
-      t2_5: =  9    k
-      t2_6: LCall  println_k    
-      t2_7: =  returnRegister    _v39
-      t2_8: stackPointer=  basePointer    
-      t2_9: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
-      t2_10: stackpointer+=  0  // Remove parameters passed into stack  
-      t2_11: Return  k  // load return value to return register  
-      t2_12: EndFunc      
+      t2_2: getparam      t
+      t2_3: getparam      w
+      t2_4: getparam      u
+      t2_5: =  9    p
+      t2_6: LCall  println_t    
+      t2_7: returnRegister  _v39    
+      t2_8: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
+      t2_9: stackPointer+=  0  // Remove parameters passed into stack  
+      t2_10: Return  1  // load return value to return register...  
+      t2_11: EndFunc      
  test_1.main: 
       t3_0: BeginFunc      
       t3_1: stackPointer-=  16  // Manipulating stack (equal to size of function)  
-      t3_2: =  5    c
-      t3_3: *_int  6  9  _v76
-      t3_4: +_int  5  _v76  _v77
-      t3_5: *_int  3  4  _v83
-      t3_6: =  _v83    _v85
-      t3_7: +_int  _v77  _v85  _v86
-      t3_8: =  _v86    a
-      t3_9: LCall  println_a    
-      t3_10: =  returnRegister    _v95
-      t3_11: stackPointer=  basePointer    
-      t3_12: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
-      t3_13: stackpointer+=  0  // Remove parameters passed into stack  
-      t3_14: =  a    b
-      t3_15: LCall  println_b    
-      t3_16: =  returnRegister    _v111
-      t3_17: stackPointer=  basePointer    
+      t3_2: =  9    a
+      t3_3: PushParam  37    
+      t3_4: PushParam  36    
+      t3_5: PushParam  a    
+      t3_6: LCall  foo    
+      t3_7: returnRegister  _v81    
+      t3_8: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
+      t3_9: stackPointer+=  16  // Remove parameters passed into stack  
+      t3_10: =  _v81    k
+      t3_11: =  3    c
+      t3_12: LCall  println_k    
+      t3_13: returnRegister  _v99    
+      t3_14: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
+      t3_15: stackPointer+=  0  // Remove parameters passed into stack  
+      t3_16: LCall  println_c    
+      t3_17: returnRegister  _v106    
       t3_18: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
-      t3_19: stackpointer+=  0  // Remove parameters passed into stack  
-      t3_20: =_int  5    c
-      t3_21: =_int  69    a
-      t3_22: PushParam      c
-      t3_23: PushParam      b
-      t3_24: PushParam      a
-      t3_25: LCall  foo    
-      t3_26: =  returnRegister    _v142
-      t3_27: stackPointer=  basePointer    
-      t3_28: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
-      t3_29: stackpointer+=  16  // Remove parameters passed into stack  
-      t3_30: =  _v142    wz
-      t3_31: LCall  println_wz    
-      t3_32: =  returnRegister    _v151
-      t3_33: stackPointer=  basePointer    
-      t3_34: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
-      t3_35: stackpointer+=  0  // Remove parameters passed into stack  
-      t3_36: EndFunc      
+      t3_19: stackPointer+=  0  // Remove parameters passed into stack  
+      t3_20: Return  1  // load return value to return register...  
+      t3_21: EndFunc      
