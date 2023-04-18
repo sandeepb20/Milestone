@@ -837,6 +837,7 @@ void codeGen(){
         for(int i = 0; i < tacMap[currTacVec].size(); i++){
             // cout << tacMap[currTacVec][i] -> labelname << endl;
             string l = tacMap[currTacVec][i] -> labelname;
+
             if(labels.find(l) != labels.end()){
                 myfile << " " << l << ":" << endl;
             }
@@ -861,9 +862,9 @@ void codeGen(){
                 
                 myfile << "     jmp " << res << endl;
             }
-            if(tacMap[currTacVec][i] -> op == "EndFunc"){
-                myfile << "     ret " << endl;
-            }
+            // if(tacMap[currTacVec][i] -> op == "EndFunc"){
+            //     myfile << "     ret " << endl;
+            // }
             if(tacMap[currTacVec][i] -> op == "="){
                 string r1 = "", r2 = "";
                 string arg1 = tacMap[currTacVec][i] -> arg1;
@@ -1146,7 +1147,7 @@ void codeGen(){
                     else  r3 = "$" +  res;
                 }else  r3 = regS[getVarReg(res)].name;
                 myfile << "     mov " << r1 << ", " << r3 << endl;
-                myfile << "     mul " << r2 << ", " << r3 << "      #   " << res << " = "<< arg1 << " * " << arg2 <<  endl;
+                myfile << "     imul " << r2 << ", " << r3 << "      #   " << res << " = "<< arg1 << " * " << arg2 <<  endl;
             }
             if(tacMap[currTacVec][i] -> op == "/_int"){
                 string r1 = "", r2 = "", r3 = "";
@@ -1193,7 +1194,6 @@ void codeGen(){
                 if(arg1.substr(0,7) == "println"){
                     myfile << "     push %rbx" << endl;
                     myfile << "     push %rcx" << endl;
-                    myfile << "     push %rdx" << endl;
                     myfile << "     mov $format, %rdi" << endl;
                     string r1 = regS[getVarReg(arg1.substr(8))].name;
                     // cout << r1;
@@ -1201,10 +1201,40 @@ void codeGen(){
                     myfile << "     call printf" << endl;
                     myfile << "     pop %rdx" << endl;
                     myfile << "     pop %rcx" << endl;
-                    myfile << "     pop %rbx" << endl;
                 }
                 // myfile << "     call " << tacMap[currTacVec][i] -> arg1 << endl;
             }
+
+
+            // ********************** For stackmanipulation **************
+
+             if(tacMap[currTacVec][i] -> op == "BeginFunc"){
+                myfile << "     push " << ebp.name << endl;
+                myfile << "     mov " << esp.name << ", " << ebp.name << "      # beginFunc" <<  endl;
+            }
+            if(tacMap[currTacVec][i] -> op == "EndFunc"){
+                myfile << "     mov " << ebp.name << ", " << esp.name << endl;
+                myfile << "     pop " << ebp.name << endl;
+                myfile << "     ret" << "       # EndFunc"<<endl;
+            }
+            if(tacMap[currTacVec][i] -> op == "stackPointer-="){
+
+                string arg1 = tacMap[currTacVec][i] -> arg1;
+                myfile << "     sub " << "$" << arg1 << ", " << esp.name << "       # stackPointer-= " << arg1  << endl;
+            }
+            if(tacMap[currTacVec][i] -> op == "stackPointer+="){
+                string arg1 = tacMap[currTacVec][i] -> arg1;
+                myfile << "     add " << "$" << arg1 << ", " << esp.name << "       # stackPointer+= " << arg1  << endl;
+            }
+            if(tacMap[currTacVec][i] -> op ==  "stackPointer="){
+                string arg1 = tacMap[currTacVec][i] -> arg1;
+                if(arg1 == "basePointer"){
+                    myfile << "     mov " << ebp.name << ", " << esp.name <<"       # stackPointer = basepointer" <<endl;
+                }
+            }
+
+            // *************************End ************************
+
            
             // if(tacMap[currTacVec][i] -> op == "+_int"){
             //     string arg1 = tacMap[currTacVec][i] -> arg1;
@@ -1494,8 +1524,11 @@ void ThreeACHelperFunc(int id){
             tacMap[currTacVec].push_back(t);
             
             int size = constrSize(temp[0]);
+            if(size%8){
+                size = (size/8+1)/8;
+            }
             // cout << size << endl;
-            t = createTacCustom("stackPointer -=", to_string(size), "", "");
+            t = createTacCustom("stackPointer-=", to_string(size), "", "");
             tacMap[currTacVec].push_back(t);
 
 
@@ -1765,7 +1798,9 @@ void ThreeACHelperFunc(int id){
             tacMap[currTacVec].push_back(t);
             int funcSize1 = funcSize(temp[0]);
             // cout << "Funcsize " << funcSize1 << endl; 
-            t = createTacCustom("stackPointer -= ", to_string(funcSize1), "// Manipulating stack (equal to size of function)","");
+            
+            if(funcSize1%8)funcSize1 = (funcSize1/8+1)*8;
+            t = createTacCustom("stackPointer-=", to_string(funcSize1), "// Manipulating stack (equal to size of function)","");
             tacMap[currTacVec].push_back(t);
             if(tree[temp[2]].first != ")"){
                 ThreeACHelperFunc(temp[2]);
@@ -1805,7 +1840,7 @@ void ThreeACHelperFunc(int id){
                 }
                 t = createTacCustom("=", "returnRegister", "", createArg(id));
                 tacMap[currTacVec].push_back(t);
-                t = createTacCustom("stackPointer", "=", "basePointer", "");
+                t = createTacCustom("stackPointer=", "basePointer","", "");
                 tacMap[currTacVec].push_back(t);
                 t = createTacCustom("RestoreMachineState","//Adjust Base Pointer to previous base pointer and reload registers", "", "");
                 tacMap[currTacVec].push_back(t);
@@ -1817,7 +1852,8 @@ void ThreeACHelperFunc(int id){
                 else  param = getParamsOf(temp[0]);
                 int paramSize1 = paramSize(param);
                 // cout << paramSize1 << endl; 
-                 t = createTacCustom("stackpointer +=", to_string(paramSize1), "// Remove parameters passed into stack", "");
+                if(paramSize1%8)paramSize1 = (paramSize1/8+1)*8;
+                 t = createTacCustom("stackpointer+=", to_string(paramSize1), "// Remove parameters passed into stack", "");
                 tacMap[currTacVec].push_back(t);
                  
             }
@@ -1849,7 +1885,7 @@ void ThreeACHelperFunc(int id){
                 /************** */
                  t = createTacCustom("=", "ConstructorValReturned", "", createArg(id));
                 tacMap[currTacVec].push_back(t);
-                t = createTacCustom("stackPointer", "=", "basePointer", "");
+                t = createTacCustom("stackPointer=", "basePointer", "","");
                 tacMap[currTacVec].push_back(t);
                t = createTacCustom("RestoreMachineState","//Adjust Base Pointer to previous base pointer and reload registers", "", "");
                 tacMap[currTacVec].push_back(t);
@@ -1857,7 +1893,8 @@ void ThreeACHelperFunc(int id){
                 vector<string> param = getParamsOfCons(temp[1]);
                 int paramSize1 = paramSize(param) + 4;
                 // cout << paramSize1 << endl; 
-                 t = createTacCustom("stackpointer +=", to_string(paramSize1), "// Remove parameters passed into stack + object refernce", "");
+                if(paramSize1%8) paramSize1 = (paramSize1/8+1)*8;
+                 t = createTacCustom("stackpointer+=", to_string(paramSize1), "// Remove parameters passed into stack + object refernce", "");
                 tacMap[currTacVec].push_back(t);
 
 
