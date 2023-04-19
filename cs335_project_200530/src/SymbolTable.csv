@@ -3,9 +3,8 @@ Class : test_1
 
 
 Printing main Symbol Table
-   c,int,4,4,8,variable
-   b,int,4,4,4,variable
-   a,int,3,4,0,variable
+   b,int[][],4,8,8,variable
+   a,int[],3,8,0,variable
 
 Printing test_1 Symbol Table
    main,int,2,4,0,method

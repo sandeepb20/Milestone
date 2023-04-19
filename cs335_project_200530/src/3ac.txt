@@ -1,13 +1,12 @@
  test_1.main: 
       t2_0: BeginFunc      
-      t2_1: stackPointer -=   12  // Manipulating stack (equal to size of function)  
-      t2_2: =  1    a
-      t2_3: =  2    b
-      t2_4: -_int  a  85  _v34
-      t2_5: =  _v34    c
-      t2_6: LCall  println_c    
-      t2_7: =  returnRegister    _v44
-      t2_8: stackPointer  =  basePointer  
-      t2_9: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
-      t2_10: stackpointer +=  0  // Remove parameters passed into stack  
-      t2_11: EndFunc      
+      t2_1: stackPointer -=   16  // Manipulating stack (equal to size of function)  
+      t2_2: =  28    t1
+      t2_3: param  t1    
+      t2_4: call  allocmem  1  _v27
+      t2_5: =  _v27    a
+      t2_6: =  80    t1
+      t2_7: param  t1    
+      t2_8: call  allocmem  1  _v52
+      t2_9: =  _v52    b
+      t2_10: EndFunc      

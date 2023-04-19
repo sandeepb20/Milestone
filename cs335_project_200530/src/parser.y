@@ -143,6 +143,7 @@ void createEntry(string currTableName, string temp, string type, int line, int s
     if(type == "double"){
         type = "float";
     }
+    if(isArray) size = 8;
     sym_entry* ent = new sym_entry();
 	    ent->type = type;
         ent->line = line;
@@ -678,6 +679,7 @@ typedef struct ThreeAC {
     string arg2;
     string res;
 
+    bool array = 0;
     string labelname;
     string falseLabel;
     bool isGoto = false;
@@ -882,7 +884,7 @@ void codeGen(){
                 myfile << "     popq %rbp " << endl;
                 myfile << "     ret " << endl;
             }
-            if(tacMap[currTacVec][i] -> op == "="){
+            if(tacMap[currTacVec][i] -> op == "=" && tacMap[currTacVec][i] -> array == 0){
                 string r1 = "", r2 = "";
                 string arg1 = tacMap[currTacVec][i] -> arg1;
                 string arg2 = tacMap[currTacVec][i] -> arg2;
@@ -1153,7 +1155,7 @@ void codeGen(){
                 }else  r3 = regS[getVarReg(res)].name;
                 myfile << "     sub " << "$1" << ", " << r3 << "      #   " << res << " = "<< arg1 << " - " << "1" <<  endl;
             }
-            if(tacMap[currTacVec][i] -> op == "+_int"){
+            if(tacMap[currTacVec][i] -> op == "+_int" || tacMap[currTacVec][i] -> op == "+"){
                 string r1 = "", r2 = "", r3 = "";
                 string arg1 = tacMap[currTacVec][i] -> arg1;
                 string arg2 = tacMap[currTacVec][i] -> arg2;
@@ -1173,7 +1175,7 @@ void codeGen(){
                 myfile << "     mov " << r1 << ", " << r3 << endl;
                 myfile << "     add " << r2 << ", " << r3 << "      #   " << res << " = "<< arg1 << " + " << arg2 <<  endl;
             }
-            if(tacMap[currTacVec][i] -> op == "-_int"){
+            if(tacMap[currTacVec][i] -> op == "-_int" || tacMap[currTacVec][i] -> op == "-"){
                 string r1 = "", r2 = "", r3 = "";
                 string arg1 = tacMap[currTacVec][i] -> arg1;
                 string arg2 = tacMap[currTacVec][i] -> arg2;
@@ -1193,7 +1195,7 @@ void codeGen(){
                 myfile << "     mov " << r1 << ", " << r3 << endl;
                 myfile << "     sub " << r2 << ", " << r3 << "      #   " << res << " = "<< arg1 << " - " << arg2 <<  endl;
             }
-            if(tacMap[currTacVec][i] -> op == "*_int"){
+            if(tacMap[currTacVec][i] -> op == "*_int" || tacMap[currTacVec][i] -> op == "*"){
                 string r1 = "", r2 = "", r3 = "";
                 string arg1 = tacMap[currTacVec][i] -> arg1;
                 string arg2 = tacMap[currTacVec][i] -> arg2;
@@ -1213,7 +1215,7 @@ void codeGen(){
                 myfile << "     mov " << r1 << ", " << r3 << endl;
                 myfile << "     mul " << r2 << ", " << r3 << "      #   " << res << " = "<< arg1 << " * " << arg2 <<  endl;
             }
-            if(tacMap[currTacVec][i] -> op == "/_int"){
+            if(tacMap[currTacVec][i] -> op == "/_int" || tacMap[currTacVec][i] -> op == "/"){
                 string r1 = "", r2 = "", r3 = "";
                 string arg1 = tacMap[currTacVec][i] -> arg1;
                 string arg2 = tacMap[currTacVec][i] -> arg2;
@@ -1233,7 +1235,7 @@ void codeGen(){
                 myfile << "     mov " << r1 << ", " << r3 << endl;
                 myfile << "     div " << r2 << ", " << r3 << "      #   " << res << " = "<< arg1 << " / " << arg2 <<  endl;
             }
-            if(tacMap[currTacVec][i] -> op == "%_int"){
+            if(tacMap[currTacVec][i] -> op == "%_int" || tacMap[currTacVec][i] -> op == "%"){
                 string r1 = "", r2 = "", r3 = "";
                 string arg1 = tacMap[currTacVec][i] -> arg1;
                 string arg2 = tacMap[currTacVec][i] -> arg2;
@@ -1457,13 +1459,23 @@ vector<int> getDim(string cclass, string ArrayName){
 }
 int getSizeOfArray(int id){
     string ArrayName = tree[id].first;
+    vector<int> dims;
+    string type;
+    int size = 1;
     for(auto it : class_table[nodeClass[id]]){
         for(auto itr : it.second){
             if(itr.first == ArrayName){
-                return itr.second -> size;
+                dims = itr.second -> ndim;
+                type = itr.second ->type;
+                for(auto i : dims){
+        size *= i;
+    }
+    size *= getSize(type);
+    return size;
             }
         }
     }
+    
     return -1;
 }
 
@@ -1835,10 +1847,13 @@ void ThreeACHelperFunc(int id){
         }
         int sizeOfArr = getSizeOfArray(arrayId);
         tac* t = createTacCustom("=", to_string(sizeOfArr), "", "t1");
+        t->array = 1;
         tacMap[currTacVec].push_back(t);
         tac* t1 = createTacCustom("param", "t1", "", "");
+        t1->array = 1;
         tacMap[currTacVec].push_back(t1);
         tac *t2 = createTacCustom("call", "allocmem", "1", "_v" + to_string(id));
+        t2->array = 1;
         tacMap[currTacVec].push_back(t2);
 
     }
