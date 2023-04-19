@@ -679,7 +679,7 @@ typedef struct ThreeAC {
     string arg2;
     string res;
 
-    bool array = 0;
+    int array = 0;
     string labelname;
     string falseLabel;
     bool isGoto = false;
@@ -935,7 +935,7 @@ void codeGen(){
                 }
                 else  {
                     myfile << "     mov " << r1 << ", " << r2 << "     # " << res << "=" << arg1 << endl;
-
+                    if(res[0] != '_')
                     myfile << "     mov " << r2 << ", -" << getSizeOf(res)+getOffset(res)  << "(%rbp)"<< endl;
                     // myfile << "     movl " << " -" << getSizeOf(res)+getOffset(res)  << "(%rbp), "<< r2 <<endl;
 
@@ -947,6 +947,46 @@ void codeGen(){
 
                 }
                 
+            }
+            if(tacMap[currTacVec][i] -> op == "=" && tacMap[currTacVec][i] -> array == 1){
+                string r1 = "", r2 = "";
+                string arg1 = tacMap[currTacVec][i] -> arg1;
+                string res = tacMap[currTacVec][i] -> res;
+                if(getOffset(arg1) == -1){
+                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
+                    else  r1 = "$" + arg1;
+                }else  r1 = regS[getVarReg(arg1)].name;
+                if(getOffset(res) == -1){
+                    if(res[0] == '_')r2 = regT[getTempReg(res)].name;
+                    else  r2 = "$" +  res;
+                }else  r2 = regS[getVarReg(res)].name;
+                if(arg1[0] == '_'){
+                    myfile << "     mov %rax " << ", -" << getSizeOf(res)+getOffset(res) << "(%rbp)" << endl;
+                }
+                else{
+                    myfile << "     mov " << r1 << ", " << "%rdi" << endl;
+                    myfile << "     call malloc" << endl;
+                }
+            }
+            if(tacMap[currTacVec][i] -> op == "=" && tacMap[currTacVec][i] -> array == 2){
+                string r1 = "", r2 = "";
+                string arg1 = tacMap[currTacVec][i] -> arg1;
+                string res = tacMap[currTacVec][i] -> res;
+                string arr = arg1.substr(arg1.find('[')-1, 1);
+                arg1 = arg1.substr(arg1.find('[')+1, -1);
+                arg1.pop_back();
+                if(getOffset(arg1) == -1){
+                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
+                    else  r1 = "$" + arg1;
+                }else  r1 = regS[getVarReg(arg1)].name;
+                if(getOffset(res) == -1){
+                    if(res[0] == '_')r2 = regT[getTempReg(res)].name;
+                    else  r2 = "$" +  res;
+                }else  r2 = regS[getVarReg(res)].name;
+                
+                myfile << "     mov -" << getSizeOf(arr)+getOffset(arr) << "(%rbp), %rdx" <<  endl;
+                myfile << "     mov " << r1 << ", " << "%rax" << endl;
+                myfile << "     mov (%rdx,%rax,4), " << r2 << endl;
             }
             if(tacMap[currTacVec][i] -> op == "=="){
                 string r1 = "", r2 = "", r3 = "";
@@ -1172,6 +1212,7 @@ void codeGen(){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
                 }else  r3 = regS[getVarReg(res)].name;
+                if(r1 != r3)
                 myfile << "     mov " << r1 << ", " << r3 << endl;
                 myfile << "     add " << r2 << ", " << r3 << "      #   " << res << " = "<< arg1 << " + " << arg2 <<  endl;
             }
@@ -1192,6 +1233,7 @@ void codeGen(){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
                 }else  r3 = regS[getVarReg(res)].name;
+                if(r1 != r3)
                 myfile << "     mov " << r1 << ", " << r3 << endl;
                 myfile << "     sub " << r2 << ", " << r3 << "      #   " << res << " = "<< arg1 << " - " << arg2 <<  endl;
             }
@@ -1212,8 +1254,9 @@ void codeGen(){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
                 }else  r3 = regS[getVarReg(res)].name;
+                if(r1 != r3)
                 myfile << "     mov " << r1 << ", " << r3 << endl;
-                myfile << "     mul " << r2 << ", " << r3 << "      #   " << res << " = "<< arg1 << " * " << arg2 <<  endl;
+                myfile << "     imul " << r2 << ", " << r3 << "      #   " << res << " = "<< arg1 << " * " << arg2 <<  endl;
             }
             if(tacMap[currTacVec][i] -> op == "/_int" || tacMap[currTacVec][i] -> op == "/"){
                 string r1 = "", r2 = "", r3 = "";
@@ -1232,6 +1275,7 @@ void codeGen(){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
                 }else  r3 = regS[getVarReg(res)].name;
+                if(r1 != r3)
                 myfile << "     mov " << r1 << ", " << r3 << endl;
                 myfile << "     div " << r2 << ", " << r3 << "      #   " << res << " = "<< arg1 << " / " << arg2 <<  endl;
             }
@@ -1252,6 +1296,7 @@ void codeGen(){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
                 }else  r3 = regS[getVarReg(res)].name;
+                if(r1 != r3)
                 myfile << "     mov " << r1 << ", " << r3 << endl;
                 myfile << "     mod " << r2 << ", " << r3 << "      #   " << res << " = "<< arg1 << " % " << arg2 <<  endl;
             }
@@ -1834,6 +1879,7 @@ void ThreeACHelperFunc(int id){
             tacMap[currTacVec].push_back(t1);
         }
         tac* t2 = createTacCustom( "=" ,ArrayName + "[" + tempIds + "]","", createArg(id));
+        t2->array = 2;
         tacMap[currTacVec].push_back(t2);
 
     }
@@ -2055,11 +2101,14 @@ void ThreeACHelperFunc(int id){
     if(tree[id].first == "ShiftExpression"){tacMap[currTacVec].push_back(createTac2(id));} 
      if(tree[id].first == "VariableDeclarator"){
         int child1 = temp[0];
+        int flag = 0;
         while(tree[child1].first == "VariableDeclaratorId"){
             vector<int> temp1 = tree[child1].second;
             child1 = temp1[0];
+            flag = 1;
         }
         tac* t = createTacCustom("=", createArg(temp[2]), "", createArg(child1));
+        t->array = flag;
         tacMap[currTacVec].push_back(t);
     }
 }

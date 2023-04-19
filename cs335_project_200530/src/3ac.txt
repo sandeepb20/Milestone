@@ -1,12 +1,15 @@
  test_1.main: 
       t2_0: BeginFunc      
-      t2_1: stackPointer -=   16  // Manipulating stack (equal to size of function)  
-      t2_2: =  28    t1
+      t2_1: stackPointer -=   12  // Manipulating stack (equal to size of function)  
+      t2_2: =  480    t1
       t2_3: param  t1    
-      t2_4: call  allocmem  1  _v27
-      t2_5: =  _v27    a
-      t2_6: =  80    t1
-      t2_7: param  t1    
-      t2_8: call  allocmem  1  _v52
-      t2_9: =  _v52    b
-      t2_10: EndFunc      
+      t2_4: call  allocmem  1  _v43
+      t2_5: =  _v43    b
+      t2_6: =  1    _v53
+      t2_7: *  _v53  6  _v53
+      t2_8: +  _v53  2  _v53
+      t2_9: *  _v53  5  _v53
+      t2_10: +  _v53  3  _v53
+      t2_11: =  b[_v53]    _v63
+      t2_12: =  _v63    c
+      t2_13: EndFunc      
