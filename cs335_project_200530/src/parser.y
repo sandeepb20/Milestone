@@ -988,6 +988,55 @@ void codeGen(){
                 myfile << "     mov " << r1 << ", " << "%rax" << endl;
                 myfile << "     mov (%rdx,%rax,4), " << r2 << endl;
             }
+            if(tacMap[currTacVec][i] -> op == "=" && tacMap[currTacVec][i] -> array == 3){
+                string r1 = "", r2 = "";
+                string arg1 = tacMap[currTacVec][i] -> res;
+                string res = tacMap[currTacVec][i] -> arg1;
+                string arr = arg1.substr(arg1.find('[')-1, 1);
+                arg1 = arg1.substr(arg1.find('[')+1, -1);
+                arg1.pop_back();
+                if(getOffset(arg1) == -1){
+                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
+                    else  r1 = "$" + arg1;
+                }else  r1 = regS[getVarReg(arg1)].name;
+                if(getOffset(res) == -1){
+                    if(res[0] == '_')r2 = regT[getTempReg(res)].name;
+                    else  r2 = "$" +  res;
+                }else  r2 = regS[getVarReg(res)].name;
+                
+                myfile << "     mov -" << getSizeOf(arr)+getOffset(arr) << "(%rbp), %rdx" <<  endl;
+                myfile << "     mov " << r1 << ", " << "%rax" << endl;
+                myfile << "     imul " << "$4" << ", " << "%rax" << endl;
+                myfile << "     add " << "%rdx" << ", " << "%rax" << endl;
+                myfile << "     mov " << r2 << ", %rax" << endl;
+            }
+            if(tacMap[currTacVec][i] -> op == "=_int"){
+                string r1 = "", r2 = "";
+                string arg1 = tacMap[currTacVec][i] -> arg1;
+                string res = tacMap[currTacVec][i] -> res;
+                if(getOffset(arg1) == -1){
+                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
+                    else  r1 = "$" + arg1;
+                }else  r1 = regS[getVarReg(arg1)].name;
+                if(getOffset(res) == -1){
+                    if(res[0] == '_')r2 = regT[getTempReg(res)].name;
+                    else  r2 = "$" +  res;
+                }else  r2 = regS[getVarReg(res)].name;
+                
+                if(res[0] == '_'){
+                    if(getOffset(arg1) != -1)
+                    myfile << "     mov -" << getSizeOf(arg1)+getOffset(arg1) << "(%rbp), " << r2 << endl;
+                    else{
+                       myfile << "     mov " << r1 << ", " << r2 << endl; 
+                    }
+                }
+                else{
+                    myfile << "     mov " << r1 << ", -" << getSizeOf(res)+getOffset(res) << "(%rbp)" << endl;
+                }
+                // myfile << "     mov -" << getSizeOf(arr)+getOffset(arr) << "(%rbp), %rdx" <<  endl;
+                // myfile << "     mov " << r1 << ", " << "%rax" << endl;
+                // myfile << "     mov (%rdx,%rax,4), " << r2 << endl;
+            }
             if(tacMap[currTacVec][i] -> op == "=="){
                 string r1 = "", r2 = "", r3 = "";
                 string arg1 = tacMap[currTacVec][i] -> arg1;
@@ -1878,9 +1927,20 @@ void ThreeACHelperFunc(int id){
             tac* t1 = createTacCustom("+", tempIds, tempVec[l-1],tempIds);
             tacMap[currTacVec].push_back(t1);
         }
+        if(tree[parent[id]].first != "Assignment"){
         tac* t2 = createTacCustom( "=" ,ArrayName + "[" + tempIds + "]","", createArg(id));
+
         t2->array = 2;
+        tacMap[currTacVec].push_back(t2);}
+        else{
+            vector<int> ch = tree[parent[id]].second;
+            ch[0] = tempId;
+            tacMap[currTacVec].push_back(createTac1(parent[id]));
+            tac* t2 = createTacCustom( "=" ,createArg(id),"",ArrayName + "[" + tempIds + "]");
+
+        t2->array = 3;
         tacMap[currTacVec].push_back(t2);
+        }
 
     }
     if(tree[id].first == "ArrayCreationExpr"){
@@ -2081,7 +2141,7 @@ void ThreeACHelperFunc(int id){
     }
    
     if(tree[id].first == "Expression")  tacMap[currTacVec].push_back(createTacCustom("=", createArg(temp[0]), "", createArg(id)));
-    if(tree[id].first == "Assignment") tacMap[currTacVec].push_back(createTac1(id));
+    if(tree[id].first == "Assignment" && tree[(tree[id].second)[0]].first != "ArrayAccess") tacMap[currTacVec].push_back(createTac1(id));
     if(tree[id].first == "PreIncExpression") tacMap[currTacVec].push_back(createTac1Dplus(id));
     if(tree[id].first == "PreDecExpression") tacMap[currTacVec].push_back(createTac1Dplus(id));
     if(tree[id].first == "PostIncExpression") {createTac2Dplus(id);}
