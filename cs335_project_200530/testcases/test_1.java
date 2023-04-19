@@ -1,23 +1,18 @@
 public class test_1 {
    
-    public void foo1(int k, int l, int m){
-        if(k == 0){
-            return 0;
-        }
-        k--;
-        println_k();
-        // foo2(10000000);
-        // foo3(8888);
-        foo1(k, l, m);
-        // k--;
-        // return foo1(k);
-        return;
+    public int foo1(int k, int l, int m){
+        k = k - 1;
+        // int x;
+        // println_k();
+        // foo1(k, l, m);
+        return 66;
     }
 
     public int main(){
-        int a = 69, c = 68;
+        int a = 69;
         println_a();
-        foo1(a, c, 0);
+        int w = foo1(a, 0, 0);
+        println_w();
         return 0;
         
     }

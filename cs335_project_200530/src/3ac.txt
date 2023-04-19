@@ -1,0 +1,29 @@
+ test_3.main: 
+      t2_0: BeginFunc      
+      t2_1: stackPointer-=  16  // Manipulating stack (equal to size of function)  
+      t2_2: =  800    _t1
+      t2_3: param  _t1    
+      t2_4: call  allocmem  1  _v35
+      t2_5: =  _v35    a
+      t2_6: =  0    _v45
+      t2_7: *  _v45  10  _v45
+      t2_8: +  _v45  0  _v45
+      t2_9: =  _v51    x
+      t2_10: =  _v51    a[_v45]
+      t2_11: =  _v51    x
+      t2_12: LCall  println_x    
+      t2_13: returnRegister  _v60    
+      t2_14: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
+      t2_15: stackPointer+=  0  // Remove parameters passed into stack  
+      t2_16: =  0    _v68
+      t2_17: *  _v68  10  _v68
+      t2_18: +  _v68  0  _v68
+      t2_19: =_int  _v74    x
+      t2_20: =  _v74    a[_v68]
+      t2_21: =_int  _v74    x
+      t2_22: LCall  println_x    
+      t2_23: returnRegister  _v82    
+      t2_24: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
+      t2_25: stackPointer+=  0  // Remove parameters passed into stack  
+      t2_26: Return  0  // load return value to return register...  
+      t2_27: EndFunc      
