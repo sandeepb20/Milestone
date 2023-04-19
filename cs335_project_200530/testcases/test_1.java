@@ -1,16 +1,24 @@
 public class test_1 {
-    public int foo(int t, int w, int u){
-        int  p = 9;
-        println_t();
-        return 1;
-    }
-    public int main(){
-        int a = 9;
-        int k = foo(a,36,37);
-        int c = 3;
+    public void foo1(int k){
+        // int xx;
+        if(k == 0){
+            return 0;
+        }
+        k--;
         println_k();
-        println_c();
-        return 1;
+        foo1(k);
+        // k--;
+        // return foo1(k);
+        return;
+    }
+
+    public int main(){
+        int a = 69, c = 68;
+        println_a();
+
+        foo1(a);
+        
+        return 0;
         
     }
 }

@@ -2,17 +2,15 @@ Variable,Type,Line,Size,Offset
 Class : test_1
 
 
-Printing foo Symbol Table
-   p,int,3,4,12,variable
-   u,int,2,4,8,variable
-   w,int,2,4,4,variable
-   t,int,2,4,0,variable
+Printing foo1 Symbol Table
+   k,int,2,8,0,variable
+
+Printing ifelse1 Symbol Table
 
 Printing main Symbol Table
-   c,int,10,4,8,variable
-   k,int,9,4,4,variable
-   a,int,8,4,0,variable
+   c,int,16,8,8,variable
+   a,int,16,8,0,variable
 
 Printing test_1 Symbol Table
-   main,int,7,4,4,method
-   foo,int,2,4,0,method
+   main,int,15,8,8,method
+   foo1,void,2,8,0,method

@@ -51,13 +51,14 @@ int getSize(string id){
         t += id[i];
     }
     id = t;
-  if(id == "char") return sizeof(char);
-  if(id == "short") return sizeof(short);
-  if(id == "int") return sizeof(int);
-  if(id == "float") return sizeof(float);
-  if(id == "double") return sizeof(double);
+    return 8;
+//   if(id == "char") return sizeof(char);
+//   if(id == "short") return sizeof(short);
+//   if(id == "int") return sizeof(int);
+//   if(id == "float") return sizeof(float);
+//   if(id == "double") return sizeof(double);
 
-  return 0; // for any ptr
+//   return 0; // for any ptr
 }
 /*------------------------------------------------------------*/
 
@@ -742,7 +743,7 @@ int getOffset(string name){
     for(auto it : class_table[cclass]){
         for(auto itr : it.second){
             if(itr.first == name){
-                return itr.second -> offset +4;
+                return itr.second -> offset + 8;
             }
         }
     }
@@ -772,19 +773,19 @@ reg esp;
 reg ebp;
 
 void initRegisters(){
-    regT[0].name = "%r8d";
-    regT[1].name = "%r9d";
-    regT[2].name = "%r10d";
-    regT[3].name = "%r11d";
-    regT[4].name = "%edx";
-    regT[5].name = "%ecx";
-    regT[6].name = "%ebx";
-    regT[7].name = "%eax";
+    regT[0].name = "%r8";
+    regT[1].name = "%r9";
+    regT[2].name = "%r10";
+    regT[3].name = "%r11";
+    regT[4].name = "%rdx";
+    regT[5].name = "%rcx";
+    regT[6].name = "%rbx";
+    regT[7].name = "%rax";
 
-    regS[0].name = "%r12d";
-    regS[1].name = "%r13d";
-    regS[2].name = "%r14d";
-    regS[3].name = "%r15d";
+    regS[0].name = "%r12";
+    regS[1].name = "%r13";
+    regS[2].name = "%r14";
+    regS[3].name = "%r15";
 
     esp.name = "%rsp";
     ebp.name = "%rbp";
@@ -849,6 +850,7 @@ void codeGen(){
         
         // cout << " "+ currTacVec + " : " << getClass(currTacVec) <<" \n";
         for(int i = 0; i < tacMap[currTacVec].size(); i++){
+            cout << tacMap[currTacVec][i] -> labelname << " "<< tacMap[currTacVec][i] -> op << " "<< tacMap[currTacVec][i] -> arg1 << endl;
             // cout << tacMap[currTacVec][i] -> labelname << endl;
             string l = tacMap[currTacVec][i] -> labelname;
 
@@ -909,17 +911,18 @@ void codeGen(){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
                     else  r1 = "$" + arg1;
                 }else  r1 = regS[getVarReg(myfile, arg1)].name;
-                myfile << "     mov " << "%eax" << ", " << r1 << "     # " << "ReturnValue" << " = " << arg1 << endl;
+                myfile << "     mov " << "%rax" << ", " << r1 << "     # " << "ReturnValue" << " = " << arg1 << endl;
             }
             if(tacMap[currTacVec][i] -> op =="Return"){
-                cout << "IN return";
+                // cout << "IN return";
                 string r1 = "";
                 string arg1 = tacMap[currTacVec][i] -> arg1;
                 if(getOffset(arg1) == -1){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
                     else  r1 = "$" + arg1;
                 }else  r1 = regS[getVarReg(myfile, arg1)].name;
-                myfile << "     mov " << r1 << ", " << "%eax" << "     # " << "Return" << " " << arg1 << endl;
+                myfile << "     mov " << r1 << ", " << "%rax" << "     # " << "Return" << " " << arg1 << endl;
+                myfile << "     jmp return_" << currTacVec.substr(currTacVec.find(".")+1, -1) << endl;
                 // myfile << "     ret " << endl;
             }
             if(tacMap[currTacVec][i] -> op == "=="){
@@ -1236,7 +1239,7 @@ void codeGen(){
                     myfile << "     mov $format, %rdi" << endl;
                     string r1 = regS[getVarReg(myfile, arg1.substr(8))].name;
                     // cout << r1;
-                    myfile << "     mov "<< r1<<", %esi" << endl;
+                    myfile << "     mov "<< r1<<", %rsi" << endl;
                     myfile << "     call printf" << endl;
                     myfile << "     add $16, %rsp       #For print stmt"<<endl;
                    i++;
@@ -1252,9 +1255,11 @@ void codeGen(){
              if(tacMap[currTacVec][i] -> op == "BeginFunc"){
                 myfile << "     push " << ebp.name << endl;
                 myfile << "     mov " << esp.name << ", " << ebp.name << "      # beginFunc" <<  endl;
-                myfile << "     sub " << "$16 , "<< esp.name << endl; 
+                // myfile << "     sub " << "$16 , "<< esp.name << endl; 
             }
             if(tacMap[currTacVec][i] -> op == "EndFunc"){
+                // myfile << "     jmp " << "return_"<< currTacVec.substr(currTacVec.find(".")+1, -1) << endl;
+                myfile << "return_"<< currTacVec.substr(currTacVec.find(".")+1, -1) << ":"<<endl;
                 myfile << "     mov " << ebp.name << ", " << esp.name << endl;
                 myfile << "     pop " << ebp.name << endl;
                 myfile << "     ret" << "       # EndFunc"<<endl;
@@ -1291,13 +1296,14 @@ void codeGen(){
                 while(tacMap[currTacVec][i] -> op == "getparam"){
                     string arg1 = tacMap[currTacVec][i] -> res;
                     string r1 = regT[getTempReg(arg1)].name;
-                    cout << arg1<<endl;
+                    // cout << arg1<<endl;
                     int off1 = getOffset(arg1);
-                    cout << off1 << endl;
-                    myfile << "     mov " << off1*2+16 << "(%rbp) , " << r1  << "     #   Get Argument " << arg1  << endl;
+                    // cout << off1 << endl;
+                    myfile << "     mov " << off1+8 << "(%rbp) , " << r1  << "     #   Get Argument " << arg1  << endl;
                     myfile << "     mov " << r1<<", -" << off1 << "(%rbp)" << "     #   Store Argument " << arg1 << " in stack" << endl;
                     i++;
                 }
+                i--;
                 continue;
             }
 
@@ -1592,8 +1598,8 @@ void ThreeACHelperFunc(int id){
             tacMap[currTacVec].push_back(t);
             
             int size = constesize(temp[0]);
-            if(size%16){
-                size = (size/16+1)/16;
+            if(size%8){
+                size = (size/8+1)/8;
             }
             // cout << size << endl;
             t = createTacCustom("stackPointer-=", to_string(size), "", "");
@@ -1875,7 +1881,7 @@ void ThreeACHelperFunc(int id){
             int funcSize1 = funcSize(temp[0]);
             // cout << "Funcsize " << funcSize1 << endl; 
             
-            if(funcSize1%16)funcSize1 = (funcSize1/16+1)*16;
+            if(funcSize1%8)funcSize1 = (funcSize1/8+1)*8;
             t = createTacCustom("stackPointer-=", to_string(funcSize1), "// Manipulating stack (equal to size of function)","");
             tacMap[currTacVec].push_back(t);
             if(tree[temp[2]].first != ")"){
@@ -1928,7 +1934,7 @@ void ThreeACHelperFunc(int id){
                 else  param = getParamsOf(temp[0]);
                 int paramSize1 = paramSize(param);
                 // cout << paramSize1 << endl; 
-                if(paramSize1%16)paramSize1 = (paramSize1/16+1)*16;
+                if(paramSize1%8)paramSize1 = (paramSize1/8+1)*8;
                  t = createTacCustom("stackPointer+=", to_string(paramSize1), "// Remove parameters passed into stack", "");
                 tacMap[currTacVec].push_back(t);
                  
@@ -1969,7 +1975,7 @@ void ThreeACHelperFunc(int id){
                 vector<string> param = getParamsOfCons(temp[1]);
                 int paramSize1 = paramSize(param) + 4;
                 // cout << paramSize1 << endl; 
-                if(paramSize1%16) paramSize1 = (paramSize1/16+1)*16;
+                if(paramSize1%8) paramSize1 = (paramSize1/8+1)*8;
                  t = createTacCustom("stackPointer+=", to_string(paramSize1), "// Remove parameters passed into stack + object refernce", "");
                 tacMap[currTacVec].push_back(t);
 
