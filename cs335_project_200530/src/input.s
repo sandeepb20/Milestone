@@ -53,33 +53,37 @@ main:
 	.cfi_offset 6, -16
 	movq	%rsp, %rbp
 	.cfi_def_cfa_register 6
-	subq	$32, %rsp
-	movl	$5, -12(%rbp)
-	movl	$1, -20(%rbp)
-	movl	$1, -8(%rbp)
-	movl	$10, -4(%rbp)
-	movl	$0, -16(%rbp)
+	subq	$48, %rsp
+	movl	$5, -28(%rbp)
+	movl	$1, -36(%rbp)
+	movl	$1, -24(%rbp)
+	movl	$10, -20(%rbp)
+	movl	$9, -16(%rbp)
+	movl	$1, -12(%rbp)
+	movl	$9, -8(%rbp)
+	movl	$35, -4(%rbp)
+	movl	$0, -32(%rbp)
 	jmp	.L4
 .L5:
 	movl	$4, %edx
 	movl	$3, %esi
 	movl	$2, %edi
 	call	foo
-	movl	%eax, -8(%rbp)
-	movl	-8(%rbp), %eax
+	movl	%eax, -24(%rbp)
+	movl	-24(%rbp), %eax
 	movl	%eax, %esi
 	leaq	.LC0(%rip), %rax
 	movq	%rax, %rdi
 	movl	$0, %eax
 	call	printf@PLT
-	movl	-20(%rbp), %eax
-	movl	%eax, -12(%rbp)
-	movl	-8(%rbp), %eax
-	movl	%eax, -20(%rbp)
-	addl	$1, -16(%rbp)
+	movl	-36(%rbp), %eax
+	movl	%eax, -28(%rbp)
+	movl	-24(%rbp), %eax
+	movl	%eax, -36(%rbp)
+	addl	$1, -32(%rbp)
 .L4:
-	movl	-16(%rbp), %eax
-	cmpl	-4(%rbp), %eax
+	movl	-32(%rbp), %eax
+	cmpl	-20(%rbp), %eax
 	jl	.L5
 	movl	$0, %eax
 	leave

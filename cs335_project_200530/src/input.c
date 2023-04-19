@@ -7,7 +7,7 @@ int foo(int x, int y, int z){
         return k + x + y + z;
     }
  int main(){
-        int n1 = 5, n2 = 1, n=1, count = 10,i,j;
+        int n1 = 5, n2 = 1, n=1, count = 10,i,j,k = 9, l = 1, p = 9, q = 35;
 
         for(i = 0; i < count ; i++){
             n = foo(2,3,4);
