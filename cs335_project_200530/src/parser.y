@@ -2160,7 +2160,18 @@ void ThreeACHelperFunc(int id){
    
     
     if(tree[id].first == "Expression")  tacMap[currTacVec].push_back(createTacCustom("=", createArg(temp[0]), "", createArg(id)));
-    if(tree[id].first == "Assignment" && tree[(tree[id].second)[0]].first != "ArrayAccess") tacMap[currTacVec].push_back(createTac1(id));
+    // if(tree[id].first == "Assignment" && tree[(tree[id].second)[0]].first != "ArrayAccess") tacMap[currTacVec].push_back(createTac1(id));
+    if(tree[id].first == "Assignment") {
+        if(tree[temp[0]].first == "ArrayAccess"){
+            tac*t = createTacCustom("ArrayAssign", createArg(temp[2]), "", createArg(temp[0]));
+            tacMap[currTacVec].push_back(t);
+        } 
+        else if(tree[temp[2]].first == "ArrayAccess"){
+            tac*t = createTacCustom("ArrayAccess", createArg(temp[2]), "", createArg(temp[0]));
+            tacMap[currTacVec].push_back(t);
+        } 
+        else tacMap[currTacVec].push_back(createTac1(id));
+    }
     if(tree[id].first == "PreIncExpression") tacMap[currTacVec].push_back(createTac1Dplus(id));
     if(tree[id].first == "PreDecExpression") tacMap[currTacVec].push_back(createTac1Dplus(id));
     if(tree[id].first == "PostIncExpression") {createTac2Dplus(id);}
