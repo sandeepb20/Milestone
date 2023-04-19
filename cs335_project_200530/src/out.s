@@ -22,7 +22,7 @@ return_foo:
      pushq %rbp
      mov %rsp, %rbp      # beginFunc
      sub $48, %rsp       # stackPointer-= 32
-     mov $8000, %r10     # _t1=8000
+     mov $343738336, %r10     # _t1=343738336
      mov %r10, %rdi     # Load Param _t1
      call malloc
      mov %rax, %r11     # Get Refernce from return reg in  _v66
@@ -32,7 +32,7 @@ return_foo:
      mov %r15, -16(%rbp)        # Set i in stack
  t3_7:
      mov -16(%rbp) ,%r12       # Load i from stack
-     cmp $100, %r12
+     cmp $500000, %r12
      jl t3_7t
      mov $0, %r8
      jmp t3_7f
@@ -64,7 +64,7 @@ return_foo:
      mov %r12, -16(%rbp)        # Set i in stack
  t3_18:
      mov -16(%rbp) ,%r14       # Load i from stack
-     cmp $100, %r14
+     cmp $500000, %r14
      jl t3_18t
      mov $0, %r8
      jmp t3_18f

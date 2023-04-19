@@ -4,11 +4,11 @@ public class test_4 {
         return kkk + 1;
     }
     public int main(){
-       int a[][] = new int[500][2];
-       for(int i = 0; i < 100;  i++){
+       int [][]a = new int[21483646][2];
+       for(int i = 0; i < 500000;  i = i + 1){
             a[i][0] = i;
        }
-       for(int i = 0; i < 100; i++){
+       for(int i = 0; i < 500000; i++){
          int x = a[i][0];
          println_x();
    }

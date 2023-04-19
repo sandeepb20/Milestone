@@ -83,24 +83,24 @@ n44->n39;
 n44->n38;
 n45 [label="{"]
 n46 [label="int"]
-n47 [label="a"]
-n48 [label="["]
-n49 [label="]"]
-n50 [label="VariableDeclaratorId"]
-n50->n49;
-n50->n48;
-n50->n47;
-n51 [label="["]
-n52 [label="]"]
-n53 [label="VariableDeclaratorId"]
-n53->n52;
-n53->n51;
-n53->n50;
+n47 [label="["]
+n48 [label="]"]
+n49 [label="ArrayType"]
+n49->n48;
+n49->n47;
+n49->n46;
+n50 [label="["]
+n51 [label="]"]
+n52 [label="ArrayType"]
+n52->n51;
+n52->n50;
+n52->n49;
+n53 [label="a"]
 n54 [label="="]
 n55 [label="new"]
 n56 [label="int"]
 n57 [label="["]
-n58 [label="500"]
+n58 [label="21483646"]
 n59 [label="]"]
 n60 [label="DimExpr"]
 n60->n59;
@@ -126,7 +126,7 @@ n67->n54;
 n67->n53;
 n68 [label="LocalVariableDeclaration"]
 n68->n67;
-n68->n46;
+n68->n52;
 n69 [label=";"]
 n70 [label="LocalVariableDeclarationStatement"]
 n70->n69;
@@ -147,7 +147,7 @@ n78->n73;
 n79 [label=";"]
 n80 [label="i"]
 n81 [label="<"]
-n82 [label="100"]
+n82 [label="500000"]
 n83 [label="RelationalExpression"]
 n83->n82;
 n83->n81;
@@ -221,7 +221,7 @@ n115->n110;
 n116 [label=";"]
 n117 [label="i"]
 n118 [label="<"]
-n119 [label="100"]
+n119 [label="500000"]
 n120 [label="RelationalExpression"]
 n120->n119;
 n120->n118;

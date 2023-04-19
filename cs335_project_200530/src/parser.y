@@ -2627,7 +2627,7 @@ void tpc(int id){
         }
         else{
             whtIsType[id] = "error";
-            cout << "Type Error at line " << LineNumber[child[1]] << endl;
+            cout << "Type Error at line*** " << LineNumber[child[1]] << endl;
             exit(1);
         }
     }
