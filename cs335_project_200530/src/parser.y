@@ -159,13 +159,16 @@ void createEntry(string currTableName, string temp, string type, int line, int s
         stoffset += size;
 }
 
-void makeSymbolTable(string name){
+void makeSymbolTable(string name, bool reset){
     sym_table new_table;
     class_table[curr_class].insert(make_pair(name, new_table));
     class_parent_table[curr_class].insert(make_pair(name, curr_table));
 	curr_table = name;
-    prevoffset = stoffset;
-    stoffset = 0;
+    if(reset){
+        prevoffset = stoffset;
+        stoffset = 0;
+    }
+    
 }
 
 string lookup(string id){
@@ -297,7 +300,7 @@ void symTable(int id){
         table t;
         class_table[curr_class] = t;
         curr_table = "null";
-        makeSymbolTable(curr_class);
+        makeSymbolTable(curr_class, 1);
         int tempid = child[0];
         while(tree[tempid].first == "Modifiers"){
             vector<int> child1 = tree[tempid].second;
@@ -329,7 +332,7 @@ void symTable(int id){
         createEntry(curr_table,tree[child[0]].first+".constr","",LineNumber[child[0]],4,stoffset,0,"constructor",stndim,parameters);
         parameters.clear();
         symTable(child[0]);
-        makeSymbolTable(tree[child[0]].first+".constr");
+        makeSymbolTable(tree[child[0]].first+".constr", 1);
         symTable(child[2]);
         return;
     }
@@ -339,7 +342,7 @@ void symTable(int id){
         createEntry(curr_table,tree[child[0]].first,sttype,LineNumber[child[0]],getSize(sttype),stoffset,0,"method",stndim,parameters);
         parameters.clear();
         symTable(child[0]);
-        makeSymbolTable(tree[child[0]].first);
+        makeSymbolTable(tree[child[0]].first, 1);
         symTable(child[2]);
         return;
     }
@@ -505,7 +508,7 @@ void symTable(int id){
     if(nodeName == "forStmt"){
         stname = "for" + to_string(fornum);
         fornum++;
-        makeSymbolTable(stname);
+        makeSymbolTable(stname, 0);
         symTable(child[2]);
         symTable(child[8]);
         if(tree[child[8]].first != "Block"){
@@ -517,7 +520,7 @@ void symTable(int id){
     if(nodeName == "whileStmt"){
         stname = "while" + to_string(whilenum);
         whilenum++;
-        makeSymbolTable(stname);
+        makeSymbolTable(stname, 0);
         symTable(child[4]);
         if(tree[child[4]].first != "Block"){
             curr_table = class_parent_table[curr_class][curr_table];
@@ -557,7 +560,7 @@ void symTable(int id){
     if(nodeName == "ifThenStmt"){
         stname = "ifelse" + to_string(ifelsenum);
         ifelsenum++;
-        makeSymbolTable(stname);
+        makeSymbolTable(stname, 0);
         symTable(child[4]);
         if(tree[child[4]].first != "Block"){
             curr_table = class_parent_table[curr_class][curr_table];
@@ -568,7 +571,7 @@ void symTable(int id){
     if(nodeName == "ifThenElseStmt"){
         stname = "ifelse" + to_string(ifelsenum);
         ifelsenum++;
-        makeSymbolTable(stname);
+        makeSymbolTable(stname, 0);
         symTable(child[4]);
         if(tree[child[4]].first != "Block"){
             curr_table = class_parent_table[curr_class][curr_table];
@@ -576,7 +579,7 @@ void symTable(int id){
         }
         stname = "ifelse" + to_string(ifelsenum);
         ifelsenum++;
-        makeSymbolTable(stname);
+        makeSymbolTable(stname, 0);
         symTable(child[6]);
         if(tree[child[6]].first != "Block"){
             curr_table = class_parent_table[curr_class][curr_table];
@@ -2299,6 +2302,13 @@ void typeChecker(){
 }
 /* ------------------------------------------------------------*/
 
+int strToInt(string s){
+    stringstream ss;
+    ss << s;
+    int res = 0;
+    ss >> res;
+    return res;
+}
 
 void tpc(int id){
     bool allVisited = true;
@@ -2516,7 +2526,7 @@ void tpc(int id){
         while(tree[temp].first == "ArrayAccess"){
             vector<int> ch = tree[temp].second;
             temp = ch[0];
-            dims.push_back(stoi(tree[ch[2]].first));
+            dims.push_back(strToInt(tree[ch[2]].first));
         }
         string arrname = tree[temp].first;
         typer = whtIsType[temp];
@@ -2713,7 +2723,7 @@ void print(){
     ForClass(root);
     symTable(root);      //fills all the class name in the class_table
     PrintSymTable();
-    // tpc(root);
+    tpc(root);
     ThreeACHelperFunc(root);
     printThreeAC();
     codeGen();
