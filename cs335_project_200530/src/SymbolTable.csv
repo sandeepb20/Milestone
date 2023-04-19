@@ -3,14 +3,28 @@ Class : test_1
 
 
 Printing foo1 Symbol Table
-   k,int,2,8,0,variable
+   yy,int,13,8,32,variable
+   xx,int,13,8,24,variable
+   m,int,12,8,16,variable
+   l,int,12,8,8,variable
+   k,int,12,8,0,variable
+
+Printing foo2 Symbol Table
+   ppp2,int,8,8,16,variable
+   ppp,int,8,8,8,variable
+   z,int,7,8,0,variable
+
+Printing foo3 Symbol Table
+   p,int,3,8,0,variable
 
 Printing ifelse1 Symbol Table
 
 Printing main Symbol Table
-   c,int,16,8,8,variable
-   a,int,16,8,0,variable
+   c,int,28,8,8,variable
+   a,int,28,8,0,variable
 
 Printing test_1 Symbol Table
-   main,int,15,8,8,method
-   foo1,void,2,8,0,method
+   main,int,27,8,40,method
+   foo1,void,12,8,16,method
+   foo2,int,7,8,8,method
+   foo3,int,2,8,0,method

@@ -837,6 +837,7 @@ int setVarReg(ofstream &myfile, string val){
 
 
 void codeGen(){
+    cout << "*****************Code Generation Started****************"<< endl;
     initRegisters();
     std::ofstream myfile;
     myfile.open ("out.s");
@@ -850,7 +851,7 @@ void codeGen(){
         
         // cout << " "+ currTacVec + " : " << getClass(currTacVec) <<" \n";
         for(int i = 0; i < tacMap[currTacVec].size(); i++){
-            cout << tacMap[currTacVec][i] -> labelname << " "<< tacMap[currTacVec][i] -> op << " "<< tacMap[currTacVec][i] -> arg1 << endl;
+            // cout << tacMap[currTacVec][i] -> labelname << " "<< tacMap[currTacVec][i] -> op << " "<< tacMap[currTacVec][i] -> arg1 << endl;
             // cout << tacMap[currTacVec][i] -> labelname << endl;
             string l = tacMap[currTacVec][i] -> labelname;
 
