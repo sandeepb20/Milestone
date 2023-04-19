@@ -1,30 +1,31 @@
 Variable,Type,Line,Size,Offset
-Class : test_1
+Class : FibonacciExample1
 
 
-Printing foo1 Symbol Table
-   yy,int,13,8,32,variable
-   xx,int,13,8,24,variable
-   m,int,12,8,16,variable
-   l,int,12,8,8,variable
-   k,int,12,8,0,variable
+Printing FibonacciExample1 Symbol Table
+   main,int,11,8,16,method
+   foo,int,5,8,8,method
+   foo2,int,2,8,0,method
+
+Printing foo Symbol Table
+   c,int,6,8,40,variable
+   k,int,7,8,56,variable
+   b,int,6,8,32,variable
+   d,int,6,8,48,variable
+   a,int,6,8,24,variable
+   z,int,5,8,16,variable
+   y,int,5,8,8,variable
+   x,int,5,8,0,variable
 
 Printing foo2 Symbol Table
-   ppp2,int,8,8,16,variable
-   ppp,int,8,8,8,variable
-   z,int,7,8,0,variable
+   p,int,2,8,0,variable
 
-Printing foo3 Symbol Table
-   p,int,3,8,0,variable
-
-Printing ifelse1 Symbol Table
+Printing for1 Symbol Table
 
 Printing main Symbol Table
-   c,int,28,8,8,variable
-   a,int,28,8,0,variable
-
-Printing test_1 Symbol Table
-   main,int,27,8,40,method
-   foo1,void,12,8,16,method
-   foo2,int,7,8,8,method
-   foo3,int,2,8,0,method
+   j,int,12,8,40,variable
+   count,int,12,8,24,variable
+   i,int,12,8,32,variable
+   n,int,12,8,16,variable
+   n2,int,12,8,8,variable
+   n1,int,12,8,0,variable

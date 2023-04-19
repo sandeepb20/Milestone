@@ -791,6 +791,16 @@ void initRegisters(){
     ebp.name = "%rbp";
 
 }
+
+void resetRegisters(){
+    // for(int i = 0; i < regS.size(); i++){
+    //     regS[i].val = "";
+    // }
+    for(int i = 0; i < 4; i++){
+        regT[i].val = "";
+    }
+}
+
 int tempregNum = 0;
 int getTempReg(string val){
     // check if already in reg
@@ -809,11 +819,11 @@ int getTempReg(string val){
 int tempVarRegNum = 0;
 int getVarReg(ofstream &myfile, string val){
     // check if already in reg
-    for(int i = 0; i < regS.size(); i++){
-        if(regS[i].val == val){
-            return i;
-        }
-    }
+    // for(int i = 0; i < regS.size(); i++){
+    //     if(regS[i].val == val){
+    //         return i;
+    //     }
+    // }
     int i = tempVarRegNum%4;
     tempVarRegNum = i+1;
     regS[i].isUsed = true;
@@ -832,6 +842,8 @@ int setVarReg(ofstream &myfile, string val){
     tempVarRegNum = i+1;
     regS[i].isUsed = true;
     regS[i].val = val;
+     myfile << "     mov -" << getOffset(val) << "(%rbp) ," << regS[i].name << "       # Load " << val << " from stack" << endl;
+   
     return i;
 }
 
@@ -951,7 +963,7 @@ void codeGen(){
                 myfile << "     mov " << "$1" << ", " << r3 << endl;
                 myfile << " " << tacMap[currTacVec][i] -> labelname + "f:" << endl;
             }
-            if(tacMap[currTacVec][i] -> op == "<"){
+            if(tacMap[currTacVec][i] -> op[0] == '<' ){
                 string r1 = "", r2 = "", r3 = "";
                 string arg1 = tacMap[currTacVec][i] -> arg1;
                 string arg2 = tacMap[currTacVec][i] -> arg2;
@@ -1116,8 +1128,11 @@ void codeGen(){
                 if(getOffset(res) == -1){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(myfile, res)].name;
+                }else  r3 = regS[setVarReg(myfile, res)].name;
                 myfile << "     add " << "$1" << ", " << r3 << "      #   " << res << " = "<< arg1 << " + " << "1" <<  endl;
+                // r3 = regS[setVarReg(myfile, res)].name;
+                    // myfile << "     mov " << r1 << ", " << r2 << "     # " << res << "=" << arg1 << endl;
+                    myfile << "     mov " << r3 << ", -" << getOffset(res) << "(%rbp) "  << "       # Set " << res << " in stack" << endl;
             }
             if(tacMap[currTacVec][i] -> op == "--"){
                 string r1 = "", r3 = "";
@@ -1248,6 +1263,7 @@ void codeGen(){
                 else{
                     myfile << "     call " << tacMap[currTacVec][i] -> arg1 << endl;
                 }
+                resetRegisters();
             }
 
 
@@ -1268,7 +1284,8 @@ void codeGen(){
             if(tacMap[currTacVec][i] -> op == "stackPointer-="){
 
                 string arg1 = tacMap[currTacVec][i] -> arg1;
-                myfile << "     sub " << "$" << arg1 << ", " << esp.name << "       # stackPointer-= " << arg1  << endl;
+                int st = stoi(arg1);
+                myfile << "     sub " << "$" << st+16 << ", " << esp.name << "       # stackPointer-= " << arg1  << endl;
             }
             // cout << tacMap[currTacVec][i] -> op << endl;
             if(tacMap[currTacVec][i] -> op == "stackPointer+="){

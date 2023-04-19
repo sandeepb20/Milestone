@@ -1,8 +1,12 @@
 	.file	"input.c"
 	.text
-	.globl	tp
-	.type	tp, @function
-tp:
+	.section	.rodata
+.LC0:
+	.string	"%d"
+	.text
+	.globl	foo
+	.type	foo, @function
+foo:
 .LFB0:
 	.cfi_startproc
 	endbr64
@@ -11,17 +15,33 @@ tp:
 	.cfi_offset 6, -16
 	movq	%rsp, %rbp
 	.cfi_def_cfa_register 6
+	subq	$32, %rsp
 	movl	%edi, -20(%rbp)
-	movl	-20(%rbp), %eax
-	addl	$14, %eax
+	movl	%esi, -24(%rbp)
+	movl	%edx, -28(%rbp)
+	movl	$5, -8(%rbp)
+	movl	-8(%rbp), %eax
+	addl	$5, %eax
 	movl	%eax, -4(%rbp)
 	movl	-4(%rbp), %eax
-	popq	%rbp
+	movl	%eax, %esi
+	leaq	.LC0(%rip), %rax
+	movq	%rax, %rdi
+	movl	$0, %eax
+	call	printf@PLT
+	movl	-4(%rbp), %edx
+	movl	-20(%rbp), %eax
+	addl	%eax, %edx
+	movl	-24(%rbp), %eax
+	addl	%eax, %edx
+	movl	-28(%rbp), %eax
+	addl	%edx, %eax
+	leave
 	.cfi_def_cfa 7, 8
 	ret
 	.cfi_endproc
 .LFE0:
-	.size	tp, .-tp
+	.size	foo, .-foo
 	.globl	main
 	.type	main, @function
 main:
@@ -33,11 +53,35 @@ main:
 	.cfi_offset 6, -16
 	movq	%rsp, %rbp
 	.cfi_def_cfa_register 6
-	subq	$16, %rsp
-	movl	$5, %edi
-	call	tp
-	movl	%eax, -4(%rbp)
-	movl	-4(%rbp), %eax
+	subq	$32, %rsp
+	movl	$5, -12(%rbp)
+	movl	$1, -20(%rbp)
+	movl	$1, -8(%rbp)
+	movl	$10, -4(%rbp)
+	movl	$0, -16(%rbp)
+	jmp	.L4
+.L5:
+	movl	$4, %edx
+	movl	$3, %esi
+	movl	$2, %edi
+	call	foo
+	movl	%eax, -8(%rbp)
+	movl	-8(%rbp), %eax
+	movl	%eax, %esi
+	leaq	.LC0(%rip), %rax
+	movq	%rax, %rdi
+	movl	$0, %eax
+	call	printf@PLT
+	movl	-20(%rbp), %eax
+	movl	%eax, -12(%rbp)
+	movl	-8(%rbp), %eax
+	movl	%eax, -20(%rbp)
+	addl	$1, -16(%rbp)
+.L4:
+	movl	-16(%rbp), %eax
+	cmpl	-4(%rbp), %eax
+	jl	.L5
+	movl	$0, %eax
 	leave
 	.cfi_def_cfa 7, 8
 	ret
