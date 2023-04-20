@@ -2289,11 +2289,12 @@ void ThreeACHelperFunc(int id){
         for(int i = 0; i < temp.size(); i++){
             if(tree[temp[i]].first == "(") {
                 if(tree[temp[i+1]].first != ""){
+                    ThreeACHelperFunc(temp[i+1]);
                     if(tree[temp[i+1]].first != "ArgumentList"){
-                        tac* t = createTacCustom("PushParam", tree[temp[i+1]].first, "", "");
+                        tac* t = createTacCustom("PushParam", createArg(temp[i+1]) , "", "");
                         tacMap[currTacVec].push_back(t);
                     }
-                    ThreeACHelperFunc(temp[i+1]);
+                    
                 }
                 tac* t;
                 if(tree[temp[i-1]].first == "QualifiedName"){
