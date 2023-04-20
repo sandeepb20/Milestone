@@ -1495,7 +1495,8 @@ void codeGen(){
             if(tacMap[currTacVec][i] -> op == "stackPointer+="){
                 string arg1 = tacMap[currTacVec][i] -> arg1;
                 cout << arg1 << endl;
-                myfile << "     add " << "$" << arg1 << ", " << esp.name << "       # stackPointer+= " << arg1  << endl;
+                int st = stoi(arg1);
+                myfile << "     add " << "$" << st*2 << ", " << esp.name << "       # stackPointer+= " << arg1  << endl;
             }
             if(tacMap[currTacVec][i] -> op ==  "stackPointer="){
                 string arg1 = tacMap[currTacVec][i] -> arg1;
@@ -1511,7 +1512,7 @@ void codeGen(){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
                     else  r1 = "$" +  arg1;
                 }else  r1 = (regS[getVarReg(myfile, arg1)].name).substr(0,4);
-                // myfile << "     sub $8, " << esp.name << "       # PushParam " << arg1 << endl;
+                myfile << "     sub $8, " << esp.name << "       # PushParam " << arg1 << endl;
                 myfile << "     pushq " << r1 << "       # PushParam " << arg1 << endl;
             }
             if(tacMap[currTacVec][i] -> op == "getparam"){
@@ -1522,7 +1523,7 @@ void codeGen(){
                     // cout << arg1<<endl;
                     int off1 = getOffset(arg1);
                     // cout << off1 << endl;
-                    myfile << "     mov " << off1+8 << "(%rbp) , " << r1  << "     #   Get Argument " << arg1  << endl;
+                    myfile << "     mov " << off1*2 << "(%rbp) , " << r1  << "     #   Get Argument " << arg1  << endl;
                     myfile << "     mov " << r1<<", -" << off1 << "(%rbp)" << "     #   Store Argument " << arg1 << " in stack" << endl;
                     i++;
                 }
