@@ -1,11 +1,11 @@
 
 public class Example1 {
-    int x ;
-    int y ;
+    int x = 1 + 2;
+    int y  = x;
     int k;
-    public int setX(int k){
-      this.x = k;
-      return k;
+    public int setX(int k2){
+      this.x = k2;
+      return k2;
     }
     Example1(int a, int b) {
         this.x = a;
@@ -22,6 +22,7 @@ public class Example1 {
         int d = a.x;
         println_c();
         println_d();
+        println_temp();
     }
   }
   // }

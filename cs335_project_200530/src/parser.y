@@ -872,6 +872,9 @@ bool isPresentInTAC(string name){
     }return false;
 }
 
+
+
+
 void codeGen(){
     cout << "*****************Code Generation Started****************"<< endl;
     initRegisters();
@@ -887,7 +890,7 @@ void codeGen(){
         string name2 = currTacVec.substr(currTacVec.find(".")+1, -1);
         if(name2 != "") myfile << " "<< currTacVec.substr(currTacVec.find(".")+1, -1) << ":" << endl;
         else {
-            myfile << " "<< name1 << ":" << endl;
+            
         }
 
         for(int i = 0; i < tacMap[currTacVec].size(); i++){
@@ -1502,6 +1505,12 @@ void codeGen(){
                 myfile << "     mov " << "(" << r1 << "), " << r3 << "     #   Get Obj Value "   << endl;
             }
 
+            if(tacMap[currTacVec][i] -> op == "LoadObjRegister"){
+                string arg1 = tacMap[currTacVec][i] -> arg1;
+                string r2 = regS[getVarReg(myfile, arg1)].name;
+                myfile << "     mov " <<r2 << ", %rbx" << "       #   Load Obj ref in rbx"<< endl;
+            }
+
 
             // ************* End Constructor *********
 
@@ -1558,7 +1567,7 @@ void codeGen(){
                     string r1 = regT[getTempReg(arg1)].name;
                     // cout << arg1<<endl;
                     int off1 = getOffset(arg1);
-                    // cout << off1 << endl;
+                    cout << off1 << " "<< arg1 << endl;
                     myfile << "     mov " << off1*2 << "(%rbp) , " << r1  << "     #   Get Argument " << arg1  << endl;
                     myfile << "     mov " << r1<<", -" << off1 << "(%rbp)" << "     #   Store Argument " << arg1 << " in stack" << endl;
                     i++;
@@ -2206,10 +2215,8 @@ void ThreeACHelperFunc(int id){
                 tac* t;
                 if(tree[temp[i-1]].first == "QualifiedName"){
                     vector<int> temp1 = tree[temp[i-1]].second;
-                    // if(tree[temp1[2]].first == "println"){
-                    //     t = createTacCustom();
-                    //     tacMap[currTacVec].push_back(t);
-                    // }
+                    t = createTacCustom("LoadObjRegister", tree[temp1[0]].first, "", "");
+                    tacMap[currTacVec].push_back(t);
                      t = createTacCustom("LCall", tree[temp1[2]].first, "", "");
                     tacMap[currTacVec].push_back(t);
                 }
