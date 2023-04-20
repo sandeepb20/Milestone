@@ -2,41 +2,71 @@
       t2_0: BeginFunc      
       t2_1: stackPointer-=  16  // Manipulating stack (equal to size of function)  
       t2_2: getparam      kkk
-      t2_3: =  0    lll
-      t2_4: +_int  kkk  1  _v30
-      t2_5: Return  _v30  // load return value to return register...  
-      t2_6: EndFunc      
- test_4.main: 
+      t2_3: PushParam  98    
+      t2_4: LCall  foo2    
+      t2_5: returnRegister  _v54    
+      t2_6: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
+      t2_7: stackPointer+=  8  // Remove parameters passed into stack  
+      t2_8: =  _v54    lll
+      t2_9: LCall  println_lll    
+      t2_10: returnRegister  _v62    
+      t2_11: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
+      t2_12: stackPointer+=  0  // Remove parameters passed into stack  
+      t2_13: +_int  kkk  1  _v70
+      t2_14: Return  _v70  // load return value to return register...  
+      t2_15: EndFunc      
+ test_4.foo2: 
       t3_0: BeginFunc      
       t3_1: stackPointer-=  32  // Manipulating stack (equal to size of function)  
-      t3_2: =  343738336    _t1
-      t3_3: param  _t1    
-      t3_4: call  allocmem  1  _v66
-      t3_5: =  _v66    a
-      t3_6: =  0    i
-      t3_7: <  i  500000  _v83
-      t3_8: ifFalse  _v83  goto  t3_17
-      t3_9: =  i    _v92
-      t3_10: *  _v92  2  _v92
-      t3_11: +  _v92  0  _v92
-      t3_12: ArrayAddress  a[_v92]    _v98
-      t3_13: ArrayAssign  i    _v98
-      t3_14: =  i    _v87
-      t3_15: ++  i    i
-      t3_16:     goto  t3_7
-      t3_17: =  0    i
-      t3_18: <  i  500000  _v120
-      t3_19: ifFalse  _v120  goto  t3_32
-      t3_20: =  i    _v132
-      t3_21: *  _v132  2  _v132
-      t3_22: +  _v132  0  _v132
-      t3_23: ArrayAddress  a[_v132]    _v138
-      t3_24: ArrayAccess  _v138    x
-      t3_25: LCall  println_x    
-      t3_26: returnRegister  _v146    
-      t3_27: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
-      t3_28: stackPointer+=  0  // Remove parameters passed into stack  
-      t3_29: =  i    _v124
-      t3_30: ++  i    i
-      t3_31:     goto  t3_18
-      t3_32: EndFunc      
+      t3_2: getparam      p
+      t3_3: LCall  println_p    
+      t3_4: returnRegister  _v21    
+      t3_5: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
+      t3_6: stackPointer+=  0  // Remove parameters passed into stack  
+      t3_7: +_int  p  1  _v28
+      t3_8: Return  _v28  // load return value to return register...  
+      t3_9: EndFunc      
+ test_4.main: 
+      t4_0: BeginFunc      
+      t4_1: stackPointer-=  32  // Manipulating stack (equal to size of function)  
+      t4_2: =  343738336    _t1
+      t4_3: param  _t1    
+      t4_4: call  allocmem  1  _v106
+      t4_5: =  _v106    a
+      t4_6: =  0    i
+      t4_7: <  i  500000  _v123
+      t4_8: ifFalse  _v123  goto  t4_17
+      t4_9: =  i    _v132
+      t4_10: *  _v132  2  _v132
+      t4_11: +  _v132  0  _v132
+      t4_12: ArrayAddress  a[_v132]    _v138
+      t4_13: ArrayAssign  i    _v138
+      t4_14: =  i    _v127
+      t4_15: ++  i    i
+      t4_16:     goto  t4_7
+      t4_17: =  0    i
+      t4_18: <  i  500000  _v160
+      t4_19: ifFalse  _v160  goto  t4_42
+      t4_20: =  i    _v172
+      t4_21: *  _v172  2  _v172
+      t4_22: +  _v172  0  _v172
+      t4_23: ArrayAddress  a[_v172]    _v178
+      t4_24: ArrayAccess  _v178    x
+      t4_25: PushParam  9    
+      t4_26: LCall  foo    
+      t4_27: returnRegister  _v190    
+      t4_28: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
+      t4_29: stackPointer+=  8  // Remove parameters passed into stack  
+      t4_30: =  _v190    ppp
+      t4_31: LCall  println_x    
+      t4_32: returnRegister  _v199    
+      t4_33: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
+      t4_34: stackPointer+=  0  // Remove parameters passed into stack  
+      t4_35: LCall  println_i    
+      t4_36: returnRegister  _v206    
+      t4_37: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
+      t4_38: stackPointer+=  0  // Remove parameters passed into stack  
+      t4_39: =  i    _v164
+      t4_40: ++  i    i
+      t4_41:     goto  t4_18
+      t4_42: EndFunc      

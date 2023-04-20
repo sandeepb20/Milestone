@@ -6,7 +6,7 @@ public class test_3 {
     public int main(){
         int a[][][] = new int[5][6][7];
         int x = a[1][2][3];
-        // println_x();
+        println_x();
         foo(1);
         x= a[1][2][3];
         println_x();

@@ -3,19 +3,24 @@ Class : test_4
 
 
 Printing foo Symbol Table
-   lll,int,3,8,8,variable
-   kkk,int,2,8,0,variable
+   lll,int,7,8,8,variable
+   kkk,int,6,8,0,variable
+
+Printing foo2 Symbol Table
+   p,int,2,8,0,variable
 
 Printing for1 Symbol Table
-   i,int,8,8,8,variable
+   i,int,14,8,8,variable
 
 Printing for2 Symbol Table
-   x,int,12,8,24,variable
-   i,int,11,8,16,variable
+   x,int,18,8,32,variable
+   ppp,int,19,8,40,variable
+   i,int,17,8,24,variable
 
 Printing main Symbol Table
-   a,int[][],7,8,0,variable
+   a,int[][],13,8,0,variable
 
 Printing test_4 Symbol Table
-   main,int,6,8,8,method
-   foo,int,2,8,0,method
+   main,int,12,8,16,method
+   foo,int,6,8,8,method
+   foo2,int,2,8,0,method
