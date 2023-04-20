@@ -11,19 +11,23 @@ public class Example1 {
         this.x = a;
         this.y = b;
     }
+    public int viewX(Example1 pp) {
+        return pp.x;
+    }
 
   
     public static void main() {
         int arr[] = new int[10];
         Example1 a = new Example1(29,3);
         Example1 b = new Example1(5, 10);
-        int temp = a.setX(100);
+        int temp = a.setX(1000);
         int c = b.x;
         a.x = 1;
         int d = a.k;
         println_c();
         println_d();
-        println_temp();
+        int m = viewX(a);
+        println_m();
     }
   }
   // }

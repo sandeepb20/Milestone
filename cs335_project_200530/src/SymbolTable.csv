@@ -1,26 +1,25 @@
 Variable,Type,Line,Size,Offset
-Class : Example1
+Class : SortArrayExample3
 
 
-Printing Example1 Symbol Table
-   main,void,16,8,36,method
-   Example1.constr,,10,4,32,constructor
-   setX,int,6,8,24,method
-   k,int,5,8,16,variable
-   y,int,4,8,8,variable
-   x,int,3,8,0,variable
+Printing SortArrayExample3 Symbol Table
+   main,void,3,8,0,method
 
-Printing Example1.constr Symbol Table
-   b,int,10,8,8,variable
-   a,int,10,8,0,variable
+Printing for1 Symbol Table
+   k,int,7,8,16,variable
+
+Printing for2 Symbol Table
+   x,int,28,8,64,variable
+   i,int,12,8,24,variable
+
+Printing for3 Symbol Table
+   q,int,18,8,56,variable
+   p,int,17,8,48,variable
+   tmp,int,16,8,40,variable
+   j,int,14,8,32,variable
+
+Printing ifelse1 Symbol Table
 
 Printing main Symbol Table
-   c,int,21,8,32,variable
-   temp,int,20,8,24,variable
-   b,Example1,19,8,16,variable
-   d,int,22,8,40,variable
-   a,Example1,18,8,8,variable
-   arr,int[],17,8,0,variable
-
-Printing setX Symbol Table
-   k2,int,6,8,0,variable
+   arr,int[],6,8,8,variable
+   size,int,5,8,0,variable

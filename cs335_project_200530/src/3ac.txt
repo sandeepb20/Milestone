@@ -1,80 +1,73 @@
- Example1.: 
-      t2_0: /_int  20  4  _v14
-      t2_1: +_int  1  _v14  _v15
-      t2_2: =  _v15    x
-      t2_3: <<_int  x  2  _v25
-      t2_4: =  _v25    y
-      t2_5: +_int  y  1  _v35
-      t2_6: =  _v35    k
- Example1.Constructor: 
-      t3_0: BeginConstructor      
-      t3_1: stackPointer-=  16    
-      t3_2: getref      _v79
-      t3_3: getparam      a
-      t3_4: getparam      b
-      t3_5: ObjAccess  x    _v84
-      t3_6: FieldAccess  a    _v84
-      t3_7: ObjAccess  y    _v93
-      t3_8: FieldAccess  b    _v93
-      t3_9: EndConstructor      
- Example1.main: 
-      t4_0: BeginFunc      
-      t4_1: stackPointer-=  48  // Manipulating stack (equal to size of function)  
-      t4_2: =  80    _t1
-      t4_3: param  _t1    
-      t4_4: call  allocmem  1  _v126
-      t4_5: =  _v126    arr
-      t4_6: PushParam  3    
-      t4_7: PushParam  29    
-      t4_8: =  44    _v136
-      t4_9: param  _v136    
-      t4_10: call  allocmem    _v141
-      t4_11: SetObjRef      _v141
-      t4_12: LCall  Constructor    
-      t4_13: LoadObjRef  ConstructorValReturned    _v142
-      t4_14: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
-      t4_15: stackPointer+=  24  // Remove parameters passed into stack + object refernce  
-      t4_16: =  _v142    a
-      t4_17: PushParam  10    
-      t4_18: PushParam  5    
-      t4_19: =  44    _v153
-      t4_20: param  _v153    
-      t4_21: call  allocmem    _v158
-      t4_22: SetObjRef      _v158
-      t4_23: LCall  Constructor    
-      t4_24: LoadObjRef  ConstructorValReturned    _v159
-      t4_25: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
-      t4_26: stackPointer+=  24  // Remove parameters passed into stack + object refernce  
-      t4_27: =  _v159    b
-      t4_28: PushParam  100    
-      t4_29: LoadObjRegister  a    
-      t4_30: LCall  setX    
-      t4_31: returnRegister  _v175    
-      t4_32: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
-      t4_33: stackPointer+=  8  // Remove parameters passed into stack  
-      t4_34: =  _v175    temp
-      t4_35: getObjVal  b  x  _v187
-      t4_36: =  _v187    c
-      t4_37: getObjVal  a  k  _v199
-      t4_38: =  _v199    d
-      t4_39: LCall  println_c    
-      t4_40: returnRegister  _v208    
-      t4_41: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
-      t4_42: stackPointer+=  0  // Remove parameters passed into stack  
-      t4_43: LCall  println_d    
-      t4_44: returnRegister  _v215    
-      t4_45: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
-      t4_46: stackPointer+=  0  // Remove parameters passed into stack  
-      t4_47: LCall  println_temp    
-      t4_48: returnRegister  _v222    
-      t4_49: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
-      t4_50: stackPointer+=  0  // Remove parameters passed into stack  
-      t4_51: EndFunc      
- Example1.setX: 
-      t5_0: BeginFunc      
-      t5_1: stackPointer-=  32  // Manipulating stack (equal to size of function)  
-      t5_2: getparam      k2
-      t5_3: ObjAccess  x    _v54
-      t5_4: FieldAccess  k2    _v54
-      t5_5: Return  k2  // load return value to return register...  
-      t5_6: EndFunc      
+ SortArrayExample3.main: 
+      t2_0: BeginFunc      
+      t2_1: stackPointer-=  16  // Manipulating stack (equal to size of function)  
+      t2_2: =  10    size
+      t2_3: =  80    _t1
+      t2_4: param  _t1    
+      t2_5: call  allocmem  1  _v35
+      t2_6: =  _v35    arr
+      t2_7: =  0    k
+      t2_8: <_null  k  size  _v53
+      t2_9: ifFalse  _v53  goto  t2_24
+      t2_10: =  k    _v62
+      t2_11: ArrayAddress  arr[_v62]    _v64
+      t2_12: -_int  size  k  _v69
+      t2_13: ArrayAssign  _v69    _v64
+      t2_14: =  k    _v75
+      t2_15: ArrayAddress  arr[_v75]    _v77
+      t2_16: =  k    _v81
+      t2_17: ArrayAddress  arr[_v81]    _v83
+      t2_18: ArrayAccess  _v83    _v83
+      t2_19: *_int  _v83  10  _v86
+      t2_20: ArrayAssign  _v86    _v77
+      t2_21: =  k    _v57
+      t2_22: ++  k    k
+      t2_23:     goto  t2_8
+      t2_24: =  0    i
+      t2_25: <_null  i  size  _v107
+      t2_26: ifFalse  _v107  goto  t2_71
+      t2_27: +_int  i  1  _v122
+      t2_28: =  _v122    j
+      t2_29: <_null  j  size  _v129
+      t2_30: ifFalse  _v129  goto  t2_61
+      t2_31: =  0    tmp
+      t2_32: =  i    _v149
+      t2_33: ArrayAddress  arr[_v149]    _v151
+      t2_34: ArrayAccess  _v151    p
+      t2_35: =  j    _v162
+      t2_36: ArrayAddress  arr[_v162]    _v164
+      t2_37: ArrayAccess  _v164    q
+      t2_38: =  i    _v174
+      t2_39: ArrayAddress  arr[_v174]    _v176
+      t2_40: =  j    _v180
+      t2_41: ArrayAddress  arr[_v180]    _v182
+      t2_42: ArrayAccess  _v182    _v182
+      t2_43: ArrayAccess  _v176    _v176
+      t2_44: >_int  _v176  _v182  _v183
+      t2_45: ifFalse  _v183  goto  t2_58
+      t2_46: =  i    _v190
+      t2_47: ArrayAddress  arr[_v190]    _v192
+      t2_48: ArrayAccess  _v192    tmp
+      t2_49: =  i    _v198
+      t2_50: ArrayAddress  arr[_v198]    _v200
+      t2_51: =  j    _v204
+      t2_52: ArrayAddress  arr[_v204]    _v206
+      t2_53: ArrayArrayAssign  _v206    _v200
+      t2_54: =  j    _v213
+      t2_55: ArrayAddress  arr[_v213]    _v215
+      t2_56: ArrayAssign  tmp    _v215
+      t2_57:     goto  t2_58
+      t2_58: =  j    _v133
+      t2_59: ++  j    j
+      t2_60:     goto  t2_29
+      t2_61: =  i    _v234
+      t2_62: ArrayAddress  arr[_v234]    _v236
+      t2_63: ArrayAccess  _v236    x
+      t2_64: LCall  println_x    
+      t2_65: returnRegister  _v245    
+      t2_66: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
+      t2_67: stackPointer+=  0  // Remove parameters passed into stack  
+      t2_68: =  i    _v111
+      t2_69: ++  i    i
+      t2_70:     goto  t2_25
+      t2_71: EndFunc      

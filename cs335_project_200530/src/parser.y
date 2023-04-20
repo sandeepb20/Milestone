@@ -160,6 +160,7 @@ void createEntry(string currTableName, string temp, string type, int line, int s
 }
 
 void makeSymbolTable(string name, bool reset){
+    cout << name << " " << reset << endl;
     sym_table new_table;
     class_table[curr_class].insert(make_pair(name, new_table));
     class_parent_table[curr_class].insert(make_pair(name, curr_table));
@@ -513,7 +514,7 @@ void symTable(int id){
         symTable(child[8]);
         if(tree[child[8]].first != "Block"){
             curr_table = class_parent_table[curr_class][curr_table];
-            stoffset = prevoffset;
+            // stoffset = prevoffset;
         }
         return;
     }
@@ -524,7 +525,7 @@ void symTable(int id){
         symTable(child[4]);
         if(tree[child[4]].first != "Block"){
             curr_table = class_parent_table[curr_class][curr_table];
-            stoffset = prevoffset;
+            // stoffset = prevoffset;
         }
         return;
     }
@@ -553,7 +554,7 @@ void symTable(int id){
     if(nodeName == "Block"){
         symTable(child[1]);
         curr_table = class_parent_table[curr_class][curr_table];
-        stoffset = prevoffset;
+        // stoffset = prevoffset;
         return;
         
     }
@@ -561,10 +562,11 @@ void symTable(int id){
         stname = "ifelse" + to_string(ifelsenum);
         ifelsenum++;
         makeSymbolTable(stname, 0);
+        symTable(child[2]);
         symTable(child[4]);
         if(tree[child[4]].first != "Block"){
             curr_table = class_parent_table[curr_class][curr_table];
-            stoffset = prevoffset;
+            // stoffset = prevoffset;
         }
         return;
     }
@@ -572,10 +574,11 @@ void symTable(int id){
         stname = "ifelse" + to_string(ifelsenum);
         ifelsenum++;
         makeSymbolTable(stname, 0);
+        symTable(child[2]);
         symTable(child[4]);
         if(tree[child[4]].first != "Block"){
             curr_table = class_parent_table[curr_class][curr_table];
-            stoffset = prevoffset;
+            // stoffset = prevoffset;
         }
         stname = "ifelse" + to_string(ifelsenum);
         ifelsenum++;
@@ -583,7 +586,7 @@ void symTable(int id){
         symTable(child[6]);
         if(tree[child[6]].first != "Block"){
             curr_table = class_parent_table[curr_class][curr_table];
-            stoffset = prevoffset;
+            // stoffset = prevoffset;
         }
         return;
     }
@@ -634,7 +637,6 @@ void symTable(int id){
         }
 
     }
-
     for(int i = 0; i < child.size(); i++){
         symTable(child[i]);
     }
@@ -794,15 +796,15 @@ void initRegisters(){
     regT[1].name = "%r9";
     regT[2].name = "%r10";
     regT[3].name = "%r11";
-    regT[4].name = "%rdx";
+    regT[4].name = "%r15";
     regT[5].name = "%rcx";
-    regT[6].name = "%rbx";
-    regT[7].name = "%rax";
+    regT[6].name = "%rdx";
+    regT[7].name = "%rbx";
 
     regS[0].name = "%r12";
     regS[1].name = "%r13";
     regS[2].name = "%r14";
-    regS[3].name = "%r15";
+    
 
     esp.name = "%rsp";
     ebp.name = "%rbp";
@@ -813,7 +815,7 @@ void resetRegisters(){
     // for(int i = 0; i < regS.size(); i++){
     //     regS[i].val = "";
     // }
-    for(int i = 0; i < 4; i++){
+    for(int i = 0; i < 6; i++){
         regT[i].val = "";
     }
 }
@@ -821,12 +823,12 @@ void resetRegisters(){
 int tempregNum = 0;
 int getTempReg(string val){
     // check if already in reg
-    for(int i = 0; i < 4; i++){
+    for(int i = 0; i < 6; i++){
         if(regT[i].val == val){
             return i;
         }
     }
-    int i = tempregNum%4;
+    int i = tempregNum%6;
     tempregNum = i+1;
     regT[i].isUsed = true;
     regT[i].val = val;
@@ -841,7 +843,7 @@ int getVarReg(ofstream &myfile, string val){
     //         return i;
     //     }
     // }
-    int i = tempVarRegNum%4;
+    int i = tempVarRegNum%3;
     tempVarRegNum = i+1;
     regS[i].isUsed = true;
     regS[i].val = val;
@@ -858,7 +860,7 @@ int setVarReg(ofstream &myfile, string val){
             return i;
         }
     }
-    int i = tempVarRegNum%4;
+    int i = tempVarRegNum%3;
     tempVarRegNum = i+1;
     regS[i].isUsed = true;
     regS[i].val = val;
@@ -1007,7 +1009,7 @@ void codeGen(){
             }
             if(ops == "ArrayAddress"){
                 string arg1 = tacMap[currTacVec][i] -> arg1;
-                string base = arg1.substr(arg1.find('[')-1, 1);
+                string base = arg1.substr(0,arg1.find('['));
                 string addr  = arg1.substr(arg1.find('[')+1, -1);
                 string res = tacMap[currTacVec][i] -> res;
                 addr.pop_back();
@@ -1024,6 +1026,7 @@ void codeGen(){
                     if(base[0] == '_') r2 = regT[getTempReg(base)].name;
                     else  r2 = "$" + base;
                 }else  r2 = regS[getVarReg(myfile, base)].name;
+                cout << r2 << " " << arg1 << endl;
                 myfile << "     add "<< r1 << ", "<< r2 << "     # addr + base"<< endl;
                 // res = upar wala
                 string r3 = "";
@@ -1073,6 +1076,24 @@ void codeGen(){
                     else  r2 = "$" +  res;
                 }else  r2 = regS[getVarReg(myfile, res)].name;
                 myfile << "     mov " << r1 << ", ("<< r2 << ")     # Array assign" << endl;
+            }
+            if(ops == "ArrayArrayAssign"){
+                 string arg1 = tacMap[currTacVec][i] -> arg1;
+                string res = tacMap[currTacVec][i] -> res;
+                string r1 = "", r2 = "";
+                if(getOffset(arg1) == -1){
+                    if(res[0] == '_')r1 = regT[getTempReg(arg1)].name;
+                    else  r1 = "$" +  arg1;
+                }else  r1 = regS[getVarReg(myfile, arg1)].name;
+                if(getOffset(res) == -1){
+                    if(res[0] == '_')r2 = regT[getTempReg(res)].name;
+                    else  r2 = "$" +  res;
+                }else  r2 = regS[getVarReg(myfile, res)].name;
+                string tempr = regT[getTempReg("_s"+res)].name;
+                myfile << "     mov ("<< r1 << "), "<< tempr << "     # Array Array assign" << endl;
+                
+                myfile << "     mov " << tempr << ", ("<< r2 << ")     # Array Array assign" << endl;
+
             }
 
             if(ops == "=="){
@@ -1728,10 +1749,13 @@ vector<int> getDim(string cclass, string ArrayName){
     for(auto it : class_table[cclass]){
         for(auto itr : it.second){
             if(itr.first == ArrayName){
+                // cout << itr.second -> ndim.size() << "found" << endl;
                 return itr.second -> ndim;
             }
         }
     }
+    cout  << cclass << " " << ArrayName << " not found" << endl;
+    // cout << " not found" << endl;
     return {};
 }
 int getSizeOfArray(int id){
@@ -2353,7 +2377,11 @@ void ThreeACHelperFunc(int id){
     if(tree[id].first == "Expression")  tacMap[currTacVec].push_back(createTacCustom("=", createArg(temp[0]), "", createArg(id)));
     // if(tree[id].first == "Assignment" && tree[(tree[id].second)[0]].first != "ArrayAccess") tacMap[currTacVec].push_back(createTac1(id));
     if(tree[id].first == "Assignment") {
-        if(tree[temp[0]].first == "ArrayAccess"){
+        if(tree[temp[0]].first == "ArrayAccess" && tree[temp[2]].first == "ArrayAccess"){
+            tac*t = createTacCustom("ArrayArrayAssign", createArg(temp[2]), "", createArg(temp[0]));
+            tacMap[currTacVec].push_back(t);
+        }
+        else if(tree[temp[0]].first == "ArrayAccess"){
             tac*t = createTacCustom("ArrayAssign", createArg(temp[2]), "", createArg(temp[0]));
             tacMap[currTacVec].push_back(t);
         } 
@@ -2366,6 +2394,34 @@ void ThreeACHelperFunc(int id){
             tacMap[currTacVec].push_back(t);
         }
         else tacMap[currTacVec].push_back(createTac1(id));
+    }
+    string z = tree[id].first;
+    if(z == "RelationalExpression" 
+        ||  z == "ConditionalOrExpression"
+        ||  z == "ConditionalAndExpression"
+        ||  z == "AdditiveExpression"
+        ||  z == "MultiplicativeExpression"
+        ||  z == "RelationalExpression"
+        ||  z == "EqualityExpression"
+        ||  z == "AndExpression"
+        ||  z == "ShiftExpression"
+    ){
+        if(tree[temp[0]].first == "ArrayAccess" && tree[temp[2]].first == "ArrayAccess"){
+            tac*t = createTacCustom("ArrayAccess", createArg(temp[2]), "", createArg(temp[2]));
+            tacMap[currTacVec].push_back(t);
+            t = createTacCustom("ArrayAccess", createArg(temp[0]), "", createArg(temp[0]));
+            tacMap[currTacVec].push_back(t);
+        }
+        else if(tree[temp[0]].first == "ArrayAccess"){
+            tac*t = createTacCustom("ArrayAccess", createArg(temp[0]), "", createArg(temp[0]));
+            tacMap[currTacVec].push_back(t);
+        } 
+        else if (tree[temp[2]].first == "ArrayAccess"){
+            tac*t = createTacCustom("ArrayAccess", createArg(temp[2]), "", createArg(temp[2]));
+            tacMap[currTacVec].push_back(t);
+        }    
+        // tacMap[currTacVec].push_back(createTac2(id);
+
     }
     if(tree[id].first == "PreIncExpression") tacMap[currTacVec].push_back(createTac1Dplus(id));
     if(tree[id].first == "PreDecExpression") tacMap[currTacVec].push_back(createTac1Dplus(id));
@@ -2667,10 +2723,12 @@ void tpc(int id){
         string arrname = tree[temp].first;
         typer = whtIsType[temp];
         string cclass = nodeClass[temp];
+        // cout << cclass << " " << arrname << endl;
         vector<int> dimensions = getDim(cclass, arrname);
         reverse(dimensions.begin(), dimensions.end());
         if(dims.size() != dimensions.size()){
-            cout << "error: array required, but int found" << endl;
+            // cout << dims.size() << " " << dimensions.size() << endl;
+            cout << "error: array required, but int found at line " << LineNumber[temp] << endl;
         }
         else{
             for(int i=0; i<dims.size(); i++){
