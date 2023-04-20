@@ -1334,7 +1334,7 @@ void codeGen(){
                 myfile << "     mov " << r1 << ", " << r3 << endl;
                 myfile << "     add " << r2 << ", " << r3 << "      #   " << res << " = "<< arg1 << " + " << arg2 <<  endl;
             }
-            if(tacMap[currTacVec][i] -> op == "-_int"){
+            if(tacMap[currTacVec][i] -> op == "-_int" || tacMap[currTacVec][i] -> op == "-"){
                 string r1 = "", r2 = "", r3 = "";
                 string arg1 = tacMap[currTacVec][i] -> arg1;
                 string arg2 = tacMap[currTacVec][i] -> arg2;
@@ -1374,7 +1374,7 @@ void codeGen(){
                 myfile << "     mov " << r1 << ", " << r3 << endl;
                 myfile << "     imul " << r2 << ", " << r3 << "      #   " << res << " = "<< arg1 << " * " << arg2 <<  endl;
             }
-            if(tacMap[currTacVec][i] -> op == "/_int"){
+            if(tacMap[currTacVec][i] -> op == "/_int" || tacMap[currTacVec][i] -> op == "/"){
                 string r1 = "", r2 = "", r3 = "";
                 string arg1 = tacMap[currTacVec][i] -> arg1;
                 string arg2 = tacMap[currTacVec][i] -> arg2;
@@ -1391,10 +1391,12 @@ void codeGen(){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
                 }else  r3 = regS[getVarReg(myfile, res)].name;
-                myfile << "     mov " << r1 << ", " << r3 << endl;
-                myfile << "     div " << r2 << ", " << r3 << "      #   " << res << " = "<< arg1 << " / " << arg2 <<  endl;
+                myfile << "     mov " << r1 << ", " << "%rax" << endl;
+                myfile << "     cdq" << endl;
+                myfile << "     idiv " << r2  << "      #   " << res << " = "<< arg1 << " / " << arg2 <<  endl;
+                myfile << "     mov %rax, " << r3 << endl;
             }
-            if(tacMap[currTacVec][i] -> op == "%_int"){
+            if(tacMap[currTacVec][i] -> op == "%_int" || tacMap[currTacVec][i] -> op == "%"){
                 string r1 = "", r2 = "", r3 = "";
                 string arg1 = tacMap[currTacVec][i] -> arg1;
                 string arg2 = tacMap[currTacVec][i] -> arg2;
@@ -1411,8 +1413,12 @@ void codeGen(){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
                 }else  r3 = regS[getVarReg(myfile, res)].name;
-                myfile << "     mov " << r1 << ", " << r3 << endl;
-                myfile << "     mod " << r2 << ", " << r3 << "      #   " << res << " = "<< arg1 << " % " << arg2 <<  endl;
+                                myfile << "     mov " << r1 << ", " << "%rax" << endl;
+                myfile << "     cdq" << endl;
+                myfile << "     idiv " << r2  << "      #   " << res << " = "<< arg1 << " / " << arg2 <<  endl;
+                myfile << "     mov %rdx, " << r3 << endl;
+                // myfile << "     mov " << r1 << ", " << r3 << endl;
+                // myfile << "     mod " << r2 << ", " << r3 << "      #   " << res << " = "<< arg1 << " % " << arg2 <<  endl;
             }
             if(tacMap[currTacVec][i] -> op == "LCall"){
                 string arg1 = tacMap[currTacVec][i] -> arg1;

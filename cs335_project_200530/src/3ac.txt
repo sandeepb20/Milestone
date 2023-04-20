@@ -1,42 +1,13 @@
- test_4.foo: 
+ test_1.main: 
       t2_0: BeginFunc      
-      t2_1: stackPointer-=  16  // Manipulating stack (equal to size of function)  
-      t2_2: getparam      kkk
-      t2_3: =  0    lll
-      t2_4: +_int  kkk  1  _v30
-      t2_5: Return  _v30  // load return value to return register...  
-      t2_6: EndFunc      
- test_4.main: 
-      t3_0: BeginFunc      
-      t3_1: stackPointer-=  32  // Manipulating stack (equal to size of function)  
-      t3_2: =  343738336    _t1
-      t3_3: param  _t1    
-      t3_4: call  allocmem  1  _v66
-      t3_5: =  _v66    a
-      t3_6: =  0    i
-      t3_7: <  i  500000  _v83
-      t3_8: ifFalse  _v83  goto  t3_17
-      t3_9: =  i    _v92
-      t3_10: *  _v92  2  _v92
-      t3_11: +  _v92  0  _v92
-      t3_12: ArrayAddress  a[_v92]    _v98
-      t3_13: ArrayAssign  i    _v98
-      t3_14: =  i    _v87
-      t3_15: ++  i    i
-      t3_16:     goto  t3_7
-      t3_17: =  0    i
-      t3_18: <  i  500000  _v120
-      t3_19: ifFalse  _v120  goto  t3_32
-      t3_20: =  i    _v132
-      t3_21: *  _v132  2  _v132
-      t3_22: +  _v132  0  _v132
-      t3_23: ArrayAddress  a[_v132]    _v138
-      t3_24: ArrayAccess  _v138    x
-      t3_25: LCall  println_x    
-      t3_26: returnRegister  _v146    
-      t3_27: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
-      t3_28: stackPointer+=  0  // Remove parameters passed into stack  
-      t3_29: =  i    _v124
-      t3_30: ++  i    i
-      t3_31:     goto  t3_18
-      t3_32: EndFunc      
+      t2_1: stackPointer-=  48  // Manipulating stack (equal to size of function)  
+      t2_2: =  69    a
+      t2_3: =  3    b
+      t2_4: /_int  a  b  _v38
+      t2_5: =  _v38    c
+      t2_6: LCall  println_c    
+      t2_7: returnRegister  _v47    
+      t2_8: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
+      t2_9: stackPointer+=  0  // Remove parameters passed into stack  
+      t2_10: Return  0  // load return value to return register...  
+      t2_11: EndFunc      
