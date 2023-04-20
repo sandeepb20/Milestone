@@ -14,8 +14,6 @@ public class SortArrayExample3
             for (int j = i + 1; j < size; j++)   
             {  
                 int tmp = 0;  
-                int p = arr[i];
-                int q = arr[j];
                 if ( arr[i] > arr[j])   
                 {  
                     tmp = arr[i];
