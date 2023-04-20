@@ -1,3 +1,4 @@
+<<<<<<< HEAD
  Example1.Constructor: 
       t2_0: BeginConstructor      
       t2_1: stackPointer-=  16    
@@ -61,3 +62,47 @@
       t4_4: FieldAccess  k    _v33
       t4_5: Return  k  // load return value to return register...  
       t4_6: EndFunc      
+=======
+ test_1.foo1: 
+      t2_0: BeginFunc      
+      t2_1: stackPointer-=  48  // Manipulating stack (equal to size of function)  
+      t2_2: getparam      k
+      t2_3: getparam      l
+      t2_4: getparam      m
+      t2_5: -_int  k  1  _v33
+      t2_6: =_int  _v33    k
+      t2_7: LCall  println_k    
+      t2_8: returnRegister  _v40    
+      t2_9: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
+      t2_10: stackPointer+=  0  // Remove parameters passed into stack  
+      t2_11: Return  66  // load return value to return register...  
+      t2_12: EndFunc      
+ test_1.main: 
+      t3_0: BeginFunc      
+      t3_1: stackPointer-=  64  // Manipulating stack (equal to size of function)  
+      t3_2: =  8    a
+      t3_3: =  68    b
+      t3_4: =  67    c
+      t3_5: =  a    _v92
+      t3_6: --  a    a
+      t3_7: =  _v92    d
+      t3_8: --  a    a
+      t3_9: =  a    _v103
+      t3_10: =  _v103    e
+      t3_11: =  0    i
+      t3_12: <_int  i  10  _v121
+      t3_13: ifFalse  _v121  goto  t3_17
+      t3_14: =  i    _v125
+      t3_15: ++  i    i
+      t3_16:     goto  t3_12
+      t3_17: LCall  println_d    
+      t3_18: returnRegister  _v136    
+      t3_19: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
+      t3_20: stackPointer+=  0  // Remove parameters passed into stack  
+      t3_21: LCall  println_e    
+      t3_22: returnRegister  _v143    
+      t3_23: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
+      t3_24: stackPointer+=  0  // Remove parameters passed into stack  
+      t3_25: Return  0  // load return value to return register...  
+      t3_26: EndFunc      
+>>>>>>> 659081e5fd336a8054dc08be66e0fc1488500b54
