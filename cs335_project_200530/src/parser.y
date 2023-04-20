@@ -744,17 +744,48 @@ string createArg5(int id){
 string getClass(string name){
     return name.substr(0, name.find("."));
 }
+string getFunc(string name){
+    return name.substr(name.find(".")+1, -1);
+}
 
 int offff = 0;
+// int getOffset(string name){
+//     string cclass = getClass(currTacVec);
+//     for(auto it : class_table[cclass]){
+//         for(auto itr : it.second){
+//             if(itr.first == name){
+//                 return itr.second -> offset + 8;
+//             }
+//         }
+//     }
+//     return -1;
+// }
 int getOffset(string name){
     string cclass = getClass(currTacVec);
-    for(auto it : class_table[cclass]){
-        for(auto itr : it.second){
-            if(itr.first == name){
-                return itr.second -> offset + 8;
-            }
+    string cfunc = getFunc(currTacVec);
+    // cout << cfunc << " "<< cclass<< "  " << name <<endl;
+    if(cfunc == ""){
+        for(auto it : class_table[cclass][cclass]){
+            // for(auto itr : it.second){
+                if(it.first == name){
+                    return it.second -> offset + 8;
+                }
+            // }
+        }
+    }else{
+        if(cfunc == "Constructor"){
+            cfunc = cclass + ".constr";
+        }
+        for(auto it : class_table[cclass][cfunc]){
+            // for(auto itr : it.second){
+                if(it.first == name){
+                    // cout << cfunc << " "<< cclass<< "  " << name  <<" off"<< it.second -> offset + 8 <<endl;
+                    return it.second -> offset + 8;
+                }
+            // }
         }
     }
+    //  cout << cfunc << " "<< cclass<< "  " << name  <<" off "<< -1 <<endl;
     return -1;
 }
 int getSizeOf(string name){

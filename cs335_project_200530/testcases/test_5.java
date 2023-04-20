@@ -45,8 +45,9 @@ public class Example1 {
     
       Example1 a = new Example1(27, 29);
       int m = 10;
+
       m = a.k;
-      println_m();
+      println_x();
       a.x = 100;
       
       m = a.x;
