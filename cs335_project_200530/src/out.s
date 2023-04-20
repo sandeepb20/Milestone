@@ -1,97 +1,51 @@
       .global main
      .data
      .text
-<<<<<<< HEAD
- fib:
-     pushq %rbp
-     mov %rsp, %rbp      # beginFunc
-     sub $32, %rsp       # stackPointer-= 16
-     mov 16(%rbp) , %r8     #   Get Argument n
-     mov %r8, -8(%rbp)     #   Store Argument n in stack
-     mov -8(%rbp) ,%r12       # Load n from stack
-     cmp $1, %r12
-     jle t2_3t
-     mov $0, %r9
-     jmp t2_3f
- t2_3t:
-     mov $1, %r9
- t2_3f:
-     cmp $1, %r9
-     jne t2_7
-     mov -8(%rbp) ,%r13       # Load n from stack
-     mov %r13, %rax     # Return n
-     jmp return_fib
-     jmp t2_7
- t2_7:
-     sub $8, %rsp       # PushParam AdditiveExpression
-     pushq $AdditiveExpression       # PushParam AdditiveExpression
-     mov -8(%rbp) ,%r14       # Load n from stack
-     mov %r14, %r10
-     sub $1, %r10      #   _v36 = n - 1
-     call fib
-     mov %rax, %r11     # ReturnValue = _v38
-     add $16, %rsp       # stackPointer+= 8
-     mov %r11, %r12     # a=_v38
-     mov %r12, -16(%rbp)        # Set a in stack
-     sub $8, %rsp       # PushParam AdditiveExpression
-     pushq $AdditiveExpression       # PushParam AdditiveExpression
-     mov -8(%rbp) ,%r13       # Load n from stack
-     mov %r13, %r15
-     sub $2, %r15      #   _v52 = n - 2
-     call fib
-     mov %rax, %rcx     # ReturnValue = _v54
-     add $16, %rsp       # stackPointer+= 8
-     mov -16(%rbp) ,%r14       # Load a from stack
-     mov %r14, %r8
-     add %rcx, %r8      #   _v55 = a + _v54
-     mov %r8, %rax     # Return _v55
-     jmp return_fib
-return_fib:
-     mov %rbp, %rsp
-     popq %rbp
-     ret       # EndFunc
- main:
-=======
  Constructor:
            # Begin Constructor
->>>>>>> 4d24abe81b8b5aab53b7176095bf75646c57206f
      pushq %rbp
      mov %rsp, %rbp      # beginCon
      sub $32, %rsp       # stackPointer-= 16
-<<<<<<< HEAD
-     mov $10, %r12     # N=10
-     mov %r12, -8(%rbp)        # Set N in stack
-     mov -8(%rbp) ,%r13       # Load N from stack
-     sub $8, %rsp       # PushParam N
-     pushq %r13       # PushParam N
-     call fib
-     mov %rax, %r9     # ReturnValue = _v88
-     add $16, %rsp       # stackPointer+= 8
-     mov %r9, %r14     # ans=_v88
-     mov %r14, -16(%rbp)        # Set ans in stack
-     sub $32, %rsp       # For print statement
-     mov $format, %rdi
-     mov -16(%rbp) ,%r12       # Load ans from stack
-=======
-     mov 16(%rbp) , %r8     #   Get Argument a1
-     mov %r8, -8(%rbp)     #   Store Argument a1 in stack
-     mov 32(%rbp) , %r9     #   Get Argument b1
-     mov %r9, -16(%rbp)     #   Store Argument b1 in stack
-     sub $32, %rsp       # For print statement
-     mov $format, %rdi
-     mov -16(%rbp) ,%r12       # Load b1 from stack
-     mov %r12, %rsi
-     call printf
-     add $32, %rsp       #For print stmt
-     add $0, %rsp       # stackPointer+= 0
-     mov %rbx, %r10    #       move offset
-     add $0, %r10     #   Get Obj ref 
-     mov  -16(%rbp) , %r11       # Get b1 from stack
-     mov %r11, (%r10)     # Field access
+     mov 16(%rbp) , %r8     #   Get Argument a
+     mov %r8, -8(%rbp)     #   Store Argument a in stack
+     mov 32(%rbp) , %r9     #   Get Argument b
+     mov %r9, -16(%rbp)     #   Store Argument b in stack
+     mov -8(%rbp) ,%r12       # Load a from stack
+     mov -8(%rbp) ,%r13       # Load a from stack
+     mov %r12, %r10
+     imul %r13, %r10      #   _v34 = a * a
+     mov -16(%rbp) ,%r14       # Load b from stack
+     cmp %r10, %r14
+     je t2_6t
+     mov $0, %r11
+     jmp t2_6f
+ t2_6t:
+     mov $1, %r11
+ t2_6f:
+     cmp $1, %r11
+     jne t2_13
      mov %rbx, %r15    #       move offset
      add $8, %r15     #   Get Obj ref 
-     mov  -8(%rbp) , %rcx       # Get a1 from stack
-     mov %rcx, (%r15)     # Field access
+     mov -8(%rbp) ,%r12       # Load a from stack
+     mov %r12, (%r15)     # Field access
+     mov %rbx, %rcx    #       move offset
+     add $0, %rcx     #   Get Obj ref 
+     mov -16(%rbp) ,%r13       # Load b from stack
+     mov %r13, (%rcx)     # Field access
+     jmp t2_18
+ t2_13:
+     mov %rbx, %r8    #       move offset
+     add $8, %r8     #   Get Obj ref 
+     mov -8(%rbp) ,%r14       # Load a from stack
+     mov %r14, (%r8)     # Field access
+     mov %rbx, %r9    #       move offset
+     add $0, %r9     #   Get Obj ref 
+     mov -8(%rbp) ,%r12       # Load a from stack
+     mov -8(%rbp) ,%r13       # Load a from stack
+     mov %r12, %r10
+     imul %r13, %r10      #   _v78 = a * a
+     mov %r10, (%r9)     # Field access
+ t2_18:
      mov %rbp, %rsp
      popq %rbp
      ret       # EndFunc
@@ -99,22 +53,22 @@ return_fib:
      pushq %rbp
      mov %rsp, %rbp      # beginFunc
      sub $32, %rsp       # stackPointer-= 16
-     mov 16(%rbp) , %r8     #   Get Argument sr
-     mov %r8, -8(%rbp)     #   Store Argument sr in stack
-     mov -8(%rbp) ,%r13       # Load sr from stack
-     add $8, %r13     #   Get Obj ref 
-     mov (%r13), %r9     #   Get Obj Value 
-     mov %r9, %r14     # temp=_v112
-     mov %r14, -16(%rbp)        # Set temp in stack
+     mov 16(%rbp) , %r11     #   Get Argument sr1
+     mov %r11, -8(%rbp)     #   Store Argument sr1 in stack
+     mov -8(%rbp) ,%r14       # Load sr1 from stack
+     add $8, %r14     #   Get Obj ref 
+     mov (%r14), %r15     #   Get Obj Value 
+     mov %r15, %r12     # temp=_v148
+     mov %r12, -16(%rbp)        # Set temp in stack
      sub $32, %rsp       # For print statement
      mov $format, %rdi
-     mov -16(%rbp) ,%r12       # Load temp from stack
-     mov %r12, %rsi
+     mov -16(%rbp) ,%r13       # Load temp from stack
+     mov %r13, %rsi
      call printf
      add $32, %rsp       #For print stmt
      add $0, %rsp       # stackPointer+= 0
-     mov -16(%rbp) ,%r13       # Load temp from stack
-     mov %r13, %rax     # Return temp
+     mov -16(%rbp) ,%r14       # Load temp from stack
+     mov %r14, %rax     # Return temp
      jmp return_get_x
 return_get_x:
      mov %rbp, %rsp
@@ -124,22 +78,24 @@ return_get_x:
      pushq %rbp
      mov %rsp, %rbp      # beginFunc
      sub $32, %rsp       # stackPointer-= 16
-     mov 16(%rbp) , %r10     #   Get Argument sr
-     mov %r10, -8(%rbp)     #   Store Argument sr in stack
-     mov -8(%rbp) ,%r14       # Load sr from stack
-     add $0, %r14     #   Get Obj ref 
-     mov (%r14), %r11     #   Get Obj Value 
-     mov %r11, %r12     # temps=_v74
-     mov %r12, -16(%rbp)        # Set temps in stack
+     mov 16(%rbp) , %rcx     #   Get Argument sr
+     mov %rcx, -8(%rbp)     #   Store Argument sr in stack
+     mov -8(%rbp) ,%r12       # Load sr from stack
+     add $0, %r12     #   Get Obj ref 
+     mov (%r12), %r8     #   Get Obj Value 
+     mov $1, %r9
+     add %r8, %r9      #   _v110 = 1 + _v109
+     mov %r9, %r13     # temps=_v110
+     mov %r13, -16(%rbp)        # Set temps in stack
      sub $32, %rsp       # For print statement
      mov $format, %rdi
-     mov -16(%rbp) ,%r13       # Load temps from stack
-     mov %r13, %rsi
+     mov -16(%rbp) ,%r14       # Load temps from stack
+     mov %r14, %rsi
      call printf
      add $32, %rsp       #For print stmt
      add $0, %rsp       # stackPointer+= 0
-     mov -16(%rbp) ,%r14       # Load temps from stack
-     mov %r14, %rax     # Return temps
+     mov -16(%rbp) ,%r12       # Load temps from stack
+     mov %r12, %rax     # Return temps
      jmp return_get_y
 return_get_y:
      mov %rbp, %rsp
@@ -148,52 +104,49 @@ return_get_y:
  main:
      pushq %rbp
      mov %rsp, %rbp      # beginFunc
-     sub $64, %rsp       # stackPointer-= 48
-     sub $8, %rsp       # PushParam 16
-     pushq $16       # PushParam 16
+     sub $48, %rsp       # stackPointer-= 32
+     sub $8, %rsp       # PushParam 19
+     pushq $19       # PushParam 19
      sub $8, %rsp       # PushParam 4
      pushq $4       # PushParam 4
-     mov $44, %r15     # _v148=44
-     mov %r15, %rdi     # Load Param _v148
+     mov $44, %r10     # _v184=44
+     mov %r10, %rdi     # Load Param _v184
      call malloc
-     mov %rax, %rcx     # Get Refernce from return reg in  _v153
-     mov %rcx, %rbx     #       Load in rbx
+     mov %rax, %r11     # Get Refernce from return reg in  _v189
+     mov %r11, %rbx     #       Load in rbx
      call Constructor
-     mov %rbx, %r8     #       Load from rbx
+     mov %rbx, %r15     #       Load from rbx
      add $48, %rsp       # stackPointer+= 24
-     mov %r8, %r12     # num=_v154
-     mov %r12, -8(%rbp)        # Set num in stack
+     mov %r15, %r13     # num=_v190
+     mov %r13, -8(%rbp)        # Set num in stack
+     mov -8(%rbp) ,%r14       # Load num from stack
+     add $0, %r14     #   Get Obj ref 
+     mov (%r14), %rcx     #   Get Obj Value 
+     mov %rcx, %r12     # x1=_v201
+     mov %r12, -16(%rbp)        # Set x1 in stack
+     sub $32, %rsp       # For print statement
+     mov $format, %rdi
+     mov -16(%rbp) ,%r13       # Load x1 from stack
+     mov %r13, %rsi
+     call printf
+     add $32, %rsp       #For print stmt
+     add $0, %rsp       # stackPointer+= 0
+     mov -8(%rbp) ,%r14       # Load num from stack
+     sub $8, %rsp       # PushParam num
+     pushq %r14       # PushParam num
+     call get_x
+     mov %rax, %r8     # ReturnValue = _v221
+     add $16, %rsp       # stackPointer+= 8
+     mov %r8, %r12     # w=_v221
+     mov %r12, -24(%rbp)        # Set w in stack
      mov -8(%rbp) ,%r13       # Load num from stack
      sub $8, %rsp       # PushParam num
      pushq %r13       # PushParam num
-     call get_x
-     mov %rax, %r9     # ReturnValue = _v166
-     add $16, %rsp       # stackPointer+= 8
-     mov %r9, %r14     # a=_v166
-     mov %r14, -16(%rbp)        # Set a in stack
-     mov -8(%rbp) ,%r12       # Load num from stack
-     sub $8, %rsp       # PushParam num
-     pushq %r12       # PushParam num
      call get_y
-     mov %rax, %r10     # ReturnValue = _v179
+     mov %rax, %r9     # ReturnValue = _v234
      add $16, %rsp       # stackPointer+= 8
-     mov %r10, %r13     # b=_v179
-     mov %r13, -24(%rbp)        # Set b in stack
-     sub $32, %rsp       # For print statement
-     mov $format, %rdi
-     mov -16(%rbp) ,%r14       # Load a from stack
-     mov %r14, %rsi
-     call printf
-     add $32, %rsp       #For print stmt
-     add $0, %rsp       # stackPointer+= 0
-     sub $32, %rsp       # For print statement
-     mov $format, %rdi
-     mov -24(%rbp) ,%r12       # Load b from stack
->>>>>>> 4d24abe81b8b5aab53b7176095bf75646c57206f
-     mov %r12, %rsi
-     call printf
-     add $32, %rsp       #For print stmt
-     add $0, %rsp       # stackPointer+= 0
+     mov %r9, %r14     # r=_v234
+     mov %r14, -32(%rbp)        # Set r in stack
 return_main:
      mov %rbp, %rsp
      popq %rbp

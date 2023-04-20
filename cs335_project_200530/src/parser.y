@@ -1536,10 +1536,14 @@ void codeGen(){
             if(tacMap[currTacVec][i] -> op == "FieldAccess"){
                 string arg1 = tacMap[currTacVec][i] -> arg1;
                 string res = tacMap[currTacVec][i] -> res;
-                string r1 = regT[getTempReg(arg1)].name;
+                string r1 = "";
+                if(getOffset(arg1) == -1){
+                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
+                    else  r1 = "$" +  arg1;
+                }else  r1 = regS[getVarReg(myfile, arg1)].name;
                 // myfile << "     mov (" << r1 << "), " << "     #   Set at offset + obj ref "   << endl;
                 string r2 = regT[getTempReg( res)].name;
-                myfile << "     mov " << " -" << getOffset(arg1) << "(%rbp) , " <<r1 << "       # Get " << arg1 << " from stack" << endl;
+                // myfile << "     mov " << " -" << getOffset(arg1) << "(%rbp) , " <<r1 << "       # Get " << arg1 << " from stack" << endl;
                 myfile << "     mov "<< r1 << ", ("<< r2 <<")     # Field access" << endl;
                 
             }
