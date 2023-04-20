@@ -6,7 +6,7 @@ public class test_4 {
     public int foo(int x, int y, int z){
         int lll = foo2(98);
         println_lll();
-        x = x*10;
+        x = y%10;
         println_x();
         println_y();
         println_z();
