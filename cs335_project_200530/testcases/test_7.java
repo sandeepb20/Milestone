@@ -1,32 +1,32 @@
-public class SortArrayExample3  
-{  
-    public void main(){  
-        //creating an instance of an array  
-        int size = 10;
-        int[] arr = new int[10];
-        for (int k =0 ; k<size;k++)
-        {
-            arr[k] = size-k;
-            arr[k] = arr[k] * 10;
-        } 
-        for (int i = 0; i < size; i++)   
-        {  
-            for (int j = i + 1; j < size; j++)   
-            {  
-                int tmp = 0;  
-                int p = arr[i];
-                int q = arr[j];
-                if ( arr[i] > arr[j])   
-                {  
-                    tmp = arr[i];
-                    arr[i] = arr[j];  
-                    arr[j] = tmp;  
-                    // println_tmp();
-                }  
-            }  
-            //prints the sorted element of the array  
-            int x = arr[i];
-            println_x();  
-        }  
-    }  
-}
+public class squareAndRoot {
+    int y;
+    int x;
+    
+
+    squareAndRoot(int a1, int b1) {
+        println_b1();
+        this.y = b1;
+        this.x = a1;
+           
+    }
+
+    public int get_y(squareAndRoot sr) {
+        int temps = sr.y;
+        println_temps();
+        return temps;
+    }
+    public int get_x(squareAndRoot sr) {
+        int temp = sr.x;
+        println_temp();
+        return temp;
+    }
+    
+  
+    public static void main() {
+        squareAndRoot num = new squareAndRoot(4,16);
+        int a = get_x(num);
+        int b = get_y(num);
+        println_a();println_b();      
+
+    }
+  }

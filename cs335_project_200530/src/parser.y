@@ -1078,6 +1078,24 @@ void codeGen(){
                 }else  r2 = regS[getVarReg(myfile, res)].name;
                 myfile << "     mov " << r1 << ", ("<< r2 << ")     # Array assign" << endl;
             }
+            if(ops == "QualifiedName"){
+                 string arg1 = tacMap[currTacVec][i] -> arg1;
+                string res = tacMap[currTacVec][i] -> res;
+                string r1 = "", r2 = "";
+                if(getOffset(arg1) == -1){
+                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
+                    else {
+                        string temp = regT[getTempReg("_s"+arg1)].name;
+                        myfile << "     mov $"<< arg1 << ", "<< temp << endl;
+                        r1 = temp;
+                    }  
+                }else  r1 = regS[getVarReg(myfile, arg1)].name;
+                if(getOffset(res) == -1){
+                    if(res[0] == '_')r2 = regT[getTempReg(res)].name;
+                    else  r2 = "$" +  res;
+                }else  r2 = regS[getVarReg(myfile, res)].name;
+                myfile << "     mov " << r1 << ", ("<< r2 << ")     # Obj assign" << endl;
+            }
             if(ops == "ArrayArrayAssign"){
                  string arg1 = tacMap[currTacVec][i] -> arg1;
                 string res = tacMap[currTacVec][i] -> res;
@@ -1547,6 +1565,16 @@ void codeGen(){
                 myfile << "     add " << "$" << offsett - 8 << ", " << r1 << "     #   Get Obj ref "   << endl;
                 myfile << "     mov " << "(" << r1 << "), " << r3 << "     #   Get Obj Value "   << endl;
             }
+            if(tacMap[currTacVec][i] -> op =="getObjRef"){
+                string arg1 = tacMap[currTacVec][i] -> arg1;
+                string arg2 = tacMap[currTacVec][i] -> arg2;
+                string res = tacMap[currTacVec][i] -> res;
+                string r1 = regS[getVarReg(myfile, arg1)].name;
+                string r3 = regT[getTempReg(res)].name;
+                int offsett = getOffset(arg2);
+                myfile << "     add " << "$" << offsett - 8 << ", " << r1 << "     #   Get Obj ref "   << endl;
+                myfile << "     mov "  << r1 << ", " << r3 << "     #   Copy ref "   << endl;
+            }
 
             if(tacMap[currTacVec][i] -> op == "LoadObjRegister"){
                 string arg1 = tacMap[currTacVec][i] -> arg1;
@@ -1978,11 +2006,21 @@ void ThreeACHelperFunc(int id){
             memoryLoc.push(objRef[createArg(temp[0])]);
             childcallistrue = 0;
             ThreeACHelperFunc(temp[2]);
-            tac* t1 = createTacCustom("getObjVal", createArg(temp[0]) , createArg(temp[2]) ,  "_v" + to_string(id));
-            // tac* t1 = createTacCustom("=", createArg5(temp[2]), "",  tree[temp[2]].first);
-            tacMap[currTacVec].push_back(t1);
-            // tac* t = createTacCustom("=", createArg4(temp[2]), "", "_v" + to_string(id));
-            // tacMap[currTacVec].push_back(t);
+            int pid = parent[id];
+            vector<int> pchild = tree[pid].second;
+            if(pchild[0] == id){
+                tac* t1 = createTacCustom("getObjRef", createArg(temp[0]) , createArg(temp[2]) ,  "_v" + to_string(id));
+                // tac* t1 = createTacCustom("=", createArg5(temp[2]), "",  tree[temp[2]].first);
+                tacMap[currTacVec].push_back(t1);
+            }
+            else{
+                tac* t1 = createTacCustom("getObjVal", createArg(temp[0]) , createArg(temp[2]) ,  "_v" + to_string(id));
+                // tac* t1 = createTacCustom("=", createArg5(temp[2]), "",  tree[temp[2]].first);
+                tacMap[currTacVec].push_back(t1);
+                // tac* t = createTacCustom("=", createArg4(temp[2]), "", "_v" + to_string(id));
+                // tacMap[currTacVec].push_back(t);
+            }
+            
             memoryLoc.pop();
         }
     }
@@ -2252,11 +2290,12 @@ void ThreeACHelperFunc(int id){
         for(int i = 0; i < temp.size(); i++){
             if(tree[temp[i]].first == "(") {
                 if(tree[temp[i+1]].first != ""){
+                    ThreeACHelperFunc(temp[i+1]);
                     if(tree[temp[i+1]].first != "ArgumentList"){
-                        tac* t = createTacCustom("PushParam", tree[temp[i+1]].first, "", "");
+                        tac* t = createTacCustom("PushParam", createArg(temp[i+1]) , "", "");
                         tacMap[currTacVec].push_back(t);
                     }
-                    ThreeACHelperFunc(temp[i+1]);
+                    
                 }
                 tac* t;
                 if(tree[temp[i-1]].first == "QualifiedName"){
@@ -2392,6 +2431,10 @@ void ThreeACHelperFunc(int id){
         }
         else if(tree[temp[0]].first == "FieldAccess"){
             tac*t = createTacCustom("FieldAccess", createArg(temp[2]), "", createArg(temp[0]));
+            tacMap[currTacVec].push_back(t);
+        }
+        else if(tree[temp[0]].first == "QualifiedName"){
+             tac*t = createTacCustom("QualifiedName", createArg(temp[2]), "", createArg(temp[0]));
             tacMap[currTacVec].push_back(t);
         }
         else tacMap[currTacVec].push_back(createTac1(id));

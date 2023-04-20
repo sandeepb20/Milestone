@@ -1,3 +1,4 @@
+<<<<<<< HEAD
  GFG.fib: 
       t2_0: BeginFunc      
       t2_1: stackPointer-=  16  // Manipulating stack (equal to size of function)  
@@ -37,3 +38,79 @@
       t3_11: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
       t3_12: stackPointer+=  0  // Remove parameters passed into stack  
       t3_13: EndFunc      
+=======
+ squareAndRoot.Constructor: 
+      t2_0: BeginConstructor      
+      t2_1: stackPointer-=  16    
+      t2_2: getref      _v25
+      t2_3: getparam      a1
+      t2_4: getparam      b1
+      t2_5: LCall  println_b1    
+      t2_6: returnRegister  _v30    
+      t2_7: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
+      t2_8: stackPointer+=  0  // Remove parameters passed into stack  
+      t2_9: ObjAccess  y    _v36
+      t2_10: FieldAccess  b1    _v36
+      t2_11: ObjAccess  x    _v46
+      t2_12: FieldAccess  a1    _v46
+      t2_13: EndConstructor      
+ squareAndRoot.get_x: 
+      t3_0: BeginFunc      
+      t3_1: stackPointer-=  16  // Manipulating stack (equal to size of function)  
+      t3_2: getparam      sr
+      t3_3: getObjVal  sr  x  _v112
+      t3_4: =  _v112    temp
+      t3_5: LCall  println_temp    
+      t3_6: returnRegister  _v120    
+      t3_7: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
+      t3_8: stackPointer+=  0  // Remove parameters passed into stack  
+      t3_9: Return  temp  // load return value to return register...  
+      t3_10: EndFunc      
+ squareAndRoot.get_y: 
+      t4_0: BeginFunc      
+      t4_1: stackPointer-=  16  // Manipulating stack (equal to size of function)  
+      t4_2: getparam      sr
+      t4_3: getObjVal  sr  y  _v74
+      t4_4: =  _v74    temps
+      t4_5: LCall  println_temps    
+      t4_6: returnRegister  _v82    
+      t4_7: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
+      t4_8: stackPointer+=  0  // Remove parameters passed into stack  
+      t4_9: Return  temps  // load return value to return register...  
+      t4_10: EndFunc      
+ squareAndRoot.main: 
+      t5_0: BeginFunc      
+      t5_1: stackPointer-=  48  // Manipulating stack (equal to size of function)  
+      t5_2: PushParam  16    
+      t5_3: PushParam  4    
+      t5_4: =  44    _v148
+      t5_5: param  _v148    
+      t5_6: call  allocmem    _v153
+      t5_7: SetObjRef      _v153
+      t5_8: LCall  Constructor    
+      t5_9: LoadObjRef  ConstructorValReturned    _v154
+      t5_10: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
+      t5_11: stackPointer+=  24  // Remove parameters passed into stack + object refernce  
+      t5_12: =  _v154    num
+      t5_13: PushParam  num    
+      t5_14: LCall  get_x    
+      t5_15: returnRegister  _v166    
+      t5_16: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
+      t5_17: stackPointer+=  8  // Remove parameters passed into stack  
+      t5_18: =  _v166    a
+      t5_19: PushParam  num    
+      t5_20: LCall  get_y    
+      t5_21: returnRegister  _v179    
+      t5_22: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
+      t5_23: stackPointer+=  8  // Remove parameters passed into stack  
+      t5_24: =  _v179    b
+      t5_25: LCall  println_a    
+      t5_26: returnRegister  _v188    
+      t5_27: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
+      t5_28: stackPointer+=  0  // Remove parameters passed into stack  
+      t5_29: LCall  println_b    
+      t5_30: returnRegister  _v195    
+      t5_31: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
+      t5_32: stackPointer+=  0  // Remove parameters passed into stack  
+      t5_33: EndFunc      
+>>>>>>> 4d24abe81b8b5aab53b7176095bf75646c57206f
