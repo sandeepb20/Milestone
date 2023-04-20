@@ -1,32 +1,22 @@
-public class squareAndRoot {
-    int y;
-    int x;
-    
+public class test_5 {
+    public int twice(int w){
+        int t = w<<1;
+        return t;
+    }
+    public int main(){
 
-    squareAndRoot(int a1, int b1) {
-        println_b1();
-        this.y = b1;
-        this.x = a1;
-           
-    }
+        int y;
+        int x;
+        int a[][] = new int[5][6];
+        for(int i=0; i<5;i++){
+            for(int j=0; j<6;j++){
+                x = i+j;
+                a[i][j] = twice(x);
+                y = a[i][j];
+                println_y();
+            }
+        }
 
-    public int get_y(squareAndRoot sr) {
-        int temps = sr.y;
-        println_temps();
-        return temps;
+        return 0;
     }
-    public int get_x(squareAndRoot sr) {
-        int temp = sr.x;
-        println_temp();
-        return temp;
-    }
-    
-  
-    public static void main() {
-        squareAndRoot num = new squareAndRoot(4,16);
-        int a = get_x(num);
-        int b = get_y(num);
-        println_a();println_b();      
-
-    }
-  }
+}

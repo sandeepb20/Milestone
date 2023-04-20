@@ -1,5 +1,7 @@
 public class test_1 {
     public int foo1(int k, int l, int m){
+        int pp = 10;
+        println_pp();
         k = k - 1;
         println_k();
         return 66;
