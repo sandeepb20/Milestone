@@ -9,22 +9,24 @@ public class test_1 {
         int a = 8;
         int b = 68;
         int c = 67;
-        int d = a << 2;
-        int e;
-        if(a==b || a>b && a<b || a>=b || a<=b){
-            e = 1;
-        }
-        else{
-            e = 0;
-        }
+        int d = a--;
+        int e = --a;
+        // if(a==b || a>b && a<b || a>=b || a<=b){
+        //     e = 1;
+        // }
+        // else{
+        //     e = 0;
+        // }
         for(int i=0; i<10; i++){
-            println_i();
+            // println_i();
+            ;
         }
         // println_a();
         // println_b();
         // println_c();
-        int w = foo1(a, 0, 0);
+        // int w = foo1(a, 0, 0);
         println_d();
+        println_e();
         return 0;
         
     }

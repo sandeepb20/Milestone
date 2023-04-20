@@ -8,14 +8,9 @@ Printing foo1 Symbol Table
    k,int,2,8,0,variable
 
 Printing for1 Symbol Table
-   i,int,20,8,16,variable
-
-Printing ifelse1 Symbol Table
-
-Printing ifelse2 Symbol Table
+   i,int,20,8,40,variable
 
 Printing main Symbol Table
-   w,int,26,8,16,variable
    e,int,13,8,32,variable
    c,int,11,8,16,variable
    b,int,10,8,8,variable

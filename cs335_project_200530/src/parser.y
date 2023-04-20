@@ -1297,6 +1297,7 @@ void codeGen(){
                     else  r3 = "$" +  res;
                 }else  r3 = regS[getVarReg(myfile, res)].name;
                 myfile << "     sub " << "$1" << ", " << r3 << "      #   " << res << " = "<< arg1 << " - " << "1" <<  endl;
+                myfile << "     mov " << r3 << ", -" << getOffset(res) << "(%rbp) "  << "       # Set " << res << " in stack" << endl;
             }
             if(ops == "+"){
                 string r1 = "", r2 = "", r3 = "";
@@ -2746,12 +2747,21 @@ void tpc(int id){
             whtIsType[id] =  "float";
             tree[child[1]].first += "_float";
         }
-        
-        else if(whtIsType[child[0]]!="null" || whtIsType[child[2]]=="null"){
-            whtIsType[id] = "error";
-            cout << "Type Error at line " << LineNumber[child[1]] << endl;
-            // exit(1);
+        else if((whtIsType[child[0]]=="null" && whtIsType[child[2]]!="null")){
+            whtIsType[child[0]]= whtIsType[child[2]];
+            whtIsType[id] = whtIsType[child[2]];
+            tree[child[1]].first += "_" + whtIsType[child[2]];
         }
+        else if((whtIsType[child[2]]=="null" && whtIsType[child[0]]!="null")){
+            whtIsType[child[2]]= whtIsType[child[0]];
+            whtIsType[id] = whtIsType[child[0]];
+            tree[child[1]].first += "_" + whtIsType[child[0]];
+        }
+        // else if(whtIsType[child[0]]!="null" || whtIsType[child[2]]=="null"){
+        //     whtIsType[id] = "error";
+        //     cout << "Type Error at line " << LineNumber[child[1]] << endl;
+        //     // exit(1);
+        // }
     }
     else if(tree[id].first == "VariableDeclarator" && (tree[(tree[id].second)[2]].first != "ArrayCreationExpr" && tree[(tree[id].second)[2]].first != "ArrayAccess")){
         if(whtIsType[child[0]]  == whtIsType[child[2]]){
@@ -2787,12 +2797,12 @@ void tpc(int id){
             whtIsType[id] = whtIsType[child[0]];
             tree[child[1]].first += "_" + whtIsType[child[0]];
         }
-        else{
-            // cout << whtIsType[child[0]] << ' ' << whtIsType[child[2]] << endl;
-            whtIsType[id] = "error";
-            cout << "Type Error at line " << LineNumber[child[1]] << endl;
-            exit(1);
-        }
+        // else{
+        //     // cout << whtIsType[child[0]] << ' ' << whtIsType[child[2]] << endl;
+        //     whtIsType[id] = "error";
+        //     cout << "Type Error at line " << LineNumber[child[1]] << endl;
+        //     exit(1);
+        // }
         
     }
     
