@@ -1,8 +1,8 @@
 
 public class Example1 {
-    int x = 1 + 2;
-    int y  = x;
-    int k;
+    int x = 1 + 20/4;
+    int y  = x << 2;
+    int k = y+1;
     public int setX(int k2){
       this.x = k2;
       return k2;
@@ -19,7 +19,8 @@ public class Example1 {
         Example1 b = new Example1(5, 10);
         int temp = a.setX(100);
         int c = b.x;
-        int d = a.x;
+        a.x = 1;
+        int d = a.k;
         println_c();
         println_d();
         println_temp();

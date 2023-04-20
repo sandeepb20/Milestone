@@ -777,6 +777,7 @@ map<string, string> getreg;
 
 
 // *************Registers**************
+int GlobalVar = 0; 
 set<string> labels;
 typedef struct Reg{
     string name;
@@ -844,7 +845,10 @@ int getVarReg(ofstream &myfile, string val){
     tempVarRegNum = i+1;
     regS[i].isUsed = true;
     regS[i].val = val;
-    myfile << "     mov -" << getOffset(val) << "(%rbp) ," << regS[i].name << "       # Load " << val << " from stack" << endl;
+    if(GlobalVar == 1){
+        myfile << "     mov " << getOffset(val)-8 << "(%rbx) ," << regS[i].name << "       # Load " << val << " from heap" << endl;
+    }
+    else myfile << "     mov -" << getOffset(val) << "(%rbp) ," << regS[i].name << "       # Load " << val << " from stack" << endl;
     return i;
 }
 int setVarReg(ofstream &myfile, string val){
@@ -885,13 +889,20 @@ void codeGen(){
     myfile << "     .text" << endl;
 
     for(auto i = tacMap.begin(); i != tacMap.end(); i++){
+        
         currTacVec =  i->first ;
         string name1 = currTacVec.substr(0, currTacVec.find("."));
         string name2 = currTacVec.substr(currTacVec.find(".")+1, -1);
+        if(GlobalVar == 1){
+            myfile << "     jmp ReturnToCons" << name1 << endl;
+        }
+         GlobalVar = 0;
         if(name2 != "") myfile << " "<< currTacVec.substr(currTacVec.find(".")+1, -1) << ":" << endl;
         else {
-            
+            myfile << name1 << ":" << endl;
+            GlobalVar = 1;
         }
+       
 
         for(int i = 0; i < tacMap[currTacVec].size(); i++){
             string l = tacMap[currTacVec][i] -> labelname;
@@ -945,6 +956,9 @@ void codeGen(){
                 else {
                     r2 = regS[setVarReg(myfile, res)].name;
                     myfile << "     mov " << r1 << ", " << r2 << "     # " << res << "=" << arg1 << endl;
+                    if(GlobalVar == 1){
+                        myfile << "     mov " << r2 << ", " << getOffset(res)-8 << "(%rbx) "  << "       # Set " << res << " in heap" << endl;
+                    }else
                     myfile << "     mov " << r2 << ", -" << getOffset(res) << "(%rbp) "  << "       # Set " << res << " in stack" << endl;
                 
                 }
@@ -1299,6 +1313,9 @@ void codeGen(){
                 myfile << "     add " << "$1" << ", " << r3 << "      #   " << res << " = "<< arg1 << " + " << "1" <<  endl;
                 // r3 = regS[setVarReg(myfile, res)].name;
                     // myfile << "     mov " << r1 << ", " << r2 << "     # " << res << "=" << arg1 << endl;
+                    if(GlobalVar == 1){
+                        myfile << "     mov " << r3 << ", " << getOffset(res)-8 << "(%rbx) "  << "       # Set " << res << " in heap" << endl;
+                    }else
                     myfile << "     mov " << r3 << ", -" << getOffset(res) << "(%rbp) "  << "       # Set " << res << " in stack" << endl;
             }
             if(ops == "--"){
@@ -1314,6 +1331,9 @@ void codeGen(){
                     else  r3 = "$" +  res;
                 }else  r3 = regS[getVarReg(myfile, res)].name;
                 myfile << "     sub " << "$1" << ", " << r3 << "      #   " << res << " = "<< arg1 << " - " << "1" <<  endl;
+                if(GlobalVar == 1){
+                        myfile << "     mov " << r3 << ", " << getOffset(res) -8<< "(%rbx) "  << "       # Set " << res << " in heap" << endl;
+                    }else
                 myfile << "     mov " << r3 << ", -" << getOffset(res) << "(%rbp) "  << "       # Set " << res << " in stack" << endl;
             }
             if(ops == "+"){
@@ -1452,7 +1472,8 @@ void codeGen(){
                 myfile << "     pushq " << ebp.name << endl;
                 myfile << "     mov " << esp.name << ", " << ebp.name << "      # beginCon" <<  endl;
                 if(isPresentInTAC(currTacVec.substr(0,currTacVec.find(".")+1))){
-
+                    myfile << "     jmp "<<name1 << "       # Jump to global vars"<< endl;
+                    myfile << " ReturnToCons" <<name1 << ":" << endl;
                     // cout << "Yes"<< endl;
                 }
                 //  myfile << "     mov " << 8 << "(%rbp) , " << "%rax"  << "     #   Get Obj ref "   << endl;
