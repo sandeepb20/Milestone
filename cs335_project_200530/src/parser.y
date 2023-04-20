@@ -160,7 +160,7 @@ void createEntry(string currTableName, string temp, string type, int line, int s
 }
 
 void makeSymbolTable(string name, bool reset){
-    cout << name << " " << reset << endl;
+    // cout << name << " " << reset << endl;
     sym_table new_table;
     class_table[curr_class].insert(make_pair(name, new_table));
     class_parent_table[curr_class].insert(make_pair(name, curr_table));
@@ -631,7 +631,8 @@ void symTable(int id){
                 exit(1);
             }
             else{
-                cout << "Variable " << nodeName << " Not declared at line number:- " << LineNumber[id] << " But skipping this to print something" << endl; 
+                // cout << "Variable " << nodeName << " Not declared at line number:- " << LineNumber[id] << " But skipping this to print something" << endl; 
+                ;
             }
             
         }
@@ -1026,7 +1027,7 @@ void codeGen(){
                     if(base[0] == '_') r2 = regT[getTempReg(base)].name;
                     else  r2 = "$" + base;
                 }else  r2 = regS[getVarReg(myfile, base)].name;
-                cout << r2 << " " << arg1 << endl;
+                // cout << r2 << " " << arg1 << endl;
                 myfile << "     add "<< r1 << ", "<< r2 << "     # addr + base"<< endl;
                 // res = upar wala
                 string r3 = "";
@@ -1609,7 +1610,7 @@ void codeGen(){
                     string r1 = regT[getTempReg(arg1)].name;
                     // cout << arg1<<endl;
                     int off1 = getOffset(arg1);
-                    cout << off1 << " "<< arg1 << endl;
+                    // cout << off1 << " "<< arg1 << endl;
                     myfile << "     mov " << off1*2 << "(%rbp) , " << r1  << "     #   Get Argument " << arg1  << endl;
                     myfile << "     mov " << r1<<", -" << off1 << "(%rbp)" << "     #   Store Argument " << arg1 << " in stack" << endl;
                     i++;

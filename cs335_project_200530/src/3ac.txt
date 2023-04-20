@@ -1,73 +1,39 @@
- SortArrayExample3.main: 
+ GFG.fib: 
       t2_0: BeginFunc      
       t2_1: stackPointer-=  16  // Manipulating stack (equal to size of function)  
-      t2_2: =  10    size
-      t2_3: =  80    _t1
-      t2_4: param  _t1    
-      t2_5: call  allocmem  1  _v35
-      t2_6: =  _v35    arr
-      t2_7: =  0    k
-      t2_8: <_null  k  size  _v53
-      t2_9: ifFalse  _v53  goto  t2_24
-      t2_10: =  k    _v62
-      t2_11: ArrayAddress  arr[_v62]    _v64
-      t2_12: -_int  size  k  _v69
-      t2_13: ArrayAssign  _v69    _v64
-      t2_14: =  k    _v75
-      t2_15: ArrayAddress  arr[_v75]    _v77
-      t2_16: =  k    _v81
-      t2_17: ArrayAddress  arr[_v81]    _v83
-      t2_18: ArrayAccess  _v83    _v83
-      t2_19: *_int  _v83  10  _v86
-      t2_20: ArrayAssign  _v86    _v77
-      t2_21: =  k    _v57
-      t2_22: ++  k    k
-      t2_23:     goto  t2_8
-      t2_24: =  0    i
-      t2_25: <_null  i  size  _v107
-      t2_26: ifFalse  _v107  goto  t2_71
-      t2_27: +_int  i  1  _v122
-      t2_28: =  _v122    j
-      t2_29: <_null  j  size  _v129
-      t2_30: ifFalse  _v129  goto  t2_61
-      t2_31: =  0    tmp
-      t2_32: =  i    _v149
-      t2_33: ArrayAddress  arr[_v149]    _v151
-      t2_34: ArrayAccess  _v151    p
-      t2_35: =  j    _v162
-      t2_36: ArrayAddress  arr[_v162]    _v164
-      t2_37: ArrayAccess  _v164    q
-      t2_38: =  i    _v174
-      t2_39: ArrayAddress  arr[_v174]    _v176
-      t2_40: =  j    _v180
-      t2_41: ArrayAddress  arr[_v180]    _v182
-      t2_42: ArrayAccess  _v182    _v182
-      t2_43: ArrayAccess  _v176    _v176
-      t2_44: >_int  _v176  _v182  _v183
-      t2_45: ifFalse  _v183  goto  t2_58
-      t2_46: =  i    _v190
-      t2_47: ArrayAddress  arr[_v190]    _v192
-      t2_48: ArrayAccess  _v192    tmp
-      t2_49: =  i    _v198
-      t2_50: ArrayAddress  arr[_v198]    _v200
-      t2_51: =  j    _v204
-      t2_52: ArrayAddress  arr[_v204]    _v206
-      t2_53: ArrayArrayAssign  _v206    _v200
-      t2_54: =  j    _v213
-      t2_55: ArrayAddress  arr[_v213]    _v215
-      t2_56: ArrayAssign  tmp    _v215
-      t2_57:     goto  t2_58
-      t2_58: =  j    _v133
-      t2_59: ++  j    j
-      t2_60:     goto  t2_29
-      t2_61: =  i    _v234
-      t2_62: ArrayAddress  arr[_v234]    _v236
-      t2_63: ArrayAccess  _v236    x
-      t2_64: LCall  println_x    
-      t2_65: returnRegister  _v245    
-      t2_66: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
-      t2_67: stackPointer+=  0  // Remove parameters passed into stack  
-      t2_68: =  i    _v111
-      t2_69: ++  i    i
-      t2_70:     goto  t2_25
-      t2_71: EndFunc      
+      t2_2: getparam      n
+      t2_3: <=_int  n  1  _v21
+      t2_4: ifFalse  _v21  goto  t2_7
+      t2_5: Return  n  // load return value to return register...  
+      t2_6:     goto  t2_7
+      t2_7: PushParam  AdditiveExpression    
+      t2_8: -_int  n  1  _v36
+      t2_9: LCall  fib    
+      t2_10: returnRegister  _v38    
+      t2_11: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
+      t2_12: stackPointer+=  8  // Remove parameters passed into stack  
+      t2_13: =  _v38    a
+      t2_14: PushParam  AdditiveExpression    
+      t2_15: -_int  n  2  _v52
+      t2_16: LCall  fib    
+      t2_17: returnRegister  _v54    
+      t2_18: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
+      t2_19: stackPointer+=  8  // Remove parameters passed into stack  
+      t2_20: +_int  a  _v54  _v55
+      t2_21: Return  _v55  // load return value to return register...  
+      t2_22: EndFunc      
+ GFG.main: 
+      t3_0: BeginFunc      
+      t3_1: stackPointer-=  16  // Manipulating stack (equal to size of function)  
+      t3_2: =  10    N
+      t3_3: PushParam  N    
+      t3_4: LCall  fib    
+      t3_5: returnRegister  _v88    
+      t3_6: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
+      t3_7: stackPointer+=  8  // Remove parameters passed into stack  
+      t3_8: =  _v88    ans
+      t3_9: LCall  println_ans    
+      t3_10: returnRegister  _v97    
+      t3_11: RestoreMachineState  //Adjust Base Pointer to previous base pointer and reload registers    
+      t3_12: stackPointer+=  0  // Remove parameters passed into stack  
+      t3_13: EndFunc      
