@@ -1,10 +1,12 @@
-# Milestone
-Group Project CS335. 
-
-1. Go to the src directory. Run the following command to remove previous
-generated files and compile the required ones:
-make cl e a n
-make
+# Milestone | Course Project CS335. 
+## Instructions to run
+1. Go to the src directory. Run the following command to remove previous generated files and compile the required ones:
+```console
+foo@bar:~$ make clean
+```
+```console 
+foo@bar:~$ make
+```
 final is the executable.
 2. For the command line executions, write
 . / f i n a l −h
