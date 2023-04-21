@@ -44,13 +44,13 @@ invoked using as or gcc.
     ```
 
 ## Features Implemented
-    - [x] PRIMITIVE  TYPES
-    - [x] MULTIDIMENSIONAL ARRAYS (ANY DIMENSION)
-    - [x] BASIC  OPERATORS
-    - [x] METHOD DECLARATION AND INVOCATION
-    - [x] FUNCTIONS, RECURSION AND CONTROL FLOW (IF-ELSE, FOR, WHILE)
-    - [x] CLASSES AND OBJECTS
-    - [x] SUPPORT FOR PRINTLN
+- [x] PRIMITIVE  TYPES
+- [x] MULTIDIMENSIONAL ARRAYS (ANY DIMENSION)
+- [x] BASIC  OPERATORS
+- [x] METHOD DECLARATION AND INVOCATION
+- [x] FUNCTIONS, RECURSION AND CONTROL FLOW (IF-ELSE, FOR, WHILE)
+- [x] CLASSES AND OBJECTS
+- [x] SUPPORT FOR PRINTLN
 
 ## Procedure
 ![Procedure](./images/random.png)
@@ -90,8 +90,9 @@ public class Example1 {
     }
   }
   ```
-  #### Output
+#### Output
   ```
   1
   ```
-  ### Compiled Successfully...
+### Compiled Successfully...
+> :~~Slightly~~ Smiling Face: :smile:
