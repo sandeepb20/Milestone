@@ -23,8 +23,7 @@ invoked using as or gcc.
     • -o: For obtaining the output file, as -o=”FileName”
     • -h: will show all the commands and there uses to the user
     • -v: will show the version of the program
-    • −−verbose: it will tell, what all has happened through the execution
-    of final.
+    • −−verbose: it will tell, what all has happened through the execution of final.
     ```
 3. To run the program, use the following command, where Source File is
     `test.java` and the output dot file is `out.dot`
