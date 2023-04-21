@@ -51,14 +51,13 @@ int getSize(string id){
         t += id[i];
     }
     id = t;
-    return 8;
-//   if(id == "char") return sizeof(char);
-//   if(id == "short") return sizeof(short);
-//   if(id == "int") return sizeof(int);
-//   if(id == "float") return sizeof(float);
-//   if(id == "double") return sizeof(double);
+  if(id == "char") return sizeof(char);
+  if(id == "short") return sizeof(short);
+  if(id == "int") return sizeof(int);
+  if(id == "float") return sizeof(float);
+  if(id == "double") return sizeof(double);
 
-//   return 0; // for any ptr
+  return 0; // for any ptr
 }
 /*------------------------------------------------------------*/
 
@@ -159,17 +158,13 @@ void createEntry(string currTableName, string temp, string type, int line, int s
         stoffset += size;
 }
 
-void makeSymbolTable(string name, bool reset){
-    // cout << name << " " << reset << endl;
+void makeSymbolTable(string name){
     sym_table new_table;
     class_table[curr_class].insert(make_pair(name, new_table));
     class_parent_table[curr_class].insert(make_pair(name, curr_table));
 	curr_table = name;
-    if(reset){
-        prevoffset = stoffset;
-        stoffset = 0;
-    }
-    
+    prevoffset = stoffset;
+    stoffset = 0;
 }
 
 string lookup(string id){
@@ -301,7 +296,7 @@ void symTable(int id){
         table t;
         class_table[curr_class] = t;
         curr_table = "null";
-        makeSymbolTable(curr_class, 1);
+        makeSymbolTable(curr_class);
         int tempid = child[0];
         while(tree[tempid].first == "Modifiers"){
             vector<int> child1 = tree[tempid].second;
@@ -333,7 +328,7 @@ void symTable(int id){
         createEntry(curr_table,tree[child[0]].first+".constr","",LineNumber[child[0]],4,stoffset,0,"constructor",stndim,parameters);
         parameters.clear();
         symTable(child[0]);
-        makeSymbolTable(tree[child[0]].first+".constr", 1);
+        makeSymbolTable(tree[child[0]].first+".constr");
         symTable(child[2]);
         return;
     }
@@ -343,7 +338,7 @@ void symTable(int id){
         createEntry(curr_table,tree[child[0]].first,sttype,LineNumber[child[0]],getSize(sttype),stoffset,0,"method",stndim,parameters);
         parameters.clear();
         symTable(child[0]);
-        makeSymbolTable(tree[child[0]].first, 1);
+        makeSymbolTable(tree[child[0]].first);
         symTable(child[2]);
         return;
     }
@@ -509,23 +504,23 @@ void symTable(int id){
     if(nodeName == "forStmt"){
         stname = "for" + to_string(fornum);
         fornum++;
-        makeSymbolTable(stname, 0);
+        makeSymbolTable(stname);
         symTable(child[2]);
         symTable(child[8]);
         if(tree[child[8]].first != "Block"){
             curr_table = class_parent_table[curr_class][curr_table];
-            // stoffset = prevoffset;
+            stoffset = prevoffset;
         }
         return;
     }
     if(nodeName == "whileStmt"){
         stname = "while" + to_string(whilenum);
         whilenum++;
-        makeSymbolTable(stname, 0);
+        makeSymbolTable(stname);
         symTable(child[4]);
         if(tree[child[4]].first != "Block"){
             curr_table = class_parent_table[curr_class][curr_table];
-            // stoffset = prevoffset;
+            stoffset = prevoffset;
         }
         return;
     }
@@ -554,39 +549,37 @@ void symTable(int id){
     if(nodeName == "Block"){
         symTable(child[1]);
         curr_table = class_parent_table[curr_class][curr_table];
-        // stoffset = prevoffset;
+        stoffset = prevoffset;
         return;
         
     }
     if(nodeName == "ifThenStmt"){
         stname = "ifelse" + to_string(ifelsenum);
         ifelsenum++;
-        makeSymbolTable(stname, 0);
-        symTable(child[2]);
+        makeSymbolTable(stname);
         symTable(child[4]);
         if(tree[child[4]].first != "Block"){
             curr_table = class_parent_table[curr_class][curr_table];
-            // stoffset = prevoffset;
+            stoffset = prevoffset;
         }
         return;
     }
     if(nodeName == "ifThenElseStmt"){
         stname = "ifelse" + to_string(ifelsenum);
         ifelsenum++;
-        makeSymbolTable(stname, 0);
-        symTable(child[2]);
+        makeSymbolTable(stname);
         symTable(child[4]);
         if(tree[child[4]].first != "Block"){
             curr_table = class_parent_table[curr_class][curr_table];
-            // stoffset = prevoffset;
+            stoffset = prevoffset;
         }
         stname = "ifelse" + to_string(ifelsenum);
         ifelsenum++;
-        makeSymbolTable(stname, 0);
+        makeSymbolTable(stname);
         symTable(child[6]);
         if(tree[child[6]].first != "Block"){
             curr_table = class_parent_table[curr_class][curr_table];
-            // stoffset = prevoffset;
+            stoffset = prevoffset;
         }
         return;
     }
@@ -615,7 +608,6 @@ void symTable(int id){
                 exit(1);
                 }
                 string ttt = class_table[curr_class][curr_table][tree[ch[0]].first]->type ;
-                // cout << ttt  << " " << tree[ch[2]].first<< endl;
                 if(lookup2(tree[ch[2]].first, ttt) == "null"){
                     cout << "Variable " << nodeName << " Not declared at line number*: " << LineNumber[id] << endl; 
                     exit(1);
@@ -631,13 +623,13 @@ void symTable(int id){
                 exit(1);
             }
             else{
-                // cout << "Variable " << nodeName << " Not declared at line number:- " << LineNumber[id] << " But skipping this to print something" << endl; 
-                ;
+                cout << "Variable " << nodeName << " Not declared at line number:- " << LineNumber[id] << " But skipping this to print something" << endl; 
             }
             
         }
 
     }
+
     for(int i = 0; i < child.size(); i++){
         symTable(child[i]);
     }
@@ -686,6 +678,7 @@ typedef struct ThreeAC {
     string arg1;
     string arg2;
     string res;
+
     int array = 0;
     string labelname;
     string falseLabel;
@@ -744,50 +737,20 @@ string createArg5(int id){
 string getClass(string name){
     return name.substr(0, name.find("."));
 }
-string getFunc(string name){
-    return name.substr(name.find(".")+1, -1);
-}
 
 int offff = 0;
-// int getOffset(string name){
-//     string cclass = getClass(currTacVec);
-//     for(auto it : class_table[cclass]){
-//         for(auto itr : it.second){
-//             if(itr.first == name){
-//                 return itr.second -> offset + 8;
-//             }
-//         }
-//     }
-//     return -1;
-// }
 int getOffset(string name){
     string cclass = getClass(currTacVec);
-    string cfunc = getFunc(currTacVec);
-    // cout << cfunc << " "<< cclass<< "  " << name <<endl;
-    if(cfunc == ""){
-        for(auto it : class_table[cclass][cclass]){
-            // for(auto itr : it.second){
-                if(it.first == name){
-                    return it.second -> offset + 8;
-                }
-            // }
-        }
-    }else{
-        if(cfunc == "Constructor"){
-            cfunc = cclass + ".constr";
-        }
-        for(auto it : class_table[cclass][cfunc]){
-            // for(auto itr : it.second){
-                if(it.first == name){
-                    // cout << cfunc << " "<< cclass<< "  " << name  <<" off"<< it.second -> offset + 8 <<endl;
-                    return it.second -> offset + 8;
-                }
-            // }
+    for(auto it : class_table[cclass]){
+        for(auto itr : it.second){
+            if(itr.first == name){
+                return itr.second -> offset;
+            }
         }
     }
-    //  cout << cfunc << " "<< cclass<< "  " << name  <<" off "<< -1 <<endl;
     return -1;
 }
+
 int getSizeOf(string name){
     string cclass = getClass(currTacVec);
     for(auto it : class_table[cclass]){
@@ -811,7 +774,6 @@ map<string, string> getreg;
 
 
 // *************Registers**************
-int GlobalVar = 0; 
 set<string> labels;
 typedef struct Reg{
     string name;
@@ -828,39 +790,29 @@ void initRegisters(){
     regT[1].name = "%r9";
     regT[2].name = "%r10";
     regT[3].name = "%r11";
-    regT[4].name = "%r15";
-    regT[5].name = "%rcx";
-    regT[6].name = "%rdx";
-    regT[7].name = "%rbx";
+    regT[4].name = "%r12";
+    regT[5].name = "%r13";
+    regT[6].name = "%r14";
+    regT[7].name = "%r15";
 
-    regS[0].name = "%r12";
-    regS[1].name = "%r13";
-    regS[2].name = "%r14";
-    
+    regS[0].name = "%rax";
+    regS[1].name = "%rbx";
+    regS[2].name = "%rcx";
+    regS[3].name = "%rdx";
 
     esp.name = "%rsp";
     ebp.name = "%rbp";
 
 }
-
-void resetRegisters(){
-    // for(int i = 0; i < regS.size(); i++){
-    //     regS[i].val = "";
-    // }
-    for(int i = 0; i < 6; i++){
-        regT[i].val = "";
-    }
-}
-
 int tempregNum = 0;
 int getTempReg(string val){
     // check if already in reg
-    for(int i = 0; i < 6; i++){
+    for(int i = 0; i < regT.size(); i++){
         if(regT[i].val == val){
             return i;
         }
     }
-    int i = tempregNum%6;
+    int i = tempregNum%8;
     tempregNum = i+1;
     regT[i].isUsed = true;
     regT[i].val = val;
@@ -868,84 +820,44 @@ int getTempReg(string val){
 }
 
 int tempVarRegNum = 0;
-int getVarReg(ofstream &myfile, string val){
-    // check if already in reg
-    // for(int i = 0; i < regS.size(); i++){
-    //     if(regS[i].val == val){
-    //         return i;
-    //     }
-    // }
-    int i = tempVarRegNum%3;
-    tempVarRegNum = i+1;
-    regS[i].isUsed = true;
-    regS[i].val = val;
-    if(GlobalVar == 1){
-        myfile << "     mov " << getOffset(val)-8 << "(%rbx) ," << regS[i].name << "       # Load " << val << " from heap" << endl;
-    }
-    else myfile << "     mov -" << getOffset(val) << "(%rbp) ," << regS[i].name << "       # Load " << val << " from stack" << endl;
-    return i;
-}
-int setVarReg(ofstream &myfile, string val){
+int getVarReg(string val){
     // check if already in reg
     for(int i = 0; i < regS.size(); i++){
         if(regS[i].val == val){
             return i;
         }
     }
-    int i = tempVarRegNum%3;
+    int i = tempVarRegNum%4;
     tempVarRegNum = i+1;
     regS[i].isUsed = true;
     regS[i].val = val;
-    //   myfile << "     mov -" << getOffset(val) << "(%rbp) ," << regS[i].name << "       # Load22 " << val << " from stack" << endl;
-   
     return i;
 }
 
 
-bool isPresentInTAC(string name){
-    for(auto i = tacMap.begin(); i != tacMap.end(); i++){
-        // cout << i -> first << " " << name << endl;
-        if(i -> first == name) return true;
-        // currTacVec =  i->first ;
-    }return false;
-}
-
-
-
-
 void codeGen(){
-    cout << "*****************Code Generation Started****************"<< endl;
     initRegisters();
     std::ofstream myfile;
     myfile.open ("out.s");
-    myfile << "      .global main" << endl;
+    myfile << "     .global main" << endl;
     myfile << "     .data" << endl;
     myfile << "     .text" << endl;
 
     for(auto i = tacMap.begin(); i != tacMap.end(); i++){
-        
+        string rememberIt;
         currTacVec =  i->first ;
-        string name1 = currTacVec.substr(0, currTacVec.find("."));
-        string name2 = currTacVec.substr(currTacVec.find(".")+1, -1);
-        if(GlobalVar == 1){
-            myfile << "     jmp ReturnToCons" << name1 << endl;
-        }
-         GlobalVar = 0;
-        if(name2 != "") myfile << " "<< currTacVec.substr(currTacVec.find(".")+1, -1) << ":" << endl;
-        else {
-            myfile << name1 << ":" << endl;
-            GlobalVar = 1;
-        }
-       
+        myfile << " "<< currTacVec.substr(currTacVec.find(".")+1, -1) << ":" << endl;
+        
+        myfile << "     pushq %rbp" << endl;
+        myfile << "     movq %rsp, %rbp" << endl;
 
+        // cout << " "+ currTacVec + " : " << getClass(currTacVec) <<" \n";
         for(int i = 0; i < tacMap[currTacVec].size(); i++){
+            // cout << tacMap[currTacVec][i] -> labelname << endl;
             string l = tacMap[currTacVec][i] -> labelname;
             if(labels.find(l) != labels.end()){
                 myfile << " " << l << ":" << endl;
             }
-            string ops = tacMap[currTacVec][i] -> op;
-            ops = ops.substr(0, ops.find("_"));
-            // cout << ops << endl;
             if(tacMap[currTacVec][i] -> gotoLabel == "ifFalse"){
                 string r1 = "", r2 = "";
                 string arg = tacMap[currTacVec][i] -> arg;
@@ -953,7 +865,7 @@ void codeGen(){
                 if(getOffset(arg) == -1){
                     if(arg[0] == '_') r1 = regT[getTempReg(arg)].name;
                     else  r1 = "$" + arg;
-                }else  r1 = regS[getVarReg(myfile, arg)].name;
+                }else  r1 = regS[getVarReg(arg)].name;
                 if(r1 == "$returnRegister"){
                     continue;
                 }
@@ -967,186 +879,165 @@ void codeGen(){
                 
                 myfile << "     jmp " << res << endl;
             }
-            // if(tacMap[currTacVec][i] -> op == "EndFunc"){
-            //     myfile << "     ret " << endl;
-            // }
-           
-            if(ops == "="){
-                
+            if(tacMap[currTacVec][i] -> op == "EndFunc" && tacMap[currTacVec][i-1] -> op != "Return"){
+                myfile << "     mov $0, %rax " << endl;
+                myfile << "     popq %rbp " << endl;
+                myfile << "     ret " << endl;
+            }
+            if(tacMap[currTacVec][i] -> op == "=" && tacMap[currTacVec][i] -> array == 0){
                 string r1 = "", r2 = "";
                 string arg1 = tacMap[currTacVec][i] -> arg1;
+                string arg2 = tacMap[currTacVec][i] -> arg2;
                 string res = tacMap[currTacVec][i] -> res;
-                if(getOffset(arg1) == -1){
-                    if(arg1[0] == '_') {r1 = regT[getTempReg(arg1)].name;}
-                    else  {r1 = "$" + arg1;}
-                }
-                else  r1 = regS[getVarReg(myfile, arg1)].name;
-                if(r1 == "$returnRegister")continue;
-                if(getOffset(res) == -1){
-                    if(res[0] == '_'){r2 = regT[getTempReg(res)].name;}
-                    else  {r2 = "$" +  res;}
-                    myfile << "     mov " << r1 << ", " << r2 << "     # " << res << "=" << arg1 << endl;
-                }
-                else {
-                    r2 = regS[setVarReg(myfile, res)].name;
-                    myfile << "     mov " << r1 << ", " << r2 << "     # " << res << "=" << arg1 << endl;
-                    if(GlobalVar == 1){
-                        myfile << "     mov " << r2 << ", " << getOffset(res)-8 << "(%rbx) "  << "       # Set " << res << " in heap" << endl;
-                    }else
-                    myfile << "     mov " << r2 << ", -" << getOffset(res) << "(%rbp) "  << "       # Set " << res << " in stack" << endl;
-                
-                }
-            }
-            if(ops == "returnRegister"){
-                
-                string r1 = "";
-                string arg1 = tacMap[currTacVec][i] -> arg1;
-                if(getOffset(arg1) == -1){
-                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
-                    else  r1 = "$" + arg1;
-                }else  r1 = regS[getVarReg(myfile, arg1)].name;
-                myfile << "     mov " << "%rax" << ", " << r1 << "     # " << "ReturnValue" << " = " << arg1 << endl;
-            }
-            if(ops =="Return"){
-                // cout << "IN return";
-                string r1 = "";
-                string arg1 = tacMap[currTacVec][i] -> arg1;
-                if(getOffset(arg1) == -1){
-                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
-                    else  r1 = "$" + arg1;
-                }else  r1 = regS[getVarReg(myfile, arg1)].name;
-                myfile << "     mov " << r1 << ", " << "%rax" << "     # " << "Return" << " " << arg1 << endl;
-                myfile << "     jmp return_" << currTacVec.substr(currTacVec.find(".")+1, -1) << endl;
-                // myfile << "     ret " << endl;
-            }
-            if(ops == "param"){
-                string r1 = "";
-                string arg1 = tacMap[currTacVec][i] -> arg1;
-                if(getOffset(arg1) == -1){
-                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
-                    else  r1 = "$" + arg1;
-                }else  r1 = regS[getVarReg(myfile, arg1)].name;
-                myfile << "     mov " << r1 << ", " << "%rdi" << "     # " << "Load Param" << " " << arg1 << endl;
-            }
-            if(ops == "call"){
-                myfile << "     call malloc" << endl;
-                string r1 = "";
-                string arg1 = tacMap[currTacVec][i] -> res;
-                if(getOffset(arg1) == -1){
-                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
-                    else  r1 = "$" + arg1;
-                }else  r1 = regS[getVarReg(myfile, arg1)].name;
-                myfile << "     mov %rax, " << r1  << "     # " << "Get Refernce from return reg in " << " " << arg1 << endl;
+                if(arg1 == "getparam"){
+                    
+                    // myfile << "     balle "<< res << endl;
+                    
+                    r1 = regS[getTempReg(res)].name;
+                    r2 = regS[getVarReg(res)].name;
 
-            }
-            if(ops == "ArrayAddress"){
-                string arg1 = tacMap[currTacVec][i] -> arg1;
-                string base = arg1.substr(0,arg1.find('['));
-                string addr  = arg1.substr(arg1.find('[')+1, -1);
-                string res = tacMap[currTacVec][i] -> res;
-                addr.pop_back();
-                //  addr * 8
-                string r1 = "";
-                 if(getOffset(addr) == -1){
-                    if(addr[0] == '_') r1 = regT[getTempReg(addr)].name;
-                    else  r1 = "$" + addr;
-                }else  r1 = regS[getVarReg(myfile, addr)].name;
-                myfile << "     imul $8, "<< r1 << "        # addr * 8"<< endl;
-                // base + addr1
-                string r2 = "";
-                 if(getOffset(base) == -1){
-                    if(base[0] == '_') r2 = regT[getTempReg(base)].name;
-                    else  r2 = "$" + base;
-                }else  r2 = regS[getVarReg(myfile, base)].name;
-                // cout << r2 << " " << arg1 << endl;
-                myfile << "     add "<< r1 << ", "<< r2 << "     # addr + base"<< endl;
-                // res = upar wala
-                string r3 = "";
-                 if(getOffset(res) == -1){
-                    if(res[0] == '_') r3 = regT[getTempReg(res)].name;
-                    else  r3 = "$" + res;
-                }else  r3 = regS[getVarReg(myfile, res)].name;
-                myfile << "     mov " << r2 << ", "<< r3 << endl;
-            }
+                    myfile << "     mov " << 8+getOffset(res)  << "(%rbp)"<<  ", " << r1<< endl;
+                    myfile << "     mov " << r1  << ", -" << getSizeOf(res)+getOffset(res)  << "(%rbp)"<< endl;
 
-            if(ops =="ArrayAccess"){
-                string arg1 = tacMap[currTacVec][i] -> arg1;
-                string res = tacMap[currTacVec][i] -> res;
-                string r1 = "", r2 = "";
-                if(getOffset(arg1) == -1){
+                    myfile << "     mov -" << getSizeOf(res)+getOffset(res)  << "(%rbp),"<< r2<<endl;
+
+
+
+                }
+                if(arg1 == "returnRegister"){
+                    
+                    // myfile << "     balle "<< res << endl;
+                    if(getOffset(res) == -1){
+                    if(res[0] == '_')r2 = regT[getTempReg(res)].name;
+                    else  r2 = "$" +  res;
+                    }else  r2 = regS[getVarReg(res)].name;
+                    myfile << "     mov " << "%rsi, "<<r2<<endl;
+                    
+
+                    // myfile << "     mov -" << getSizeOf(res)+getOffset(res)  << "(%rbp),"<< r2<<endl;
+
+
+
+                }
+                else{
+                    
+                    if(getOffset(arg1) == -1){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
                     else  r1 = "$" + arg1;
-                }else  r1 = regS[getVarReg(myfile, arg1)].name;
+                }else  r1 = regS[getVarReg(arg1)].name;
                 if(getOffset(res) == -1){
                     if(res[0] == '_')r2 = regT[getTempReg(res)].name;
                     else  r2 = "$" +  res;
-                    myfile << "     mov ("<< r1 << "), "<< r2 <<"     # Array access" << endl;
-                }else
+                }else  r2 = regS[getVarReg(res)].name;
+                if(r1 == "$returnRegister")
                 {
-                    r2 = regS[setVarReg(myfile, res)].name;
-                     myfile << "     mov ("<< r1 << "), "<< r2 <<"     # Array access" << endl;
-                    myfile << "     mov " << r2 << ", -" << getOffset(res) << "(%rbp) "  << "       # Set " << res << " in stack" << endl;
-                }  
-                // res = (arg1);
-               
-            }
+                    continue;
+                }
+                else  {
+                    myfile << "     mov " << r1 << ", " << r2 << "     # " << res << "=" << arg1 << endl;
+                    if(res[0] != '_')
+                    myfile << "     mov " << r2 << ", -" << getSizeOf(res)+getOffset(res)  << "(%rbp)"<< endl;
+                    // myfile << "     movl " << " -" << getSizeOf(res)+getOffset(res)  << "(%rbp), "<< r2 <<endl;
 
-            if(ops == "ArrayAssign"){
+                    // myfile << "     mov " << r1 << ", " << r2 << "     # " << res << "=" << arg1 << endl;
+
+                    // myfile << "     mov " << r1 << ", " << r2 << "     # " << res << "=" << arg1 << endl;
+                    //sizeof(res)
+                }
+
+                }
+                
+            }
+            if(tacMap[currTacVec][i] -> op == "=" && tacMap[currTacVec][i] -> array == 1){
+                string r1 = "", r2 = "";
                 string arg1 = tacMap[currTacVec][i] -> arg1;
                 string res = tacMap[currTacVec][i] -> res;
-                string r1 = "", r2 = "";
                 if(getOffset(arg1) == -1){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
-                    else {
-                        string temp = regT[getTempReg("_s"+arg1)].name;
-                        myfile << "     mov $"<< arg1 << ", "<< temp << endl;
-                        r1 = temp;
-                    }  
-                }else  r1 = regS[getVarReg(myfile, arg1)].name;
+                    else  r1 = "$" + arg1;
+                }else  r1 = regS[getVarReg(arg1)].name;
                 if(getOffset(res) == -1){
                     if(res[0] == '_')r2 = regT[getTempReg(res)].name;
                     else  r2 = "$" +  res;
-                }else  r2 = regS[getVarReg(myfile, res)].name;
-                myfile << "     mov " << r1 << ", ("<< r2 << ")     # Array assign" << endl;
+                }else  r2 = regS[getVarReg(res)].name;
+                if(arg1[0] == '_'){
+                    myfile << "     mov %rax " << ", -" << getSizeOf(res)+getOffset(res) << "(%rbp)" << endl;
+                }
+                else{
+                    myfile << "     mov " << r1 << ", " << "%rdi" << endl;
+                    myfile << "     call malloc" << endl;
+                }
             }
-            if(ops == "QualifiedName"){
-                 string arg1 = tacMap[currTacVec][i] -> arg1;
-                string res = tacMap[currTacVec][i] -> res;
+            if(tacMap[currTacVec][i] -> op == "=" && tacMap[currTacVec][i] -> array == 2){
                 string r1 = "", r2 = "";
+                string arg1 = tacMap[currTacVec][i] -> arg1;
+                string res = tacMap[currTacVec][i] -> res;
+                string arr = arg1.substr(arg1.find('[')-1, 1);
+                arg1 = arg1.substr(arg1.find('[')+1, -1);
+                arg1.pop_back();
                 if(getOffset(arg1) == -1){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
-                    else {
-                        string temp = regT[getTempReg("_s"+arg1)].name;
-                        myfile << "     mov $"<< arg1 << ", "<< temp << endl;
-                        r1 = temp;
-                    }  
-                }else  r1 = regS[getVarReg(myfile, arg1)].name;
+                    else  r1 = "$" + arg1;
+                }else  r1 = regS[getVarReg(arg1)].name;
                 if(getOffset(res) == -1){
                     if(res[0] == '_')r2 = regT[getTempReg(res)].name;
                     else  r2 = "$" +  res;
-                }else  r2 = regS[getVarReg(myfile, res)].name;
-                myfile << "     mov " << r1 << ", ("<< r2 << ")     # Obj assign" << endl;
-            }
-            if(ops == "ArrayArrayAssign"){
-                 string arg1 = tacMap[currTacVec][i] -> arg1;
-                string res = tacMap[currTacVec][i] -> res;
-                string r1 = "", r2 = "";
-                if(getOffset(arg1) == -1){
-                    if(res[0] == '_')r1 = regT[getTempReg(arg1)].name;
-                    else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(myfile, arg1)].name;
-                if(getOffset(res) == -1){
-                    if(res[0] == '_')r2 = regT[getTempReg(res)].name;
-                    else  r2 = "$" +  res;
-                }else  r2 = regS[getVarReg(myfile, res)].name;
-                string tempr = regT[getTempReg("_s"+res)].name;
-                myfile << "     mov ("<< r1 << "), "<< tempr << "     # Array Array assign" << endl;
+                }else  r2 = regS[getVarReg(res)].name;
                 
-                myfile << "     mov " << tempr << ", ("<< r2 << ")     # Array Array assign" << endl;
-
+                myfile << "     mov -" << getSizeOf(arr)+getOffset(arr) << "(%rbp), %rdx" <<  endl;
+                myfile << "     mov " << r1 << ", " << "%rax" << endl;
+                myfile << "     mov (%rdx,%rax,4), " << r2 << endl;
             }
-
-            if(ops == "=="){
+            if(tacMap[currTacVec][i] -> op == "=" && tacMap[currTacVec][i] -> array == 3){
+                string r1 = "", r2 = "";
+                string arg1 = tacMap[currTacVec][i] -> res;
+                string res = tacMap[currTacVec][i] -> arg1;
+                string arr = arg1.substr(arg1.find('[')-1, 1);
+                arg1 = arg1.substr(arg1.find('[')+1, -1);
+                arg1.pop_back();
+                if(getOffset(arg1) == -1){
+                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
+                    else  r1 = "$" + arg1;
+                }else  r1 = regS[getVarReg(arg1)].name;
+                if(getOffset(res) == -1){
+                    if(res[0] == '_')r2 = regT[getTempReg(res)].name;
+                    else  r2 = "$" +  res;
+                }else  r2 = regS[getVarReg(res)].name;
+                
+                myfile << "     mov -" << getSizeOf(arr)+getOffset(arr) << "(%rbp), %rdx" <<  endl;
+                myfile << "     mov " << r1 << ", " << "%rax" << endl;
+                myfile << "     imul " << "$4" << ", " << "%rax" << endl;
+                myfile << "     add " << "%rdx" << ", " << "%rax" << endl;
+                myfile << "     mov " << r2 << ", %rax" << endl;
+            }
+            if(tacMap[currTacVec][i] -> op == "=_int"){
+                string r1 = "", r2 = "";
+                string arg1 = tacMap[currTacVec][i] -> arg1;
+                string res = tacMap[currTacVec][i] -> res;
+                if(getOffset(arg1) == -1){
+                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
+                    else  r1 = "$" + arg1;
+                }else  r1 = regS[getVarReg(arg1)].name;
+                if(getOffset(res) == -1){
+                    if(res[0] == '_')r2 = regT[getTempReg(res)].name;
+                    else  r2 = "$" +  res;
+                }else  r2 = regS[getVarReg(res)].name;
+                
+                if(res[0] == '_'){
+                    if(getOffset(arg1) != -1)
+                    myfile << "     mov -" << getSizeOf(arg1)+getOffset(arg1) << "(%rbp), " << r2 << endl;
+                    else{
+                       myfile << "     mov " << r1 << ", " << r2 << endl; 
+                    }
+                }
+                else{
+                    myfile << "     mov " << r1 << ", -" << getSizeOf(res)+getOffset(res) << "(%rbp)" << endl;
+                }
+                // myfile << "     mov -" << getSizeOf(arr)+getOffset(arr) << "(%rbp), %rdx" <<  endl;
+                // myfile << "     mov " << r1 << ", " << "%rax" << endl;
+                // myfile << "     mov (%rdx,%rax,4), " << r2 << endl;
+            }
+            if(tacMap[currTacVec][i] -> op == "=="){
                 string r1 = "", r2 = "", r3 = "";
                 string arg1 = tacMap[currTacVec][i] -> arg1;
                 string arg2 = tacMap[currTacVec][i] -> arg2;
@@ -1154,15 +1045,15 @@ void codeGen(){
                 if(getOffset(arg1) == -1){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
                     else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(myfile, arg1)].name;
+                }else  r1 = regS[getVarReg(arg1)].name;
                 if(getOffset(arg2) == -1){
                     if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
                     else  r2 = "$" +  arg2;
-                }else  r2 = regS[getVarReg(myfile, arg2)].name;
+                }else  r2 = regS[getVarReg(arg2)].name;
                 if(getOffset(res) == -1){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(myfile, res)].name;
+                }else  r3 = regS[getVarReg(res)].name;
                 myfile << "     cmp " << r2 << ", " << r1 << endl;
                 myfile << "     je " << tacMap[currTacVec][i] -> labelname + "t" << endl;
                 myfile << "     mov " << "$0" << ", " << r3 << endl;
@@ -1171,7 +1062,7 @@ void codeGen(){
                 myfile << "     mov " << "$1" << ", " << r3 << endl;
                 myfile << " " << tacMap[currTacVec][i] -> labelname + "f:" << endl;
             }
-            if(ops == "!="){
+            if(tacMap[currTacVec][i] -> op == "<"){
                 string r1 = "", r2 = "", r3 = "";
                 string arg1 = tacMap[currTacVec][i] -> arg1;
                 string arg2 = tacMap[currTacVec][i] -> arg2;
@@ -1179,40 +1070,15 @@ void codeGen(){
                 if(getOffset(arg1) == -1){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
                     else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(myfile, arg1)].name;
+                }else  r1 = regS[getVarReg(arg1)].name;
                 if(getOffset(arg2) == -1){
                     if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
                     else  r2 = "$" +  arg2;
-                }else  r2 = regS[getVarReg(myfile, arg2)].name;
+                }else  r2 = regS[getVarReg(arg2)].name;
                 if(getOffset(res) == -1){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(myfile, res)].name;
-                myfile << "     cmp " << r2 << ", " << r1 << endl;
-                myfile << "     jne " << tacMap[currTacVec][i] -> labelname + "t" << endl;
-                myfile << "     mov " << "$0" << ", " << r3 << endl;
-                myfile << "     jmp " << tacMap[currTacVec][i] -> labelname + "f" << endl;
-                myfile << " " << tacMap[currTacVec][i] -> labelname + "t:" << endl;
-                myfile << "     mov " << "$1" << ", " << r3 << endl;
-                myfile << " " << tacMap[currTacVec][i] -> labelname + "f:" << endl;
-            }
-            if(ops == "<" ){
-                string r1 = "", r2 = "", r3 = "";
-                string arg1 = tacMap[currTacVec][i] -> arg1;
-                string arg2 = tacMap[currTacVec][i] -> arg2;
-                string res = tacMap[currTacVec][i] -> res;
-                if(getOffset(arg1) == -1){
-                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
-                    else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(myfile, arg1)].name;
-                if(getOffset(arg2) == -1){
-                    if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
-                    else  r2 = "$" +  arg2;
-                }else  r2 = regS[getVarReg(myfile, arg2)].name;
-                if(getOffset(res) == -1){
-                    if(res[0] == '_')r3 = regT[getTempReg(res)].name;
-                    else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(myfile, res)].name;
+                }else  r3 = regS[getVarReg(res)].name;
                 myfile << "     cmp " << r2 << ", " << r1 << endl;
                 myfile << "     jl " << tacMap[currTacVec][i] -> labelname + "t" << endl;
                 myfile << "     mov " << "$0" << ", " << r3 << endl;
@@ -1221,7 +1087,7 @@ void codeGen(){
                 myfile << "     mov " << "$1" << ", " << r3 << endl;
                 myfile << " " << tacMap[currTacVec][i] -> labelname + "f:" << endl;
             }
-            if(ops == ">"){
+            if(tacMap[currTacVec][i] -> op == ">"){
                 string r1 = "", r2 = "", r3 = "";
                 string arg1 = tacMap[currTacVec][i] -> arg1;
                 string arg2 = tacMap[currTacVec][i] -> arg2;
@@ -1229,15 +1095,15 @@ void codeGen(){
                 if(getOffset(arg1) == -1){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
                     else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(myfile, arg1)].name;
+                }else  r1 = regS[getVarReg(arg1)].name;
                 if(getOffset(arg2) == -1){
                     if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
                     else  r2 = "$" +  arg2;
-                }else  r2 = regS[getVarReg(myfile, arg2)].name;
+                }else  r2 = regS[getVarReg(arg2)].name;
                 if(getOffset(res) == -1){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(myfile, res)].name;
+                }else  r3 = regS[getVarReg(res)].name;
                 myfile << "     cmp " << r2 << ", " << r1 << endl;
                 myfile << "     jg " << tacMap[currTacVec][i] -> labelname + "t" << endl;
                 myfile << "     mov " << "$0" << ", " << r3 << endl;
@@ -1246,7 +1112,7 @@ void codeGen(){
                 myfile << "     mov " << "$1" << ", " << r3 << endl;
                 myfile << " " << tacMap[currTacVec][i] -> labelname + "f:" << endl;
             }
-            if(ops == "<="){
+            if(tacMap[currTacVec][i] -> op == "<="){
                 string r1 = "", r2 = "", r3 = "";
                 string arg1 = tacMap[currTacVec][i] -> arg1;
                 string arg2 = tacMap[currTacVec][i] -> arg2;
@@ -1254,15 +1120,15 @@ void codeGen(){
                 if(getOffset(arg1) == -1){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
                     else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(myfile, arg1)].name;
+                }else  r1 = regS[getVarReg(arg1)].name;
                 if(getOffset(arg2) == -1){
                     if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
                     else  r2 = "$" +  arg2;
-                }else  r2 = regS[getVarReg(myfile, arg2)].name;
+                }else  r2 = regS[getVarReg(arg2)].name;
                 if(getOffset(res) == -1){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(myfile, res)].name;
+                }else  r3 = regS[getVarReg(res)].name;
                 myfile << "     cmp " << r2 << ", " << r1 << endl;
                 myfile << "     jle " << tacMap[currTacVec][i] -> labelname + "t" << endl;
                 myfile << "     mov " << "$0" << ", " << r3 << endl;
@@ -1271,7 +1137,7 @@ void codeGen(){
                 myfile << "     mov " << "$1" << ", " << r3 << endl;
                 myfile << " " << tacMap[currTacVec][i] -> labelname + "f:" << endl;
             }
-            if(ops == ">="){
+            if(tacMap[currTacVec][i] -> op == ">="){
                 string r1 = "", r2 = "", r3 = "";
                 string arg1 = tacMap[currTacVec][i] -> arg1;
                 string arg2 = tacMap[currTacVec][i] -> arg2;
@@ -1279,15 +1145,15 @@ void codeGen(){
                 if(getOffset(arg1) == -1){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
                     else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(myfile, arg1)].name;
+                }else  r1 = regS[getVarReg(arg1)].name;
                 if(getOffset(arg2) == -1){
                     if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
                     else  r2 = "$" +  arg2;
-                }else  r2 = regS[getVarReg(myfile, arg2)].name;
+                }else  r2 = regS[getVarReg(arg2)].name;
                 if(getOffset(res) == -1){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(myfile, res)].name;
+                }else  r3 = regS[getVarReg(res)].name;
                 myfile << "     cmp " << r2 << ", " << r1 << endl;
                 myfile << "     jge " << tacMap[currTacVec][i] -> labelname + "t" << endl;
                 myfile << "     mov " << "$0" << ", " << r3 << endl;
@@ -1295,50 +1161,6 @@ void codeGen(){
                 myfile << " " << tacMap[currTacVec][i] -> labelname + "t:" << endl;
                 myfile << "     mov " << "$1" << ", " << r3 << endl;
                 myfile << " " << tacMap[currTacVec][i] -> labelname + "f:" << endl;
-            }
-            if(ops == ">>"){
-                string r1 = "", r2 = "", r3 = "";
-                string arg1 = tacMap[currTacVec][i] -> arg1;
-                string arg2 = tacMap[currTacVec][i] -> arg2;
-                string res = tacMap[currTacVec][i] -> res;
-                if(getOffset(arg1) == -1){
-                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
-                    else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(myfile, arg1)].name;
-                if(getOffset(arg2) == -1){
-                    if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
-                    else  r2 = "$" +  arg2;
-                }else  r2 = regS[getVarReg(myfile, arg2)].name;
-                if(getOffset(res) == -1){
-                    if(res[0] == '_')r3 = regT[getTempReg(res)].name;
-                    else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(myfile, res)].name;
-                myfile << "     mov " << r1 << ", %rax" << endl;
-                myfile << "     sar " << r2 << ", %rax" << endl;
-                // myfile << "     mov %rax, -" << getOffset(res) << "(%rbp) "  << "       # Set " << res << " in stack" << endl;
-                myfile << "     mov %rax, " << r3 << endl;
-            }
-            if(ops == "<<"){
-                string r1 = "", r2 = "", r3 = "";
-                string arg1 = tacMap[currTacVec][i] -> arg1;
-                string arg2 = tacMap[currTacVec][i] -> arg2;
-                string res = tacMap[currTacVec][i] -> res;
-                if(getOffset(arg1) == -1){
-                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
-                    else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(myfile, arg1)].name;
-                if(getOffset(arg2) == -1){
-                    if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
-                    else  r2 = "$" +  arg2;
-                }else  r2 = regS[getVarReg(myfile, arg2)].name;
-                if(getOffset(res) == -1){
-                    if(res[0] == '_')r3 = regT[getTempReg(res)].name;
-                    else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(myfile, res)].name;
-                myfile << "     mov " << r1 << ", %rax" << endl;
-                myfile << "     sal " << r2 << ", %rax" << endl;
-                // myfile << "     mov %rax, -" << getOffset(res) << "(%rbp) "  << "       # Set " << res << " in stack" << endl;
-                myfile << "     mov %rax, " << r3 << endl;
             }
             if(tacMap[currTacVec][i] -> op == "&&"){
                 string r1 = "", r2 = "", r3 = "";
@@ -1348,15 +1170,15 @@ void codeGen(){
                 if(getOffset(arg1) == -1){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
                     else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(myfile, arg1)].name;
+                }else  r1 = regS[getVarReg(arg1)].name;
                 if(getOffset(arg2) == -1){
                     if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
                     else  r2 = "$" +  arg2;
-                }else  r2 = regS[getVarReg(myfile, arg2)].name;
+                }else  r2 = regS[getVarReg(arg2)].name;
                 if(getOffset(res) == -1){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(myfile, res)].name;
+                }else  r3 = regS[getVarReg(res)].name;
                 myfile << "     cmp " << "$0" << ", " << r1 << endl;
                 myfile << "     je " << tacMap[currTacVec][i] -> labelname + "t" << endl;
                 myfile << "     cmp " << "$0" << ", " << r2 << endl;
@@ -1367,7 +1189,7 @@ void codeGen(){
                 myfile << "     mov " << "$0" << ", " << r3 << endl;
                 myfile << " " << tacMap[currTacVec][i] -> labelname + "f:" << endl;
             }
-            if(ops == "||"){
+            if(tacMap[currTacVec][i] -> op == "||"){
                 string r1 = "", r2 = "", r3 = "";
                 string arg1 = tacMap[currTacVec][i] -> arg1;
                 string arg2 = tacMap[currTacVec][i] -> arg2;
@@ -1375,15 +1197,15 @@ void codeGen(){
                 if(getOffset(arg1) == -1){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
                     else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(myfile, arg1)].name;
+                }else  r1 = regS[getVarReg(arg1)].name;
                 if(getOffset(arg2) == -1){
                     if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
                     else  r2 = "$" +  arg2;
-                }else  r2 = regS[getVarReg(myfile, arg2)].name;
+                }else  r2 = regS[getVarReg(arg2)].name;
                 if(getOffset(res) == -1){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(myfile, res)].name;
+                }else  r3 = regS[getVarReg(res)].name;
                 myfile << "     cmp " << "$1" << ", " << r1 << endl;
                 myfile << "     je " << tacMap[currTacVec][i] -> labelname + "t" << endl;
                 myfile << "     cmp " << "$1" << ", " << r2 << endl;
@@ -1394,45 +1216,35 @@ void codeGen(){
                 myfile << "     mov " << "$1" << ", " << r3 << endl;
                 myfile << " " << tacMap[currTacVec][i] -> labelname + "f:" << endl;
             }
-            if(ops == "++"){
+            if(tacMap[currTacVec][i] -> op == "++"){
                 string r1 = "", r3 = "";
                 string arg1 = tacMap[currTacVec][i] -> arg1;
                 string res = tacMap[currTacVec][i] -> res;
                 if(getOffset(arg1) == -1){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
                     else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(myfile, arg1)].name;
+                }else  r1 = regS[getVarReg(arg1)].name;
                 if(getOffset(res) == -1){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
-                }else  r3 = regS[setVarReg(myfile, res)].name;
+                }else  r3 = regS[getVarReg(res)].name;
                 myfile << "     add " << "$1" << ", " << r3 << "      #   " << res << " = "<< arg1 << " + " << "1" <<  endl;
-                // r3 = regS[setVarReg(myfile, res)].name;
-                    // myfile << "     mov " << r1 << ", " << r2 << "     # " << res << "=" << arg1 << endl;
-                    if(GlobalVar == 1){
-                        myfile << "     mov " << r3 << ", " << getOffset(res)-8 << "(%rbx) "  << "       # Set " << res << " in heap" << endl;
-                    }else
-                    myfile << "     mov " << r3 << ", -" << getOffset(res) << "(%rbp) "  << "       # Set " << res << " in stack" << endl;
             }
-            if(ops == "--"){
+            if(tacMap[currTacVec][i] -> op == "--"){
                 string r1 = "", r3 = "";
                 string arg1 = tacMap[currTacVec][i] -> arg1;
                 string res = tacMap[currTacVec][i] -> res;
                 if(getOffset(arg1) == -1){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
                     else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(myfile, arg1)].name;
+                }else  r1 = regS[getVarReg(arg1)].name;
                 if(getOffset(res) == -1){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(myfile, res)].name;
+                }else  r3 = regS[getVarReg(res)].name;
                 myfile << "     sub " << "$1" << ", " << r3 << "      #   " << res << " = "<< arg1 << " - " << "1" <<  endl;
-                if(GlobalVar == 1){
-                        myfile << "     mov " << r3 << ", " << getOffset(res) -8<< "(%rbx) "  << "       # Set " << res << " in heap" << endl;
-                    }else
-                myfile << "     mov " << r3 << ", -" << getOffset(res) << "(%rbp) "  << "       # Set " << res << " in stack" << endl;
             }
-            if(ops == "+"){
+            if(tacMap[currTacVec][i] -> op == "+_int" || tacMap[currTacVec][i] -> op == "+"){
                 string r1 = "", r2 = "", r3 = "";
                 string arg1 = tacMap[currTacVec][i] -> arg1;
                 string arg2 = tacMap[currTacVec][i] -> arg2;
@@ -1440,19 +1252,20 @@ void codeGen(){
                 if(getOffset(arg1) == -1){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
                     else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(myfile, arg1)].name;
+                }else  r1 = regS[getVarReg(arg1)].name;
                 if(getOffset(arg2) == -1){
                     if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
                     else  r2 = "$" +  arg2;
-                }else  r2 = regS[getVarReg(myfile, arg2)].name;
+                }else  r2 = regS[getVarReg(arg2)].name;
                 if(getOffset(res) == -1){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(myfile, res)].name;
+                }else  r3 = regS[getVarReg(res)].name;
+                if(r1 != r3)
                 myfile << "     mov " << r1 << ", " << r3 << endl;
                 myfile << "     add " << r2 << ", " << r3 << "      #   " << res << " = "<< arg1 << " + " << arg2 <<  endl;
             }
-            if(ops == "+="){
+            if(tacMap[currTacVec][i] -> op == "-_int" || tacMap[currTacVec][i] -> op == "-"){
                 string r1 = "", r2 = "", r3 = "";
                 string arg1 = tacMap[currTacVec][i] -> arg1;
                 string arg2 = tacMap[currTacVec][i] -> arg2;
@@ -1460,40 +1273,20 @@ void codeGen(){
                 if(getOffset(arg1) == -1){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
                     else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(myfile, arg1)].name;
+                }else  r1 = regS[getVarReg(arg1)].name;
                 if(getOffset(arg2) == -1){
                     if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
                     else  r2 = "$" +  arg2;
-                }else  r2 = regS[getVarReg(myfile, arg2)].name;
+                }else  r2 = regS[getVarReg(arg2)].name;
                 if(getOffset(res) == -1){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(myfile, res)].name;
-                // myfile << "     mov " << r1 << ", " << r3 << endl;
-                myfile << "     add " << r1 << ", " << r3 << "      #   " << res << " = "<< arg1 << " + " << arg2 <<  endl;
-                myfile << "     mov " << r3 << ", -" << getOffset(res) << "(%rbp)" << endl;
-            }
-            if(ops == "-"){
-                string r1 = "", r2 = "", r3 = "";
-                string arg1 = tacMap[currTacVec][i] -> arg1;
-                string arg2 = tacMap[currTacVec][i] -> arg2;
-                string res = tacMap[currTacVec][i] -> res;
-                if(getOffset(arg1) == -1){
-                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
-                    else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(myfile, arg1)].name;
-                if(getOffset(arg2) == -1){
-                    if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
-                    else  r2 = "$" +  arg2;
-                }else  r2 = regS[getVarReg(myfile, arg2)].name;
-                if(getOffset(res) == -1){
-                    if(res[0] == '_')r3 = regT[getTempReg(res)].name;
-                    else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(myfile, res)].name;
+                }else  r3 = regS[getVarReg(res)].name;
+                if(r1 != r3)
                 myfile << "     mov " << r1 << ", " << r3 << endl;
                 myfile << "     sub " << r2 << ", " << r3 << "      #   " << res << " = "<< arg1 << " - " << arg2 <<  endl;
             }
-            if(ops == "-="){
+            if(tacMap[currTacVec][i] -> op == "*_int" || tacMap[currTacVec][i] -> op == "*"){
                 string r1 = "", r2 = "", r3 = "";
                 string arg1 = tacMap[currTacVec][i] -> arg1;
                 string arg2 = tacMap[currTacVec][i] -> arg2;
@@ -1501,40 +1294,20 @@ void codeGen(){
                 if(getOffset(arg1) == -1){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
                     else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(myfile, arg1)].name;
+                }else  r1 = regS[getVarReg(arg1)].name;
                 if(getOffset(arg2) == -1){
                     if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
                     else  r2 = "$" +  arg2;
-                }else  r2 = regS[getVarReg(myfile, arg2)].name;
+                }else  r2 = regS[getVarReg(arg2)].name;
                 if(getOffset(res) == -1){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(myfile, res)].name;
-                // myfile << "     mov " << r1 << ", " << r3 << endl;
-                myfile << "     sub " << r1 << ", " << r3 << "      #   " << res << " = "<< arg1 << " - " << arg2 <<  endl;
-                myfile << "     mov " << r3 << ", -" << getOffset(res) << "(%rbp)" << endl;
-            }
-            if(ops == "*"){
-                string r1 = "", r2 = "", r3 = "";
-                string arg1 = tacMap[currTacVec][i] -> arg1;
-                string arg2 = tacMap[currTacVec][i] -> arg2;
-                string res = tacMap[currTacVec][i] -> res;
-                if(getOffset(arg1) == -1){
-                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
-                    else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(myfile, arg1)].name;
-                if(getOffset(arg2) == -1){
-                    if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
-                    else  r2 = "$" +  arg2;
-                }else  r2 = regS[getVarReg(myfile, arg2)].name;
-                if(getOffset(res) == -1){
-                    if(res[0] == '_')r3 = regT[getTempReg(res)].name;
-                    else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(myfile, res)].name;
+                }else  r3 = regS[getVarReg(res)].name;
+                if(r1 != r3)
                 myfile << "     mov " << r1 << ", " << r3 << endl;
                 myfile << "     imul " << r2 << ", " << r3 << "      #   " << res << " = "<< arg1 << " * " << arg2 <<  endl;
             }
-            if(ops == "*="){
+            if(tacMap[currTacVec][i] -> op == "/_int" || tacMap[currTacVec][i] -> op == "/"){
                 string r1 = "", r2 = "", r3 = "";
                 string arg1 = tacMap[currTacVec][i] -> arg1;
                 string arg2 = tacMap[currTacVec][i] -> arg2;
@@ -1542,19 +1315,20 @@ void codeGen(){
                 if(getOffset(arg1) == -1){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
                     else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(myfile, arg1)].name;
+                }else  r1 = regS[getVarReg(arg1)].name;
                 if(getOffset(arg2) == -1){
                     if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
                     else  r2 = "$" +  arg2;
-                }else  r2 = regS[getVarReg(myfile, arg2)].name;
+                }else  r2 = regS[getVarReg(arg2)].name;
                 if(getOffset(res) == -1){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(myfile, res)].name;
-                myfile << "     imul " << r1 << ", " << r3 << "      #   " << res << " = "<< arg1 << " * " << arg2 <<  endl;
-                myfile << "     mov " << r3 << ", -" << getOffset(res) << "(%rbp)" << endl;
+                }else  r3 = regS[getVarReg(res)].name;
+                if(r1 != r3)
+                myfile << "     mov " << r1 << ", " << r3 << endl;
+                myfile << "     div " << r2 << ", " << r3 << "      #   " << res << " = "<< arg1 << " / " << arg2 <<  endl;
             }
-            if(ops == "/"){
+            if(tacMap[currTacVec][i] -> op == "%_int" || tacMap[currTacVec][i] -> op == "%"){
                 string r1 = "", r2 = "", r3 = "";
                 string arg1 = tacMap[currTacVec][i] -> arg1;
                 string arg2 = tacMap[currTacVec][i] -> arg2;
@@ -1562,259 +1336,86 @@ void codeGen(){
                 if(getOffset(arg1) == -1){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
                     else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(myfile, arg1)].name;
+                }else  r1 = regS[getVarReg(arg1)].name;
                 if(getOffset(arg2) == -1){
                     if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
-                    else{
-                        r2 = regT[getTempReg(arg2)].name;
-                        myfile << "     mov " << "$" + arg2 << ", " << r2 << endl;
-                    } 
-                }else  r2 = regS[getVarReg(myfile, arg2)].name;
+                    else  r2 = "$" +  arg2;
+                }else  r2 = regS[getVarReg(arg2)].name;
                 if(getOffset(res) == -1){
                     if(res[0] == '_')r3 = regT[getTempReg(res)].name;
                     else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(myfile, res)].name;
-                myfile << "     mov " << r1 << ", " << "%rax" << endl;
-                myfile << "     cdq" << endl;
-                myfile << "     idiv " << r2  << "      #   " << res << " = "<< arg1 << " / " << arg2 <<  endl;
-                myfile << "     mov %rax, " << r3 << endl;
+                }else  r3 = regS[getVarReg(res)].name;
+                if(r1 != r3)
+                myfile << "     mov " << r1 << ", " << r3 << endl;
+                myfile << "     mod " << r2 << ", " << r3 << "      #   " << res << " = "<< arg1 << " % " << arg2 <<  endl;
             }
-            if(ops == "/="){
-                string r1 = "", r2 = "", r3 = "";
-                string arg1 = tacMap[currTacVec][i] -> arg1;
-                string arg2 = tacMap[currTacVec][i] -> arg2;
-                string res = tacMap[currTacVec][i] -> res;
-                if(getOffset(arg1) == -1){
-                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
-                    else{
-                        r1 = regT[getTempReg(arg1)].name;
-                        myfile << "     mov " << "$" + arg1 << ", " << r1 << endl;
-                    } 
-                }else  r1 = regS[getVarReg(myfile, arg1)].name;
-                if(getOffset(res) == -1){
-                    if(res[0] == '_')r3 = regT[getTempReg(res)].name;
-                    else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(myfile, res)].name;
-                myfile << "     mov " << r3 << ", " << "%rax" << endl;
-                myfile << "     cdq" << endl;
-                myfile << "     idiv " << r1  << "      #   " << res << " = "<< arg1 << " / " << arg2 <<  endl;
-                myfile << "     mov %rax, " << r3 << endl;
-                myfile << "     mov " << r3 << ", -" << getOffset(res) << "(%rbp)" << endl;
-            }
-            if(ops == "%"){
-                string r1 = "", r2 = "", r3 = "";
-                string arg1 = tacMap[currTacVec][i] -> arg1;
-                string arg2 = tacMap[currTacVec][i] -> arg2;
-                string res = tacMap[currTacVec][i] -> res;
-                if(getOffset(arg1) == -1){
-                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
-                    else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(myfile, arg1)].name;
-                if(getOffset(arg2) == -1){
-                    if(arg2[0] == '_') r2 = regT[getTempReg(arg2)].name;
-                    else{
-                        r2 = regT[getTempReg(arg2)].name;
-                        myfile << "     mov " << "$" + arg2 << ", " << r2 << endl;
-                    } 
-                }else  r2 = regS[getVarReg(myfile, arg2)].name;
-                if(getOffset(res) == -1){
-                    if(res[0] == '_')r3 = regT[getTempReg(res)].name;
-                    else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(myfile, res)].name;
-                                myfile << "     mov " << r1 << ", " << "%rax" << endl;
-                myfile << "     cdq" << endl;
-                myfile << "     idiv " << r2  << "      #   " << res << " = "<< arg1 << " / " << arg2 <<  endl;
-                myfile << "     mov %rdx, " << r3 << endl;
-                // myfile << "     mov " << r1 << ", " << r3 << endl;
-                // myfile << "     mod " << r2 << ", " << r3 << "      #   " << res << " = "<< arg1 << " % " << arg2 <<  endl;
-            }
-            if(ops == "%="){
-                string r1 = "", r2 = "", r3 = "";
-                string arg1 = tacMap[currTacVec][i] -> arg1;
-                string arg2 = tacMap[currTacVec][i] -> arg2;
-                string res = tacMap[currTacVec][i] -> res;
-                if(getOffset(arg1) == -1){
-                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
-                    else{
-                        r1 = regT[getTempReg(arg1)].name;
-                        myfile << "     mov " << "$" + arg1 << ", " << r1 << endl;
-                    } 
-                }else  r1 = regS[getVarReg(myfile, arg1)].name;
-                if(getOffset(res) == -1){
-                    if(res[0] == '_')r3 = regT[getTempReg(res)].name;
-                    else  r3 = "$" +  res;
-                }else  r3 = regS[getVarReg(myfile, res)].name;
-                myfile << "     mov " << r3 << ", " << "%rax" << endl;
-                myfile << "     cdq" << endl;
-                myfile << "     idiv " << r1  << "      #   " << res << " = "<< arg1 << " / " << arg2 <<  endl;
-                myfile << "     mov %rdx, " << r3 << endl;
-                myfile << "     mov " << r3 << ", -" << getOffset(res) << "(%rbp)" << endl;
-            }
-            if(ops == "LCall"){
+            if(tacMap[currTacVec][i] -> op == "LCall"){
                 string arg1 = tacMap[currTacVec][i] -> arg1;
                 if(arg1.substr(0,7) == "println"){
-                    myfile << "     sub $32, %rsp       # For print statement"<<endl;
+                    // myfile << "     push %rbx" << endl;
+                    // myfile << "     push %rcx" << endl;
+                    // myfile << "     push %rdx" << endl;
                     myfile << "     mov $format, %rdi" << endl;
-                    string r1 = regS[getVarReg(myfile, arg1.substr(8))].name;
+                    string r1 = regS[getVarReg(arg1.substr(8))].name;
                     // cout << r1;
                     myfile << "     mov "<< r1<<", %rsi" << endl;
                     myfile << "     call printf" << endl;
-                    myfile << "     add $32, %rsp       #For print stmt"<<endl;
-                   i++;
+                    // myfile << "     pop %rdx" << endl;
+                    // myfile << "     pop %rcx" << endl;
+                    // myfile << "     pop %rbx" << endl;
                 }
                 else{
-                    myfile << "     call " << tacMap[currTacVec][i] -> arg1 << endl;
-                }
-                resetRegisters();
-            }
+                    myfile << "     call "<< arg1 << endl;
+                    
 
-             // ************ COnstructor **************
-            if(tacMap[currTacVec][i] -> op == "BeginConstructor"){
-                myfile << "      "<< "     # Begin Constructor"<<  endl;
-                myfile << "     pushq " << ebp.name << endl;
-                myfile << "     mov " << esp.name << ", " << ebp.name << "      # beginCon" <<  endl;
-                if(isPresentInTAC(currTacVec.substr(0,currTacVec.find(".")+1))){
-                    myfile << "     jmp "<<name1 << "       # Jump to global vars"<< endl;
-                    myfile << " ReturnToCons" <<name1 << ":" << endl;
-                    // cout << "Yes"<< endl;
                 }
-                //  myfile << "     mov " << 8 << "(%rbp) , " << "%rax"  << "     #   Get Obj ref "   << endl;
+                // myfile << "     call " << tacMap[currTacVec][i] -> arg1 << endl;
             }
-            
-            if(tacMap[currTacVec][i] -> op == "EndConstructor"){
-                // myfile << "     jmp " << "return_"<< currTacVec.substr(currTacVec.find(".")+1, -1) << endl;
-                myfile << "     mov " << ebp.name << ", " << esp.name << endl;
-                myfile << "     popq %rbp" << endl;
+            if(tacMap[currTacVec][i] -> op == "PushParam"){
+                // string arg1 = tacMap[currTacVec][i] -> arg1;
+                string arg1 = tacMap[currTacVec][i] -> arg1; // empty
+                string res = tacMap[currTacVec][i] -> res; // 66 / c
+
+                string r2 = "";
+
+                if(getOffset(res) == -1)
+                {
+                    if(res[0] == '_')r2 = regT[getTempReg(res)].name;
+                    else  r2 = "$" +  res;
+                }
+                else  r2 = regS[getVarReg(res)].name;
+               
+                myfile << "     push "<< r2<<endl;
+
                 
-                myfile << "     ret" << "       # EndFunc"<<endl;
             }
-            if(tacMap[currTacVec][i] -> op == "ObjAccess"){
-                int offsett = getOffset(tacMap[currTacVec][i] -> arg1);
-                string res = tacMap[currTacVec][i] -> res;
-                string r1 = regT[getTempReg( res)].name;
-                myfile << "     mov %rbx, " <<  r1 << "    #       move offset" << endl;
-                myfile << "     add " << "$" << offsett - 8 << ", " << r1 << "     #   Get Obj ref "   << endl;
+            if(tacMap[currTacVec][i] -> op == "stackPointer -= "){
+
+                // skip for now
             }
-            if(tacMap[currTacVec][i] -> op == "FieldAccess"){
+            if(tacMap[currTacVec][i] -> op == "stackPointer += "){
+
+                // skip for now
+            }
+            if(tacMap[currTacVec][i] -> op == "Return"){
+
+                string r1 = "", r2 = "", r3 = "";
                 string arg1 = tacMap[currTacVec][i] -> arg1;
+                string arg2 = tacMap[currTacVec][i] -> arg2;
                 string res = tacMap[currTacVec][i] -> res;
-                string r1 = "";
                 if(getOffset(arg1) == -1){
                     if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
                     else  r1 = "$" +  arg1;
-                }else  r1 = regS[getVarReg(myfile, arg1)].name;
-                // myfile << "     mov (" << r1 << "), " << "     #   Set at offset + obj ref "   << endl;
-                string r2 = regT[getTempReg( res)].name;
-                // myfile << "     mov " << " -" << getOffset(arg1) << "(%rbp) , " <<r1 << "       # Get " << arg1 << " from stack" << endl;
-                myfile << "     mov "<< r1 << ", ("<< r2 <<")     # Field access" << endl;
-                
-            }
-
-            if(tacMap[currTacVec][i] -> op == "SetObjRef"){
-                string arg = tacMap[currTacVec][i] -> res;
-                string r1 = regT[getTempReg(arg)].name;
-                myfile << "     mov " << r1 << ", %rbx"<< "     #       Load in rbx"<<endl;
-            }
-            if(tacMap[currTacVec][i] -> op == "LoadObjRef"){
-                string arg = tacMap[currTacVec][i] -> res;
-                string r1 = regT[getTempReg(arg)].name;
-                myfile << "     mov %rbx, "<< r1 << "     #       Load from rbx"<<endl;
-            }
-
-            if(tacMap[currTacVec][i] -> op =="getObjVal"){
-                string arg1 = tacMap[currTacVec][i] -> arg1;
-                string arg2 = tacMap[currTacVec][i] -> arg2;
-                string res = tacMap[currTacVec][i] -> res;
-                string r1 = regS[getVarReg(myfile, arg1)].name;
-                string r3 = regT[getTempReg(res)].name;
-                int offsett = getOffset(arg2);
-                myfile << "     add " << "$" << offsett - 8 << ", " << r1 << "     #   Get Obj ref "   << endl;
-                myfile << "     mov " << "(" << r1 << "), " << r3 << "     #   Get Obj Value "   << endl;
-            }
-            if(tacMap[currTacVec][i] -> op =="getObjRef"){
-                string arg1 = tacMap[currTacVec][i] -> arg1;
-                string arg2 = tacMap[currTacVec][i] -> arg2;
-                string res = tacMap[currTacVec][i] -> res;
-                string r1 = regS[getVarReg(myfile, arg1)].name;
-                string r3 = regT[getTempReg(res)].name;
-                int offsett = getOffset(arg2);
-                myfile << "     add " << "$" << offsett - 8 << ", " << r1 << "     #   Get Obj ref "   << endl;
-                myfile << "     mov "  << r1 << ", " << r3 << "     #   Copy ref "   << endl;
-            }
-
-            if(tacMap[currTacVec][i] -> op == "LoadObjRegister"){
-                string arg1 = tacMap[currTacVec][i] -> arg1;
-                string r2 = regS[getVarReg(myfile, arg1)].name;
-                myfile << "     mov " <<r2 << ", %rbx" << "       #   Load Obj ref in rbx"<< endl;
-            }
+                }else  r1 = regS[getVarReg(arg1)].name;
+                myfile << "     mov "<< r1<<", %rsi"<<endl;
+                myfile << "     add "<< "$"+rememberIt << ", %rsp"<<endl;
+                myfile << "     pop "<< "%rbp"<<endl;
+                myfile << "     add "<< "$"+rememberIt << ", %rsp"<<endl;
+                myfile << "     ret "<< endl;
 
 
-            // ************* End Constructor *********
 
-
-            // ********************** For stackmanipulation **************
-            if(tacMap[currTacVec][i] -> op == "BeginFunc"){
-                myfile << "     pushq " << ebp.name << endl;
-                myfile << "     mov " << esp.name << ", " << ebp.name << "      # beginFunc" <<  endl;
-                // myfile << "     sub " << "$16 , "<< esp.name << endl; 
             }
-            
-            if(tacMap[currTacVec][i] -> op == "EndFunc"){
-                // myfile << "     jmp " << "return_"<< currTacVec.substr(currTacVec.find(".")+1, -1) << endl;
-                myfile << "return_"<< currTacVec.substr(currTacVec.find(".")+1, -1) << ":"<<endl;
-                myfile << "     mov " << ebp.name << ", " << esp.name << endl;
-                myfile << "     popq "<< ebp.name << endl;
-                
-                myfile << "     ret" << "       # EndFunc"<<endl;
-            }
-            if(tacMap[currTacVec][i] -> op == "stackPointer-="){
-
-                string arg1 = tacMap[currTacVec][i] -> arg1;
-                int st = stoi(arg1);
-                myfile << "     sub " << "$" << st + 16 << ", " << esp.name << "       # stackPointer-= " << arg1  << endl;
-            }
-            // cout << tacMap[currTacVec][i] -> op << endl;
-            if(tacMap[currTacVec][i] -> op == "stackPointer+="){
-                string arg1 = tacMap[currTacVec][i] -> arg1;
-                // cout << arg1 << endl;
-                int st = stoi(arg1);
-                myfile << "     add " << "$" << st*2 << ", " << esp.name << "       # stackPointer+= " << arg1  << endl;
-            }
-            if(tacMap[currTacVec][i] -> op ==  "stackPointer="){
-                string arg1 = tacMap[currTacVec][i] -> arg1;
-                if(arg1 == "basePointer"){
-                    myfile << "     mov " << ebp.name << ", " << esp.name <<"       # stackPointer = basepointer" <<endl;
-                }
-            }
-
-            if(tacMap[currTacVec][i] -> op == "PushParam"){
-                string arg1 = tacMap[currTacVec][i] -> arg1;
-                string r1 = "";
-                 if(getOffset(arg1) == -1){
-                    if(arg1[0] == '_') r1 = regT[getTempReg(arg1)].name;
-                    else  r1 = "$" +  arg1;
-                }else  r1 = (regS[getVarReg(myfile, arg1)].name).substr(0,4);
-                myfile << "     sub $8, " << esp.name << "       # PushParam " << arg1 << endl;
-                myfile << "     pushq " << r1 << "       # PushParam " << arg1 << endl;
-            }
-            if(tacMap[currTacVec][i] -> op == "getparam"){
-                int pnum = 0;
-                while(tacMap[currTacVec][i] -> op == "getparam"){
-                    string arg1 = tacMap[currTacVec][i] -> res;
-                    string r1 = regT[getTempReg(arg1)].name;
-                    // cout << arg1<<endl;
-                    int off1 = getOffset(arg1);
-                    // cout << off1 << " "<< arg1 << endl;
-                    myfile << "     mov " << off1*2 << "(%rbp) , " << r1  << "     #   Get Argument " << arg1  << endl;
-                    myfile << "     mov " << r1<<", -" << off1 << "(%rbp)" << "     #   Store Argument " << arg1 << " in stack" << endl;
-                    i++;
-                }
-                i--;
-                continue;
-            }
-
-            // *************************End ************************
-
            
             // if(tacMap[currTacVec][i] -> op == "+_int"){
             //     string arg1 = tacMap[currTacVec][i] -> arg1;
@@ -1944,13 +1545,10 @@ vector<int> getDim(string cclass, string ArrayName){
     for(auto it : class_table[cclass]){
         for(auto itr : it.second){
             if(itr.first == ArrayName){
-                // cout << itr.second -> ndim.size() << "found" << endl;
                 return itr.second -> ndim;
             }
         }
     }
-    cout  << cclass << " " << ArrayName << " not found" << endl;
-    // cout << " not found" << endl;
     return {};
 }
 int getSizeOfArray(int id){
@@ -1974,6 +1572,7 @@ int getSizeOfArray(int id){
     
     return -1;
 }
+
 
 map<int, string> whtIsType;
 
@@ -2054,7 +1653,7 @@ int funcSize(int id){
     }
     return ssize;
 }
-int constesize(int id){
+int constrSize(int id){
     int temp = parent[id];
     string cclass;
     int ssize = 0;
@@ -2066,31 +1665,6 @@ int constesize(int id){
         cclass = nodeClass[id];
     }
     string name = tree[id].first + ".constr";
-    vector<string> param;
-    for(auto it : class_table[cclass]){
-            if(it.first == name){
-                t = class_table[cclass][name];
-                break;
-            }
-            
-    }
-    for(auto it : t) {
-        ssize += (it.second)->size;
-    }
-    return ssize;
-}
-int constesize1(int id){
-    int temp = parent[id];
-    string cclass;
-    int ssize = 0;
-    sym_table t;
-    if(tree[temp].first == "QualifiedName"){
-        cclass = customtypeof((tree[temp].second)[0]);
-    }
-    else{
-        cclass = nodeClass[id];
-    }
-    string name = tree[id].first ;
     vector<string> param;
     for(auto it : class_table[cclass]){
             if(it.first == name){
@@ -2140,16 +1714,13 @@ void ThreeACHelperFunc(int id){
             tac* t = createTacCustom("BeginConstructor", "", "","");
             tacMap[currTacVec].push_back(t);
             
-            int size = constesize(temp[0]);
-            if(size%16){
-                size = (size/16+1)/16;
-            }
+            int size = constrSize(temp[0]);
             // cout << size << endl;
-            t = createTacCustom("stackPointer-=", to_string(size), "", "");
+            t = createTacCustom("stackPointer -=", to_string(size), "", "");
             tacMap[currTacVec].push_back(t);
 
 
-            tac* t1 = createTacCustom("getref", "","",createArg(id));
+            tac* t1 = createTacCustom("=", "getparam", "",createArg(id));
             memoryLoc.push(createArg(id));
             tacMap[currTacVec].push_back(t1);
             ThreeACHelperFunc(temp[2]);
@@ -2158,13 +1729,11 @@ void ThreeACHelperFunc(int id){
     if(tree[id].first == "FieldAccess"){
         if(tree[temp[1]].first == "."){
             childcallistrue = 0;
-            // int offsett = getOffset(tree[temp[2]].first);
             ThreeACHelperFunc(temp[2]);
-            tac* t = createTacCustom("ObjAccess", tree[temp[2]].first, "", "_v" + to_string(id));
-            // tac* t1 = createTacCustom("getAddr", createArg5(temp[2]), " Field Access ",  tree[temp[2]].first);
+            tac* t1 = createTacCustom("=", createArg5(temp[2]), "",  tree[temp[2]].first);
+            tacMap[currTacVec].push_back(t1);
+            tac* t = createTacCustom("=", createArg4(temp[2]), "", "_v" + to_string(id));
             tacMap[currTacVec].push_back(t);
-            // tac* t = createTacCustom("", createArg4(temp[2]), "", "_v" + to_string(id));
-            // tacMap[currTacVec].push_back(t);
         }
     }
     if(tree[id].first == "QualifiedName"){
@@ -2172,30 +1741,11 @@ void ThreeACHelperFunc(int id){
             memoryLoc.push(objRef[createArg(temp[0])]);
             childcallistrue = 0;
             ThreeACHelperFunc(temp[2]);
-            int pid = parent[id];
-            vector<int> pchild = tree[pid].second;
-            if(pchild[0] == id){
-                tac* t1 = createTacCustom("getObjRef", createArg(temp[0]) , createArg(temp[2]) ,  "_v" + to_string(id));
-                // tac* t1 = createTacCustom("=", createArg5(temp[2]), "",  tree[temp[2]].first);
-                tacMap[currTacVec].push_back(t1);
-            }
-            else{
-                tac* t1 = createTacCustom("getObjVal", createArg(temp[0]) , createArg(temp[2]) ,  "_v" + to_string(id));
-                // tac* t1 = createTacCustom("=", createArg5(temp[2]), "",  tree[temp[2]].first);
-                tacMap[currTacVec].push_back(t1);
-                // tac* t = createTacCustom("=", createArg4(temp[2]), "", "_v" + to_string(id));
-                // tacMap[currTacVec].push_back(t);
-            }
-            
-            memoryLoc.pop();
-        }
-    }
-    if(tree[id].first == "PrimaryNoNewArray"){
-        if(tree[temp[0]].first == "(" && tree[temp[2]].first == ")" )
-        {   childcallistrue = 0;
-        ThreeACHelperFunc(temp[1]);
-            tac* t = createTacCustom("=", createArg(temp[1]), "", createArg(id));
+            tac* t1 = createTacCustom("=", createArg5(temp[2]), "",  tree[temp[2]].first);
+            tacMap[currTacVec].push_back(t1);
+            tac* t = createTacCustom("=", createArg4(temp[2]), "", "_v" + to_string(id));
             tacMap[currTacVec].push_back(t);
+            memoryLoc.pop();
         }
     }
     if(tree[id].first == "FormalParameterList"){
@@ -2204,7 +1754,7 @@ void ThreeACHelperFunc(int id){
             ThreeACHelperFunc(temp[0]);
             ThreeACHelperFunc(temp[2]);
             vector<int> temp1 = tree[temp[2]].second;
-            tac* t = createTacCustom("getparam","", "", createArg3(temp1[2]));
+            tac* t = createTacCustom("=","getparam", "", createArg3(temp1[2]));
             tacMap[currTacVec].push_back(t);
             
         }
@@ -2212,11 +1762,11 @@ void ThreeACHelperFunc(int id){
            
             ThreeACHelperFunc(temp[0]);
              vector<int>  temp1 = tree[temp[0]].second;
-            tac* t1 = createTacCustom("getparam","",  "", createArg3(temp1[2]));
+            tac* t1 = createTacCustom("=","getparam",  "", createArg3(temp1[2]));
             tacMap[currTacVec].push_back(t1);
              ThreeACHelperFunc(temp[2]);
             temp1 = tree[temp[2]].second;
-            tac* t = createTacCustom("getparam","", "", createArg3(temp1[2]));
+            tac* t = createTacCustom("=","getparam", "", createArg3(temp1[2]));
             tacMap[currTacVec].push_back(t);
         }
     }
@@ -2227,7 +1777,7 @@ void ThreeACHelperFunc(int id){
         tac* t = new tac();
         t -> op = "Return";
         t -> arg1 = createArg(temp[1]);
-        t -> arg2 = "// load return value to return register...";
+        t -> arg2 = "// load return value to return register";
         tacMap[currTacVec].push_back(t);
         return;        
     }
@@ -2344,7 +1894,7 @@ void ThreeACHelperFunc(int id){
         backpatch(tacMap[currTacVec].size(), elseid);
 
     }
-   if(tree[id].first == "ArrayAccess"){
+    if(tree[id].first == "ArrayAccess"){
         childcallistrue = 0;
         vector<string> tempVec;
         string ArrayName = "";
@@ -2377,11 +1927,23 @@ void ThreeACHelperFunc(int id){
             tac* t1 = createTacCustom("+", tempIds, tempVec[l-1],tempIds);
             tacMap[currTacVec].push_back(t1);
         }
-        tac* t2 = createTacCustom( "ArrayAddress" ,ArrayName + "[" + tempIds + "]","", createArg(id));
+        if(tree[parent[id]].first != "Assignment"){
+        tac* t2 = createTacCustom( "=" ,ArrayName + "[" + tempIds + "]","", createArg(id));
+
+        t2->array = 2;
+        tacMap[currTacVec].push_back(t2);}
+        else{
+            vector<int> ch = tree[parent[id]].second;
+            ch[0] = tempId;
+            tacMap[currTacVec].push_back(createTac1(parent[id]));
+            tac* t2 = createTacCustom( "=" ,createArg(id),"",ArrayName + "[" + tempIds + "]");
+
+        t2->array = 3;
         tacMap[currTacVec].push_back(t2);
+        }
 
     }
-   if(tree[id].first == "ArrayCreationExpr"){
+    if(tree[id].first == "ArrayCreationExpr"){
         childcallistrue = 0;
         vector<int> temp2 = tree[parent[id]].second;
         int arrayId = temp2[0];
@@ -2390,11 +1952,14 @@ void ThreeACHelperFunc(int id){
             arrayId = temp3[0];
         }
         int sizeOfArr = getSizeOfArray(arrayId);
-        tac* t = createTacCustom("=", to_string(sizeOfArr), "", "_t1");
+        tac* t = createTacCustom("=", to_string(sizeOfArr), "", "t1");
+        t->array = 1;
         tacMap[currTacVec].push_back(t);
-        tac* t1 = createTacCustom("param", "_t1", "", "");
+        tac* t1 = createTacCustom("param", "t1", "", "");
+        t1->array = 1;
         tacMap[currTacVec].push_back(t1);
         tac *t2 = createTacCustom("call", "allocmem", "1", "_v" + to_string(id));
+        t2->array = 1;
         tacMap[currTacVec].push_back(t2);
 
     }
@@ -2436,16 +2001,14 @@ void ThreeACHelperFunc(int id){
             tacMap[currTacVec].push_back(t);
             int funcSize1 = funcSize(temp[0]);
             // cout << "Funcsize " << funcSize1 << endl; 
-            
-            if(funcSize1%16)funcSize1 = (funcSize1/16+2)*16;
-            t = createTacCustom("stackPointer-=", to_string(funcSize1), "// Manipulating stack (equal to size of function)","");
+            t = createTacCustom("stackPointer -= ", to_string(funcSize1), "// Manipulating stack (equal to size of function)","");
             tacMap[currTacVec].push_back(t);
             if(tree[temp[2]].first != ")"){
                 ThreeACHelperFunc(temp[2]);
             }
             if(tree[temp[2]].first == "FormalParameter"){
                 vector<int> child1 = tree[temp[2]].second;
-                t = createTacCustom("getparam","", "", createArg3(child1[2]));
+                t = createTacCustom("=","getparam", "", createArg3(child1[2]));
                 tacMap[currTacVec].push_back(t);
             }
         }
@@ -2456,18 +2019,19 @@ void ThreeACHelperFunc(int id){
         for(int i = 0; i < temp.size(); i++){
             if(tree[temp[i]].first == "(") {
                 if(tree[temp[i+1]].first != ""){
-                    ThreeACHelperFunc(temp[i+1]);
                     if(tree[temp[i+1]].first != "ArgumentList"){
-                        tac* t = createTacCustom("PushParam", createArg(temp[i+1]) , "", "");
+                        tac* t = createTacCustom("PushParam", tree[temp[i+1]].first, "", "");
                         tacMap[currTacVec].push_back(t);
                     }
-                    
+                    ThreeACHelperFunc(temp[i+1]);
                 }
                 tac* t;
                 if(tree[temp[i-1]].first == "QualifiedName"){
                     vector<int> temp1 = tree[temp[i-1]].second;
-                    t = createTacCustom("LoadObjRegister", tree[temp1[0]].first, "", "");
-                    tacMap[currTacVec].push_back(t);
+                    // if(tree[temp1[2]].first == "println"){
+                    //     t = createTacCustom();
+                    //     tacMap[currTacVec].push_back(t);
+                    // }
                      t = createTacCustom("LCall", tree[temp1[2]].first, "", "");
                     tacMap[currTacVec].push_back(t);
                 }
@@ -2475,10 +2039,10 @@ void ThreeACHelperFunc(int id){
                      t = createTacCustom("LCall", tree[temp[i-1]].first, "", "");
                     tacMap[currTacVec].push_back(t);
                 }
-                t = createTacCustom("returnRegister",createArg(id), "", "" );
+                t = createTacCustom("=", "returnRegister", "", createArg(id));
                 tacMap[currTacVec].push_back(t);
-                // t = createTacCustom("stackPointer=", "basePointer","", "");
-                // tacMap[currTacVec].push_back(t);
+                t = createTacCustom("stackPointer", "=", "basePointer", "");
+                tacMap[currTacVec].push_back(t);
                 t = createTacCustom("RestoreMachineState","//Adjust Base Pointer to previous base pointer and reload registers", "", "");
                 tacMap[currTacVec].push_back(t);
                 vector<string> param;
@@ -2489,8 +2053,7 @@ void ThreeACHelperFunc(int id){
                 else  param = getParamsOf(temp[0]);
                 int paramSize1 = paramSize(param);
                 // cout << paramSize1 << endl; 
-                if(paramSize1%8)paramSize1 = (paramSize1/8+1)*8;
-                 t = createTacCustom("stackPointer+=", to_string(paramSize1), "// Remove parameters passed into stack", "");
+                 t = createTacCustom("stackpointer +=", to_string(paramSize1), "// Remove parameters passed into stack", "");
                 tacMap[currTacVec].push_back(t);
                  
             }
@@ -2505,34 +2068,32 @@ void ThreeACHelperFunc(int id){
                 if(tree[temp[i+1]].first != ""){
                     ThreeACHelperFunc(temp[i+1]);
                 }
-                int constSize = constesize1(temp[1]);
-    
+                int constSize = constrSize(temp[1]);
                 tac *t5 = createTacCustom("=",  to_string(constSize), "", "_v" + to_string(temp[i]));
                 tacMap[currTacVec].push_back(t5);
-                tac* t4 = createTacCustom("param", "_v" + to_string(temp[i]),"", "");
+                tac* t4 = createTacCustom("=", "param", "_v" + to_string(temp[i]), "");
                 tacMap[currTacVec].push_back(t4);
-                tac* t3 = createTacCustom("call", "allocmem", "", "_v" + to_string(temp[i+2]));
+                tac* t3 = createTacCustom("call", "allocmem", "", "1");
                 tacMap[currTacVec].push_back(t3);
-                tac* t = createTacCustom("SetObjRef", "", "", "_v" + to_string(temp[i+2]));
+                tac* t = createTacCustom("=", "GetObjRef", "// Store Object ref", "_v" + to_string(temp[i+2]));
                 tacMap[currTacVec].push_back(t);
-                // tac* t1 = createTacCustom("PushParam", "_v" + to_string(temp[i+2]) , "", "");
-                // tacMap[currTacVec].push_back(t1);
-                tac* t2 = createTacCustom( "LCall", "Constructor","", "");
+                tac* t1 = createTacCustom("PushParam", "", "", "_v" + to_string(temp[i+2]));
+                tacMap[currTacVec].push_back(t1);
+                tac* t2 = createTacCustom("=", "LCall", tree[temp[i-1]].first + ".Constructor", "");
                 tacMap[currTacVec].push_back(t2);
 
                 /************** */
-                 t = createTacCustom("LoadObjRef", "ConstructorValReturned", "", createArg(id));
+                 t = createTacCustom("=", "ConstructorValReturned", "", createArg(id));
                 tacMap[currTacVec].push_back(t);
-                // t = createTacCustom("stackPointer=", "basePointer", "","");
-                // tacMap[currTacVec].push_back(t);
+                t = createTacCustom("stackPointer", "=", "basePointer", "");
+                tacMap[currTacVec].push_back(t);
                t = createTacCustom("RestoreMachineState","//Adjust Base Pointer to previous base pointer and reload registers", "", "");
                 tacMap[currTacVec].push_back(t);
                 
                 vector<string> param = getParamsOfCons(temp[1]);
                 int paramSize1 = paramSize(param) + 4;
                 // cout << paramSize1 << endl; 
-                if(paramSize1%8) paramSize1 = (paramSize1/8+1)*8;
-                 t = createTacCustom("stackPointer+=", to_string(paramSize1), "// Remove parameters passed into stack + object refernce", "");
+                 t = createTacCustom("stackpointer +=", to_string(paramSize1), "// Remove parameters passed into stack + object refernce", "");
                 tacMap[currTacVec].push_back(t);
 
 
@@ -2547,14 +2108,14 @@ void ThreeACHelperFunc(int id){
     if(tree[id].first == "ArgumentList"){
         childcallistrue = 0;
         if(tree[temp[0]].first == "ArgumentList"){
-            tac* t = createTacCustom("PushParam", createArg(temp[2]) , "", "");
+            tac* t = createTacCustom("PushParam", "", "", createArg(temp[2]));
             tacMap[currTacVec].push_back(t);
             ThreeACHelperFunc(temp[0]);
         }
         else{
-            tac* t = createTacCustom("PushParam",  createArg(temp[2]) , "", "");
+            tac* t = createTacCustom("PushParam", "", "", createArg(temp[2]));
             tacMap[currTacVec].push_back(t);
-            tac* t1 = createTacCustom("PushParam", createArg(temp[0]) , "", "");
+            tac* t1 = createTacCustom("PushParam", "", "", createArg(temp[0]));
             tacMap[currTacVec].push_back(t1);
         }
     }
@@ -2579,60 +2140,8 @@ void ThreeACHelperFunc(int id){
         }
     }
    
-    
     if(tree[id].first == "Expression")  tacMap[currTacVec].push_back(createTacCustom("=", createArg(temp[0]), "", createArg(id)));
-    // if(tree[id].first == "Assignment" && tree[(tree[id].second)[0]].first != "ArrayAccess") tacMap[currTacVec].push_back(createTac1(id));
-    if(tree[id].first == "Assignment") {
-        if(tree[temp[0]].first == "ArrayAccess" && tree[temp[2]].first == "ArrayAccess"){
-            tac*t = createTacCustom("ArrayArrayAssign", createArg(temp[2]), "", createArg(temp[0]));
-            tacMap[currTacVec].push_back(t);
-        }
-        else if(tree[temp[0]].first == "ArrayAccess"){
-            tac*t = createTacCustom("ArrayAssign", createArg(temp[2]), "", createArg(temp[0]));
-            tacMap[currTacVec].push_back(t);
-        } 
-        else if(tree[temp[2]].first == "ArrayAccess"){
-            tac*t = createTacCustom("ArrayAccess", createArg(temp[2]), "", createArg(temp[0]));
-            tacMap[currTacVec].push_back(t);
-        }
-        else if(tree[temp[0]].first == "FieldAccess"){
-            tac*t = createTacCustom("FieldAccess", createArg(temp[2]), "", createArg(temp[0]));
-            tacMap[currTacVec].push_back(t);
-        }
-        else if(tree[temp[0]].first == "QualifiedName"){
-             tac*t = createTacCustom("QualifiedName", createArg(temp[2]), "", createArg(temp[0]));
-            tacMap[currTacVec].push_back(t);
-        }
-        else tacMap[currTacVec].push_back(createTac1(id));
-    }
-    string z = tree[id].first;
-    if(z == "RelationalExpression" 
-        ||  z == "ConditionalOrExpression"
-        ||  z == "ConditionalAndExpression"
-        ||  z == "AdditiveExpression"
-        ||  z == "MultiplicativeExpression"
-        ||  z == "RelationalExpression"
-        ||  z == "EqualityExpression"
-        ||  z == "AndExpression"
-        ||  z == "ShiftExpression"
-    ){
-        if(tree[temp[0]].first == "ArrayAccess" && tree[temp[2]].first == "ArrayAccess"){
-            tac*t = createTacCustom("ArrayAccess", createArg(temp[2]), "", createArg(temp[2]));
-            tacMap[currTacVec].push_back(t);
-            t = createTacCustom("ArrayAccess", createArg(temp[0]), "", createArg(temp[0]));
-            tacMap[currTacVec].push_back(t);
-        }
-        else if(tree[temp[0]].first == "ArrayAccess"){
-            tac*t = createTacCustom("ArrayAccess", createArg(temp[0]), "", createArg(temp[0]));
-            tacMap[currTacVec].push_back(t);
-        } 
-        else if (tree[temp[2]].first == "ArrayAccess"){
-            tac*t = createTacCustom("ArrayAccess", createArg(temp[2]), "", createArg(temp[2]));
-            tacMap[currTacVec].push_back(t);
-        }    
-        // tacMap[currTacVec].push_back(createTac2(id);
-
-    }
+    if(tree[id].first == "Assignment" && tree[(tree[id].second)[0]].first != "ArrayAccess") tacMap[currTacVec].push_back(createTac1(id));
     if(tree[id].first == "PreIncExpression") tacMap[currTacVec].push_back(createTac1Dplus(id));
     if(tree[id].first == "PreDecExpression") tacMap[currTacVec].push_back(createTac1Dplus(id));
     if(tree[id].first == "PostIncExpression") {createTac2Dplus(id);}
@@ -2652,18 +2161,15 @@ void ThreeACHelperFunc(int id){
     if(tree[id].first == "ShiftExpression"){tacMap[currTacVec].push_back(createTac2(id));} 
      if(tree[id].first == "VariableDeclarator"){
         int child1 = temp[0];
+        int flag = 0;
         while(tree[child1].first == "VariableDeclaratorId"){
             vector<int> temp1 = tree[child1].second;
             child1 = temp1[0];
+            flag = 1;
         }
-        if(tree[temp[2]].first == "ArrayAccess"){
-            tac* t = createTacCustom("ArrayAccess", createArg(temp[2]), "", createArg(child1));
-            tacMap[currTacVec].push_back(t);
-        }
-        else{
-            tac* t = createTacCustom("=", createArg(temp[2]), "", createArg(child1));
-            tacMap[currTacVec].push_back(t);
-        }
+        tac* t = createTacCustom("=", createArg(temp[2]), "", createArg(child1));
+        t->array = flag;
+        tacMap[currTacVec].push_back(t);
     }
 }
 // ****************************************************************
@@ -2704,13 +2210,6 @@ void typeChecker(){
 }
 /* ------------------------------------------------------------*/
 
-int strToInt(string s){
-    stringstream ss;
-    ss << s;
-    int res = 0;
-    ss >> res;
-    return res;
-}
 
 void tpc(int id){
     bool allVisited = true;
@@ -2741,9 +2240,6 @@ void tpc(int id){
     for(int i = 0; i < child.size(); i++){
         
         tpc(child[i]);
-    }
-    if(tree[id].first == "PrimaryNoNewArray"){
-        whtIsType[id] = whtIsType[(tree[id].second)[1]];
     }
      if(tree[id].first == "FieldAccess"){
         whtIsType[id] = whtIsType[(tree[id].second)[2]];
@@ -2928,17 +2424,15 @@ void tpc(int id){
         while(tree[temp].first == "ArrayAccess"){
             vector<int> ch = tree[temp].second;
             temp = ch[0];
-            dims.push_back(strToInt(tree[ch[2]].first));
+            dims.push_back(stoi(tree[ch[2]].first));
         }
         string arrname = tree[temp].first;
         typer = whtIsType[temp];
         string cclass = nodeClass[temp];
-        // cout << cclass << " " << arrname << endl;
         vector<int> dimensions = getDim(cclass, arrname);
         reverse(dimensions.begin(), dimensions.end());
         if(dims.size() != dimensions.size()){
-            // cout << dims.size() << " " << dimensions.size() << endl;
-            cout << "error: array required, but int found at line " << LineNumber[temp] << endl;
+            cout << "error: array required, but int found" << endl;
         }
         else{
             for(int i=0; i<dims.size(); i++){
@@ -2959,7 +2453,7 @@ void tpc(int id){
             typel = tree[ch[0]].first;
         }
         if(typel != typer){
-            cout << "error: incompatible types: possible lossy conveesion from " << typer << " to " << typel << endl;
+            cout << "error: incompatible types: possible lossy conversion from " << typer << " to " << typel << endl;
         }
         }
     }
@@ -2974,7 +2468,7 @@ void tpc(int id){
         }
         else if((whtIsType[child[0]]=="int" && whtIsType[child[2]]=="float") ){
             whtIsType[id] = "error";
-            cout << "Type Error at line " << LineNumber[child[0]] << ". Incompatible types: possible lossy conveesion from double to int"  << endl;
+            cout << "Type Error at line " << LineNumber[child[0]] << ". Incompatible types: possible lossy conversion from double to int"  << endl;
             exit(1);
         }
         else if((whtIsType[child[2]]=="int" && whtIsType[child[0]]=="float") ){
@@ -2996,16 +2490,6 @@ void tpc(int id){
             whtIsType[child[2]]="float";
             whtIsType[id] =  "float";
             tree[child[1]].first += "_float";
-        }
-        else if((whtIsType[child[0]]=="null" && whtIsType[child[2]]!="null")){
-            whtIsType[child[0]]= whtIsType[child[2]];
-            whtIsType[id] = whtIsType[child[2]];
-            tree[child[1]].first += "_" + whtIsType[child[2]];
-        }
-        else if((whtIsType[child[2]]=="null" && whtIsType[child[0]]!="null")){
-            whtIsType[child[2]]= whtIsType[child[0]];
-            whtIsType[id] = whtIsType[child[0]];
-            tree[child[1]].first += "_" + whtIsType[child[0]];
         }
         else{
             whtIsType[id] = "error";
@@ -3039,19 +2523,9 @@ void tpc(int id){
             whtIsType[id] =  "float";
             tree[child[1]].first += "_float";
         }
-        else if((whtIsType[child[0]]=="null" && whtIsType[child[2]]!="null")){
-            whtIsType[child[0]]= whtIsType[child[2]];
-            whtIsType[id] = whtIsType[child[2]];
-            tree[child[1]].first += "_" + whtIsType[child[2]];
-        }
-        else if((whtIsType[child[2]]=="null" && whtIsType[child[0]]!="null")){
-            whtIsType[child[2]]= whtIsType[child[0]];
-            whtIsType[id] = whtIsType[child[0]];
-            tree[child[1]].first += "_" + whtIsType[child[0]];
-        }
         else{
             whtIsType[id] = "error";
-            cout << "Type Error at line*** " << LineNumber[child[1]] << endl;
+            cout << "Type Error at line " << LineNumber[child[1]] << endl;
             exit(1);
         }
     }
@@ -3067,16 +2541,6 @@ void tpc(int id){
             whtIsType[child[2]]="int";
             whtIsType[id] =  "int";
             tree[child[1]].first += "_int";
-        }
-        else if((whtIsType[child[0]]=="null" && whtIsType[child[2]]!="null")){
-            whtIsType[child[0]]= whtIsType[child[2]];
-            whtIsType[id] = whtIsType[child[2]];
-            tree[child[1]].first += "_" + whtIsType[child[2]];
-        }
-        else if((whtIsType[child[2]]=="null" && whtIsType[child[0]]!="null")){
-            whtIsType[child[2]]= whtIsType[child[0]];
-            whtIsType[id] = whtIsType[child[0]];
-            tree[child[1]].first += "_" + whtIsType[child[0]];
         }
         else{
             whtIsType[id] = "error";
@@ -3111,21 +2575,11 @@ void tpc(int id){
             whtIsType[id] =  "float";
             tree[child[1]].first += "_float";
         }
-        else if((whtIsType[child[0]]=="null" && whtIsType[child[2]]!="null")){
-            whtIsType[child[0]]= whtIsType[child[2]];
-            whtIsType[id] = whtIsType[child[2]];
-            tree[child[1]].first += "_" + whtIsType[child[2]];
+        else if(whtIsType[child[0]]!="null" || whtIsType[child[2]]=="null"){
+            whtIsType[id] = "error";
+            cout << "Type Error at line " << LineNumber[child[1]] << endl;
+            // exit(1);
         }
-        else if((whtIsType[child[2]]=="null" && whtIsType[child[0]]!="null")){
-            whtIsType[child[2]]= whtIsType[child[0]];
-            whtIsType[id] = whtIsType[child[0]];
-            tree[child[1]].first += "_" + whtIsType[child[0]];
-        }
-        // else if(whtIsType[child[0]]!="null" || whtIsType[child[2]]=="null"){
-        //     whtIsType[id] = "error";
-        //     cout << "Type Error at line " << LineNumber[child[1]] << endl;
-        //     // exit(1);
-        // }
     }
     else if(tree[id].first == "VariableDeclarator" && (tree[(tree[id].second)[2]].first != "ArrayCreationExpr" && tree[(tree[id].second)[2]].first != "ArrayAccess")){
         if(whtIsType[child[0]]  == whtIsType[child[2]]){
@@ -3151,22 +2605,12 @@ void tpc(int id){
             whtIsType[id] =  "float";
             tree[child[1]].first += "_float";
         }
-        else if((whtIsType[child[0]]=="null" && whtIsType[child[2]]!="null")){
-            whtIsType[child[0]]= whtIsType[child[2]];
-            whtIsType[id] = whtIsType[child[2]];
-            tree[child[1]].first += "_" + whtIsType[child[2]];
+        else{
+            // cout << whtIsType[child[0]] << ' ' << whtIsType[child[2]] << endl;
+            whtIsType[id] = "error";
+            cout << "Type Error at line " << LineNumber[child[1]] << endl;
+            exit(1);
         }
-        else if((whtIsType[child[2]]=="null" && whtIsType[child[0]]!="null")){
-            whtIsType[child[2]]= whtIsType[child[0]];
-            whtIsType[id] = whtIsType[child[0]];
-            tree[child[1]].first += "_" + whtIsType[child[0]];
-        }
-        // else{
-        //     // cout << whtIsType[child[0]] << ' ' << whtIsType[child[2]] << endl;
-        //     whtIsType[id] = "error";
-        //     cout << "Type Error at line " << LineNumber[child[1]] << endl;
-        //     exit(1);
-        // }
         
     }
     
