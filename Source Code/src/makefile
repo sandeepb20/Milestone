@@ -6,4 +6,4 @@ lex.yy.c: lexer.l parser.tab.h
 parser.tab.h parser.tab.c: parser.y
 	bison -d -t -v parser.y
 clean:
-	rm final parser.tab.c parser.tab.h lex.yy.c graph.ps out.dot parser.output
+	rm final parser.tab.c parser.tab.h lex.yy.c  out.dot parser.output a.out out.s  3ac.txt SymbolTable.csv
