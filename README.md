@@ -14,7 +14,7 @@ invoked using as or gcc.
     `final` is the executable.
 
 2. For the command line executions, write
-    ```
+    ```console 
     foo@bar:~$ ./final −h
     ```
     This will show you all the commands which can be given along with ./final
@@ -28,18 +28,18 @@ invoked using as or gcc.
     ```
 3. To run the program, use the following command, where Source File is
     `test.java` and the output dot file is `out.dot`
-    ```
+    ```console 
     foo@bar:~$ ./final −i ="test.java" −o="out.dot"
     ```
 4. To print the graph, use following command, where the dot file is `out.dot`
     and the graph will be in `graph.ps`
-    ```
+    ```console 
     foo@bar:~$ dot −Tps −o graph . ps out . dot
     ```
 5. The symbol table, 3AC dump and the x86 64 assembly code can be found
     in file `SymbolTable.csv, 3ac.txt and out.s` respectively in src directory
 6. Running the below command will test the `out.s`
-    ```
+    ```console 
     foo@bar:~$ gcc −no−pie out.s && ./a.out
     ```
 
