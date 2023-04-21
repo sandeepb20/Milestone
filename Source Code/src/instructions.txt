@@ -1,0 +1,3 @@
+./final -i="../testcases/test_4.java" -o="out.dot"
+
+gcc -no-pie out.s && ./a.out
